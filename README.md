@@ -151,9 +151,9 @@ mindmap
 
 ## 3. Design & Prototype
 
-**UI Prototype:** [Public link: to be added after the build, target 28 Sep 2026]
+**UI Prototype:** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app). This is the interactive landing page: try the language switch, the medicine scan, the check-in reply triage and the clinic safety gate. Source: [prototype/khabar-landing.html](prototype/khabar-landing.html).
 
-Planned key screens. Screenshots will replace these descriptions once built.
+Planned key screens for the app itself. Screenshots will replace these descriptions once built (target 28 Sep 2026).
 
 | # | Screen | Interaction |
 |---|---|---|

@@ -1,0 +1,1040 @@
+<meta charset="utf-8">
+<title>Khabar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700&display=swap&text=%E3%80%81%E3%80%82%E4%B8%80%E4%B8%8A%E4%B8%A4%E4%B8%AA%E4%B8%AD%E4%BA%8B%E4%BA%8C%E4%BD%A0%E4%BF%A1%E5%80%92%E5%86%92%E5%88%97%E5%88%B0%E5%89%8D%E5%8D%B1%E5%8D%B3%E5%8F%8C%E5%8F%91%E5%8F%B7%E5%90%84%E5%90%8E%E5%90%90%E5%90%97%E5%90%B8%E5%91%95%E5%91%BC%E5%9B%9E%E5%9B%B0%E5%9C%B0%E5%A4%8D%E5%A4%A9%E5%A4%B4%E5%A5%BD%E5%A6%82%E5%B9%B3%E5%BE%88%E6%84%9F%E6%88%96%E6%89%80%E6%89%8D%E6%8A%96%E6%96%87%E6%97%A9%E6%97%B6%E6%98%8F%E6%98%9F%E6%99%95%E6%99%9A%E6%9C%8D%E6%9C%9F%E6%9D%A5%E6%9E%9C%E6%A0%BC%E6%AC%A1%E6%AF%8F%E6%B0%A8%E6%B0%AF%E6%B1%97%E6%B2%A1%E7%89%B9%E7%94%A8%E7%94%B2%E7%97%9B%E7%AB%8B%E7%B2%92%E7%B3%96%E8%83%8D%E8%83%B8%E8%A1%80%E8%A6%81%E8%AF%8A%E8%AF%B7%E9%99%A9%E9%9A%BE%E9%9C%80%E9%A4%90%E9%A5%AD%E9%AA%8C%E9%BD%90%EF%BC%8C%EF%BC%9A%EF%BC%9F">
+<style>
+  @property --glow-a { syntax: "<color>"; inherits: true; initial-value: #5A3A1C; }
+  @property --glow-b { syntax: "<color>"; inherits: true; initial-value: #0F1C24; }
+  @property --thread { syntax: "<color>"; inherits: true; initial-value: #62C79B; }
+
+  :root {
+    color-scheme: dark;
+    --ink: #0D1A20;
+    --ink-2: #13242C;
+    --ink-3: #1B303A;
+    --line: rgba(190, 220, 226, 0.13);
+    --line-strong: rgba(190, 220, 226, 0.28);
+    --mist: #E6EFF1;
+    --mist-2: #A9BCC2;
+    --mist-3: #748C95;
+    --paper: #EEECE4;
+    --paper-ink: #1E2427;
+    --paper-rule: #D6D1C1;
+    --pandan: #62C79B;
+    --amber: #F2B347;
+    --cili: #F26A4F;
+    --lamp: #FFD89A;
+    --thread: #62C79B;
+    --glow-a: #5A3A1C;
+    --glow-b: #0F1C24;
+    --f-display: "Bricolage Grotesque", "Noto Sans SC", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+    --f-body: "Plus Jakarta Sans", "Noto Sans SC", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --gutter: clamp(16px, 5vw, 64px);
+    --maxw: 1180px;
+    transition: --thread 0.8s ease;
+  }
+
+  html { background: var(--ink); scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--mist);
+    font-family: var(--f-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  body[data-scene="hero"]    { --glow-a: #6A4420; --glow-b: #0F1D25; }
+  body[data-scene="paper"]   { --glow-a: #3B2E1E; --glow-b: #0E1A20; }
+  body[data-scene="table"]   { --glow-a: #5E4120; --glow-b: #141817; }
+  body[data-scene="days"]    { --glow-a: #17423A; --glow-b: #0B171D; }
+  body[data-scene="try"]     { --glow-a: #22343F; --glow-b: #0D1A20; }
+  body[data-scene="clinic"]  { --glow-a: #1D3445; --glow-b: #0E1920; }
+  body[data-scene="ramadan"] { --glow-a: #7A5320; --glow-b: #111A33; }
+  body[data-scene="finale"]  { --glow-a: #1E4262; --glow-b: #0B1626; }
+
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; border-radius: 6px; }
+
+  .backdrop {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(120% 70% at 72% 112%, var(--glow-a), transparent 62%),
+      radial-gradient(80% 55% at 8% -12%, color-mix(in oklab, var(--glow-a) 40%, transparent), transparent 64%),
+      var(--glow-b);
+    transition: --glow-a 1.4s ease, --glow-b 1.4s ease;
+  }
+  .nav, main, .foot { position: relative; z-index: 1; }
+
+  .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* ---------- type ---------- */
+  .eyebrow {
+    font: 500 0.74rem/1.2 var(--f-mono);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--mist-2); margin: 0 0 18px;
+  }
+  h1, h2, h3 { font-family: var(--f-display); font-optical-sizing: auto; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2.5rem, 5.4vw, 4.5rem); line-height: 0.98; letter-spacing: -0.028em; font-weight: 760; }
+  h2 { font-size: clamp(1.9rem, 3.6vw, 3rem); line-height: 1.04; letter-spacing: -0.02em; font-weight: 720; margin-bottom: 18px; }
+  h3 { font-size: 1.12rem; font-weight: 700; letter-spacing: -0.01em; }
+  p { margin: 0 0 16px; }
+  .muted { color: var(--mist-3); font-size: 0.88rem; }
+  .fineprint { font-size: 0.82rem; color: var(--mist-3); margin-top: 16px; max-width: 62ch; }
+  .copy p { color: var(--mist-2); max-width: 56ch; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.78rem 1.15rem; border-radius: 999px;
+    font: 600 0.95rem/1 var(--f-body); text-decoration: none;
+    border: 1px solid transparent; cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  }
+  .btn-primary { background: var(--pandan); color: #062319; }
+  .btn-primary:hover { background: #7AD6AC; }
+  .btn-ghost { background: transparent; color: var(--mist); border-color: var(--line-strong); }
+  .btn-ghost:hover { border-color: var(--mist-2); }
+  .btn-small { padding: 0.55rem 0.85rem; font-size: 0.85rem; }
+  .btn[disabled] { opacity: 0.42; cursor: not-allowed; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  /* ---------- nav + thread rail ---------- */
+  .nav {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: color-mix(in oklab, var(--ink) 70%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+  .brand { display: inline-flex; align-items: center; gap: 0.6rem; font: 800 1.3rem/1 var(--f-display); letter-spacing: -0.02em; text-decoration: none; }
+  .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--thread); box-shadow: 0 0 14px var(--thread); }
+  .nav-links { display: flex; gap: 22px; font-size: 0.9rem; }
+  .nav-links a { color: var(--mist-2); text-decoration: none; }
+  .nav-links a:hover { color: var(--mist); }
+  @media (max-width: 820px) { .nav-links { display: none; } }
+
+  .rail {
+    position: fixed; z-index: 15; pointer-events: none;
+    left: max(6px, calc((100vw - var(--maxw)) / 2 - 26px));
+    top: 92px; bottom: 36px; width: 2px;
+    background: var(--line);
+  }
+  .rail-fill {
+    position: absolute; left: 0; top: 0; width: 100%;
+    height: calc(var(--p, 0) * 100%);
+    background: var(--thread); box-shadow: 0 0 10px var(--thread);
+  }
+  .rail-head {
+    position: absolute; left: 50%; top: calc(var(--p, 0) * 100%);
+    width: 10px; height: 10px; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--thread);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--thread) 22%, transparent), 0 0 18px var(--thread);
+  }
+  .rail-day {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font: 500 0.68rem/1 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--mist-2); white-space: nowrap;
+  }
+  @media (max-width: 1260px) { .rail-day { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; overflow: hidden; }
+  .hero-dust { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .hero-grid {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: center;
+    gap: clamp(36px, 5vw, 76px);
+    padding-block: clamp(48px, 9vh, 104px) clamp(64px, 11vh, 120px);
+  }
+  .greeting {
+    font: 700 clamp(1.5rem, 2.8vw, 2.2rem)/1.1 var(--f-display);
+    color: var(--lamp); margin: 0 0 14px; min-height: 1.2em;
+  }
+  .lede { font-size: 1.14rem; color: var(--mist-2); max-width: 50ch; margin: 22px 0 26px; }
+  .lang-switch { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .lang-switch button {
+    background: transparent; color: var(--mist-2);
+    border: 1px solid var(--line-strong); border-radius: 999px;
+    padding: 0.5rem 0.95rem; font: 600 0.9rem/1 var(--f-body); cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .lang-switch button:hover { color: var(--mist); border-color: var(--mist-2); }
+  .lang-switch button[aria-pressed="true"] { background: var(--mist); color: var(--ink); border-color: var(--mist); }
+  .lang-label { font-size: 0.82rem; color: var(--mist-3); margin: 0 0 10px; }
+
+  .hero-stage { position: relative; }
+  .paper {
+    background-color: var(--paper); color: var(--paper-ink);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--paper-rule) 27px 28px);
+    box-shadow: 0 34px 60px -24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  .note {
+    width: min(100%, 430px); margin: 0; padding: 20px 24px 14px;
+    border-radius: 3px; transform: rotate(-3deg);
+    font: 400 0.92rem/28px var(--f-mono);
+  }
+  .note-head {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 0.7rem; letter-spacing: 0.12em; font-weight: 600;
+    border-bottom: 2px solid var(--paper-ink); margin-bottom: 0;
+  }
+  .note p { margin: 0; }
+  .note ol { list-style: none; margin: 0; padding: 0; }
+  .note li { display: flex; justify-content: space-between; gap: 14px; }
+  .jargon { font-weight: 600; box-shadow: inset 0 -0.5em 0 rgba(242, 179, 71, 0.5); }
+  .note-sign { text-align: right; font-style: italic; }
+
+  .decoded {
+    position: relative; width: min(100%, 470px);
+    margin: -10px 0 0 auto; padding: 20px 22px 12px;
+    background: color-mix(in oklab, var(--ink-2) 86%, transparent);
+    border: 1px solid var(--line-strong); border-radius: 16px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 28px 60px -26px rgba(0, 0, 0, 0.8);
+  }
+  .decoded-label { display: flex; justify-content: space-between; gap: 12px; font: 500 0.72rem/1.3 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist-3); margin-bottom: 6px; }
+  .decoded-list { list-style: none; margin: 0; padding: 0; }
+  .decoded-list li {
+    display: grid; grid-template-columns: 8.2rem minmax(0, 1fr); gap: 12px;
+    padding: 11px 0; border-top: 1px solid var(--line); font-size: 0.97rem; line-height: 1.45;
+  }
+  .decoded-list li:first-child { border-top: 0; }
+  .decoded-list .k { font-weight: 600; color: var(--mist); }
+  .decoded-list .v { color: var(--mist); overflow-wrap: anywhere; }
+  .decoded-list li.warn .k, .decoded-list li.warn .v { color: var(--amber); }
+  .decoded-list li.back .k { color: var(--mist-2); }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .decoded { margin-top: -6px; }
+  }
+  @media (max-width: 520px) {
+    .decoded-list li { grid-template-columns: 1fr; gap: 2px; }
+    .note { transform: rotate(-1.5deg); font-size: 0.82rem; }
+  }
+
+  /* ---------- scenes ---------- */
+  .scene { position: relative; padding-block: clamp(76px, 12vh, 140px); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 84px); align-items: center; }
+  .scene-head { max-width: 760px; margin-bottom: 40px; }
+  .scene-head p { color: var(--mist-2); max-width: 60ch; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* problem */
+  .facts { margin: 30px 0 0; }
+  .facts div { display: grid; grid-template-columns: 8.2rem minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--line); }
+  .facts dt { font: 720 1.9rem/1 var(--f-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--mist); }
+  .facts dd { margin: 0; color: var(--mist-2); font-size: 0.95rem; }
+  .glossary-note { font-size: 0.86rem; color: var(--mist-3); margin-bottom: 14px; }
+  .chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .chip {
+    display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; align-items: baseline;
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+    background: color-mix(in oklab, var(--ink-2) 72%, transparent);
+  }
+  .chip-term { font: 600 1rem/1.2 var(--f-mono); color: var(--amber); grid-row: span 2; }
+  .chip-mean { color: var(--mist); font-size: 0.95rem; line-height: 1.35; overflow-wrap: anywhere; min-width: 0; }
+  .chip-latin { font: 400 0.72rem/1.3 var(--f-mono); color: var(--mist-3); font-style: italic; }
+  @media (max-width: 460px) { .chips { grid-template-columns: 1fr; } }
+
+  /* table */
+  .table-stage { display: grid; grid-template-columns: 1.45fr 0.95fr; gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .table-stage { grid-template-columns: 1fr; } }
+  .packets {
+    list-style: none; margin: 0; padding: clamp(18px, 3vw, 32px);
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-content: start;
+    border-radius: 20px; min-height: 360px;
+    background:
+      radial-gradient(80% 70% at 50% 28%, rgba(255, 216, 154, 0.16), transparent 70%),
+      #1B1814;
+    border: 1px solid rgba(255, 216, 154, 0.12);
+  }
+  @media (max-width: 560px) { .packets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .packet {
+    position: relative; display: flex; flex-direction: column; gap: 3px;
+    padding: 10px 12px 12px; border-radius: 6px;
+    background: var(--paper); color: var(--paper-ink);
+    font: 400 0.78rem/1.35 var(--f-mono);
+    transform: translate(var(--x, 0px), var(--y, 0px)) rotate(var(--r, 0deg));
+    box-shadow: 0 12px 22px -12px rgba(0, 0, 0, 0.8);
+    outline: 2px solid transparent; outline-offset: 3px;
+    transition: outline-color 0.4s ease 0.3s;
+  }
+  .packet::before { content: ""; display: block; height: 6px; border-radius: 3px; background: var(--band, #999); margin-bottom: 6px; }
+  .packet[data-kind="herb"] { background: #E8DDC6; }
+  .pk-src { font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; opacity: 0.72; }
+  .packet strong { font: 700 0.95rem/1.2 var(--f-body); }
+  .pk-gen { opacity: 0.78; }
+  .pk-flag { display: none; font: 700 0.64rem/1.2 var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+  .table-stage[data-scanned="true"] .packet { transform: none; order: var(--o); }
+  .table-stage[data-scanned="true"] .packet[data-flag] { outline-color: var(--amber); }
+  .table-stage[data-scanned="true"] .packet[data-flag] .pk-flag { display: block; color: #8A5A07; }
+  .table-stage[data-scanned="true"] .packet[data-ok] { outline-color: var(--pandan); }
+  .table-stage[data-scanned="true"] .packet[data-ok] .pk-flag { display: block; color: #1F6B49; }
+
+  .panel {
+    background: color-mix(in oklab, var(--ink-2) 92%, transparent);
+    border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+  }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 12px; }
+  .findings-top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .finding-list { list-style: none; margin: 0; padding: 0; }
+  .finding { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line); font-size: 0.93rem; }
+  .finding p { margin: 0; color: var(--mist-2); }
+  .finding strong { display: block; color: var(--mist); font-weight: 600; }
+  .finding-idle { color: var(--mist-2); font-size: 0.93rem; padding: 12px 0; border-top: 1px solid var(--line); }
+
+  .sev {
+    display: inline-block; font: 700 0.66rem/1 var(--f-body); letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.42rem 0.55rem; border-radius: 6px; white-space: nowrap;
+  }
+  .sev-red   { background: color-mix(in oklab, var(--cili) 20%, transparent);   color: #FFB6A6; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cili) 55%, transparent); }
+  .sev-amber { background: color-mix(in oklab, var(--amber) 18%, transparent);  color: #FFD99A; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--amber) 50%, transparent); }
+  .sev-ok    { background: color-mix(in oklab, var(--pandan) 16%, transparent); color: #BDEFD6; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pandan) 45%, transparent); }
+
+  /* 30 days */
+  .multi span { white-space: nowrap; }
+  .multi .sep { color: var(--mist-3); font-weight: 500; }
+  .kad {
+    margin-top: 28px; padding: 16px 16px 14px; border-radius: 8px;
+    background: #E3EEE8; color: #173029; transform: rotate(1.2deg);
+    font: 400 0.72rem/1.3 var(--f-mono);
+    box-shadow: 0 26px 50px -24px rgba(0, 0, 0, 0.75);
+    max-width: 460px;
+  }
+  .kad-head { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1.5px solid #173029; }
+  .kad-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; }
+  .kad-grid li {
+    aspect-ratio: 1; display: grid; place-items: center; border-radius: 4px;
+    border: 1px solid rgba(23, 48, 41, 0.22); font-variant-numeric: tabular-nums;
+  }
+  .kad-grid li.past { background: rgba(23, 48, 41, 0.08); }
+  .kad-grid li.ci-ok { background: #2F8A63; border-color: #2F8A63; color: #F2FFF8; font-weight: 600; }
+  .kad-grid li.ci-flag { background: #E29A2E; border-color: #E29A2E; color: #2A1A05; font-weight: 700; }
+  .kad-grid li.ci-next { border: 1.5px dashed #2F8A63; color: #1F6B49; font-weight: 600; }
+  .kad-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+  .kad-legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .lg-ok::before { background: #2F8A63; }
+  .lg-flag::before { background: #E29A2E; }
+  .lg-next::before { border: 1.5px dashed #2F8A63; }
+
+  .phone {
+    max-width: 380px; margin-inline: auto; padding: 12px;
+    background: #0A1419; border: 1px solid var(--line-strong); border-radius: 34px;
+    box-shadow: 0 40px 80px -34px rgba(0, 0, 0, 0.85);
+  }
+  .phone-top { display: flex; gap: 10px; align-items: center; padding: 8px 10px 12px; border-bottom: 1px solid var(--line); }
+  .avatar { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--pandan); color: #062319; font: 800 1rem/1 var(--f-display); }
+  .phone-top strong { display: block; font-size: 0.92rem; }
+  .phone-top span { font-size: 0.74rem; color: var(--mist-3); }
+  .chat { list-style: none; margin: 0; padding: 12px 6px 6px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { position: relative; max-width: 84%; padding: 9px 12px 20px; border-radius: 14px; font-size: 0.9rem; line-height: 1.42; }
+  .msg time { position: absolute; right: 10px; bottom: 4px; font-size: 0.64rem; color: var(--mist-3); }
+  .msg.in { align-self: flex-start; background: #1A2A32; border-top-left-radius: 4px; }
+  .msg.out { align-self: flex-end; background: #1E4A3A; border-top-right-radius: 4px; }
+  .msg.flag { background: color-mix(in oklab, var(--amber) 15%, #1A2A32); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--amber) 45%, transparent); }
+  .msg.sys { align-self: center; max-width: 92%; padding: 2px 8px; font-size: 0.76rem; color: var(--mist-3); text-align: center; }
+  .day-sep { align-self: center; font: 500 0.64rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist-3); padding: 8px 0 2px; }
+
+  /* try it */
+  .field-label { display: block; font: 500 0.74rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist-2); margin: 26px 0 10px; }
+  .field-input {
+    width: 100%; box-sizing: border-box;
+    font: 500 1.25rem/1.3 var(--f-body); color: var(--mist);
+    background: var(--ink-2); border: 1px solid var(--line-strong); border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .field-input:focus { outline: none; border-color: var(--pandan); box-shadow: 0 0 0 4px color-mix(in oklab, var(--pandan) 22%, transparent); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .ex {
+    background: transparent; color: var(--mist-2); cursor: pointer;
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.42rem 0.8rem;
+    font: 500 0.86rem/1.2 var(--f-body);
+  }
+  .ex:hover { color: var(--mist); border-color: var(--mist-2); }
+
+  .verdict {
+    --lvl: var(--amber);
+    position: relative; overflow: hidden; padding: clamp(22px, 3vw, 34px);
+    border-radius: 20px; background: var(--ink-2);
+    border: 1px solid color-mix(in oklab, var(--lvl) 45%, transparent);
+    background-image: radial-gradient(70% 60% at 100% 0%, color-mix(in oklab, var(--lvl) 20%, transparent), transparent 70%);
+    transition: border-color 0.5s;
+  }
+  .verdict[data-level="red"] { --lvl: var(--cili); }
+  .verdict[data-level="watch"] { --lvl: var(--amber); }
+  .verdict[data-level="ok"] { --lvl: var(--pandan); }
+  .verdict[data-level="review"] { --lvl: var(--mist-2); }
+  .verdict[data-level="empty"] { --lvl: var(--mist-3); }
+  .verdict-level { font: 760 clamp(2.2rem, 4.4vw, 3.4rem)/1 var(--f-display); letter-spacing: -0.02em; color: var(--lvl); margin-bottom: 12px; }
+  .verdict-msg { font-size: 1.1rem; color: var(--mist); }
+  .verdict-why { font: 400 0.82rem/1.4 var(--f-mono); color: var(--mist-3); }
+  .verdict-pt { margin: 18px 0 0; padding: 14px 16px; border-radius: 12px; background: rgba(0, 0, 0, 0.22); }
+  .verdict-pt span { display: block; font: 500 0.68rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist-3); margin-bottom: 8px; }
+  .verdict-pt p { margin: 0; }
+  .route { list-style: none; margin: 20px 0 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.84rem; color: var(--mist-2); }
+  .route li:not(:last-child)::after { content: "→"; margin-left: 8px; color: var(--mist-3); }
+  .route li:last-child { color: var(--lvl); font-weight: 600; }
+
+  /* clinic */
+  .dash { display: grid; grid-template-columns: 1.25fr 1fr; grid-template-areas: "calls gate" "calls log"; gap: 18px; }
+  .dash .calls { grid-area: calls; }
+  .dash .gate { grid-area: gate; }
+  .dash .log { grid-area: log; }
+  @media (max-width: 900px) { .dash { grid-template-columns: 1fr; grid-template-areas: "calls" "gate" "log"; } }
+  .call-list, .log-list { list-style: none; margin: 0; padding: 0; }
+  .call { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+  .call .sev { justify-self: start; }
+  .who strong { display: block; font-weight: 600; }
+  .who span { display: block; color: var(--mist-2); font-size: 0.88rem; }
+  @media (max-width: 520px) { .call { grid-template-columns: 1fr auto; } .call .sev { grid-column: 1 / -1; } }
+  .gate-find { display: flex; gap: 10px; align-items: start; font-size: 0.95rem; }
+  .gate label { display: block; font-size: 0.82rem; color: var(--mist-2); margin: 14px 0 6px; }
+  .gate textarea {
+    width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px;
+    font: 400 0.95rem/1.4 var(--f-body); color: var(--mist);
+    background: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 12px;
+  }
+  .gate textarea:focus { outline: none; border-color: var(--amber); }
+  .gate .btn { margin-top: 12px; }
+  .gate-note { margin: 10px 0 0; font-size: 0.82rem; color: var(--mist-3); }
+  .log-list li { display: grid; grid-template-columns: 6.6rem minmax(0, 1fr); gap: 2px 12px; padding: 11px 0; border-top: 1px solid var(--line); font-size: 0.9rem; }
+  .log-list time { font: 400 0.76rem/1.5 var(--f-mono); color: var(--mist-3); grid-row: span 2; font-variant-numeric: tabular-nums; }
+  .log-list .act { color: var(--mist-2); font-size: 0.84rem; }
+
+  /* ramadan */
+  .switch { display: inline-flex; align-items: center; gap: 12px; margin-top: 10px; padding: 6px 0; background: none; border: 0; color: var(--mist); font: 600 1rem/1 var(--f-body); cursor: pointer; }
+  .switch-track { width: 48px; height: 28px; border-radius: 999px; background: var(--ink-3); border: 1px solid var(--line-strong); position: relative; transition: background-color 0.25s; }
+  .switch-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--mist); transition: transform 0.25s; }
+  .switch[aria-checked="true"] .switch-track { background: var(--pandan); border-color: var(--pandan); }
+  .switch[aria-checked="true"] .switch-thumb { transform: translateX(20px); background: #062319; }
+  .sched { width: 100%; border-collapse: collapse; }
+  .sched th { text-align: left; font: 500 0.7rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist-3); padding: 0 0 10px; }
+  .sched td { padding: 14px 12px 14px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  .sched td:first-child { font-weight: 600; width: 38%; }
+  .sched td.when { color: var(--mist-2); transition: color 0.4s; }
+  .sched.fasting td.when { color: var(--lamp); }
+  .sched-note { margin: 12px 0 0; font-size: 0.84rem; color: var(--mist-3); }
+
+  /* finale */
+  .finale { position: relative; overflow: hidden; padding-block: clamp(120px, 22vh, 220px); }
+  .finale canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .finale-copy { position: relative; z-index: 1; text-align: center; }
+  .finale h2 { font-size: clamp(2.4rem, 6vw, 4.8rem); line-height: 1; margin-inline: auto; max-width: 14ch; }
+  .finale p { color: var(--mist-2); margin-inline: auto; max-width: 48ch; }
+  .finale .btn-row { justify-content: center; margin-top: 26px; }
+
+  .foot { border-top: 1px solid var(--line); padding-block: 40px 56px; color: var(--mist-3); font-size: 0.84rem; }
+  .foot-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
+  .foot p { margin: 0 0 10px; max-width: 60ch; }
+  .foot a { color: var(--mist-2); }
+  @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr; } }
+
+  /* scroll-linked motion, enhancement only (never hides content) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .rise { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
+      @keyframes rise { from { transform: translateY(46px) scale(0.985); } to { transform: none; } }
+      .note { animation: drift linear both; animation-timeline: view(); animation-range: exit 0% exit 100%; }
+      @keyframes drift { from { transform: rotate(-3deg); } to { transform: translateY(-60px) rotate(-9deg); } }
+      .kad { animation: tilt linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+      @keyframes tilt { from { transform: translateY(40px) rotate(-3deg); } to { transform: rotate(1.2deg); } }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0.01ms !important; }
+  }
+</style>
+
+<div class="backdrop" aria-hidden="true"></div>
+<div class="rail" id="rail" aria-hidden="true">
+  <div class="rail-fill"></div>
+  <div class="rail-head"><span class="rail-day" id="railDay">Lawatan</span></div>
+</div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top"><span class="brand-dot"></span>Khabar</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#paper">Why</a>
+      <a href="#table">Medicines</a>
+      <a href="#days">30 days</a>
+      <a href="#try">Try a reply</a>
+      <a href="#clinic">For clinics</a>
+    </nav>
+    <a class="btn btn-ghost btn-small" href="https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/blob/main/plan.md" target="_blank" rel="noopener">Read the plan</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="top" data-scene="hero">
+    <canvas class="hero-dust" id="dust" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Aftercare for Malaysian clinics</p>
+        <p class="greeting" id="greeting" lang="ms">Apa khabar?</p>
+        <h1>The visit ends.<br>The care shouldn’t.</h1>
+        <p class="lede">Khabar turns the doctor’s shorthand into plain words in the patient’s own language, checks in on WhatsApp for 30 days, and tells the clinic who needs a call.</p>
+        <p class="lang-label">Pick Aminah’s language</p>
+        <div class="lang-switch" role="group" aria-label="Patient language">
+          <button type="button" id="lang-ms" data-lang="ms" aria-pressed="true">BM</button>
+          <button type="button" id="lang-en" data-lang="en" aria-pressed="false">English</button>
+          <button type="button" id="lang-zh" data-lang="zh" aria-pressed="false" lang="zh-Hans">中文</button>
+          <button type="button" id="lang-ta" data-lang="ta" aria-pressed="false" lang="ta">தமிழ்</button>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="#try">Try a check-in reply</a>
+          <a class="btn btn-ghost" href="#clinic">See the clinic view</a>
+        </div>
+      </div>
+
+      <div class="hero-stage">
+        <figure class="note paper" aria-label="The doctor's note, as written">
+          <figcaption class="note-head"><span>KLINIK · PRESKRIPSI</span><span>21/09/26</span></figcaption>
+          <p>Pt: Aminah bt ████ · 67F</p>
+          <p>Dx: T2DM, HTN</p>
+          <ol>
+            <li><span>T. Metformin 500mg</span><span class="jargon">1/1 BD PC</span></li>
+            <li><span>T. Amlodipine 5mg</span><span class="jargon">1/1 OD</span></li>
+            <li><span>T. Gliclazide 80mg</span><span class="jargon">1/1 OM AC</span></li>
+          </ol>
+          <p>Hypo <span class="jargon">sx</span> → <span class="jargon">RTC STAT</span></p>
+          <p><span class="jargon">TCA 2/52</span> · FBS, HbA1c</p>
+          <p class="note-sign">— Dr P.</p>
+        </figure>
+
+        <div class="decoded" aria-live="polite">
+          <p class="decoded-label"><span>What Aminah reads</span><span id="decodedLang">Bahasa Melayu</span></p>
+          <ul class="decoded-list" id="decoded" lang="ms">
+            <li><span class="k">Metformin 500 mg</span><span class="v">1 biji, pagi dan malam, selepas makan.</span></li>
+            <li><span class="k">Amlodipine 5 mg</span><span class="v">1 biji, sekali sehari.</span></li>
+            <li><span class="k">Gliclazide 80 mg</span><span class="v">1 biji setiap pagi, sebelum sarapan.</span></li>
+            <li class="warn"><span class="k">Tanda bahaya</span><span class="v">Kalau rasa pening, berpeluh atau menggeletar, datang ke klinik segera.</span></li>
+            <li class="back"><span class="k">Temujanji</span><span class="v">Datang semula dalam 2 minggu untuk ujian gula darah.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="scene" id="paper" data-scene="paper">
+    <div class="wrap two-col">
+      <div class="copy">
+        <p class="eyebrow">Why it goes wrong at home</p>
+        <h2>The note is written in Latin shorthand. The patient reads BM, 中文 or தமிழ்.</h2>
+        <p>Doctors in busy clinics have minutes per patient. What goes home is a note like the one above, and a patient left to guess which tablet goes with which meal.</p>
+        <dl class="facts">
+          <div><dt>35%</dt><dd>of Malaysian adults have limited health literacy (NHMS 2019)</dd></div>
+          <div><dt>80–100</dt><dd>patients a day for one doctor in understaffed public clinics</dd></div>
+          <div><dt>~50%</dt><dd>of patients with chronic disease take their medicines as prescribed</dd></div>
+        </dl>
+      </div>
+      <div class="rise">
+        <p class="glossary-note">Every term on Aminah’s note, in the language you picked above.</p>
+        <ul class="chips" id="glossary">
+          <li class="chip"><span class="chip-term">BD</span><span class="chip-mean" data-term="BD">dua kali sehari</span><span class="chip-latin">bis die</span></li>
+          <li class="chip"><span class="chip-term">OD</span><span class="chip-mean" data-term="OD">sekali sehari</span><span class="chip-latin">omne in die</span></li>
+          <li class="chip"><span class="chip-term">OM</span><span class="chip-mean" data-term="OM">setiap pagi</span><span class="chip-latin">omni mane</span></li>
+          <li class="chip"><span class="chip-term">PC</span><span class="chip-mean" data-term="PC">selepas makan</span><span class="chip-latin">post cibum</span></li>
+          <li class="chip"><span class="chip-term">AC</span><span class="chip-mean" data-term="AC">sebelum makan</span><span class="chip-latin">ante cibum</span></li>
+          <li class="chip"><span class="chip-term">PRN</span><span class="chip-mean" data-term="PRN">bila perlu sahaja</span><span class="chip-latin">pro re nata</span></li>
+          <li class="chip"><span class="chip-term">STAT</span><span class="chip-mean" data-term="STAT">segera</span><span class="chip-latin">statim</span></li>
+          <li class="chip"><span class="chip-term">TCA 2/52</span><span class="chip-mean" data-term="TCA 2/52">datang semula dalam 2 minggu</span><span class="chip-latin">to come again · 2 of 52 weeks</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEDICINES -->
+  <section class="scene" id="table" data-scene="table">
+    <div class="wrap">
+      <header class="scene-head">
+        <p class="eyebrow">Before the visit</p>
+        <h2>Three clinics. One kitchen table. One hidden duplicate.</h2>
+        <p>Aminah photographs every packet she takes, including jamu and supplements. Khabar matches each brand to its actual medicine and checks them against each other before the doctor writes anything new.</p>
+      </header>
+      <div class="table-stage" id="tableStage" data-scanned="false">
+        <ul class="packets rise" id="packets" aria-label="Medicines on Aminah's table">
+          <li class="packet" data-flag style="--band:#7FA7D9; --x:4px; --y:10px; --r:-7deg; --o:1"><span class="pk-src">Klinik A · GP</span><strong>Brand A 500 mg</strong><span class="pk-gen">metformin</span><span class="pk-flag">Same medicine ×2</span></li>
+          <li class="packet" style="--band:#5FA8A0; --x:-6px; --y:22px; --r:5deg; --o:5" data-ok><span class="pk-src">Klinik Kesihatan</span><strong>Amlodipine 5 mg</strong><span class="pk-gen">amlodipine</span><span class="pk-flag">No issue found</span></li>
+          <li class="packet" data-flag data-kind="herb" style="--band:#E3B35F; --x:10px; --y:-4px; --r:9deg; --o:3"><span class="pk-src">Pharmacy · supplement</span><strong>Ginkgo capsules</strong><span class="pk-gen">ginkgo biloba</span><span class="pk-flag">Bleeding risk with aspirin</span></li>
+          <li class="packet" data-flag style="--band:#5FA8A0; --x:-12px; --y:-2px; --r:-4deg; --o:2"><span class="pk-src">Klinik Kesihatan</span><strong>Brand B 500 mg</strong><span class="pk-gen">metformin</span><span class="pk-flag">Same medicine ×2</span></li>
+          <li class="packet" data-flag style="--band:#B99BDB; --x:14px; --y:16px; --r:-10deg; --o:4"><span class="pk-src">Specialist clinic</span><strong>Aspirin 100 mg</strong><span class="pk-gen">aspirin</span><span class="pk-flag">Bleeding risk with ginkgo</span></li>
+          <li class="packet" data-flag data-kind="herb" style="--band:#9C7A4E; --x:-4px; --y:6px; --r:6deg; --o:7"><span class="pk-src">Jamu · herbal</span><strong>Bitter gourd extract</strong><span class="pk-gen">peria (momordica)</span><span class="pk-flag">May lower sugar further</span></li>
+          <li class="packet" data-flag style="--band:#5FA8A0; --x:8px; --y:-10px; --r:-3deg; --o:6"><span class="pk-src">Klinik Kesihatan</span><strong>Gliclazide 80 mg</strong><span class="pk-gen">gliclazide</span><span class="pk-flag">May lower sugar further</span></li>
+        </ul>
+        <aside class="panel" aria-live="polite">
+          <div class="findings-top">
+            <button type="button" class="btn btn-primary" id="scanBtn">Scan with Khabar</button>
+            <span class="muted" id="scanStatus">7 items on the table</span>
+          </div>
+          <div id="findings">
+            <p class="finding-idle">Khabar reads each label, maps brand names to the active ingredient, then checks every pair for duplicates and clashes.</p>
+          </div>
+        </aside>
+      </div>
+      <p class="fineprint">Illustrative example with fictional brands. Real checks use the DDInter interaction database and a curated herb list, never the AI’s own opinion.</p>
+    </div>
+  </section>
+
+  <!-- 30 DAYS -->
+  <section class="scene" id="days" data-scene="days">
+    <div class="wrap two-col">
+      <div class="copy">
+        <p class="eyebrow">After the visit</p>
+        <h2 class="multi"><span lang="ms">Apa khabar?</span> <span class="sep">·</span> <span lang="zh-Hans">你好吗？</span> <span class="sep">·</span> <span lang="ta">நலமா?</span></h2>
+        <p>Asked on day 1, 3, 7, 14 and 30, on WhatsApp, in her language. Every reply is read, not just counted. The ones that sound wrong go straight to the clinic.</p>
+        <div class="kad" aria-label="Aminah's 30-day follow-up card">
+          <div class="kad-head"><span>Kad susulan · 30 hari</span><span>Aminah · 21/09</span></div>
+          <ol class="kad-grid" id="kadGrid"></ol>
+          <div class="kad-legend"><span class="lg-ok">Replied, okay</span><span class="lg-flag">Flagged to clinic</span><span class="lg-next">Next check-ins</span></div>
+        </div>
+      </div>
+      <div class="phone rise" aria-label="Example conversation on WhatsApp, in Bahasa Melayu">
+        <div class="phone-top">
+          <span class="avatar" aria-hidden="true">K</span>
+          <div><strong>Khabar · Klinik Dr Priya</strong><span>on WhatsApp</span></div>
+        </div>
+        <ol class="chat" lang="ms">
+          <li class="day-sep">Hari 1 · Selasa</li>
+          <li class="msg in">Assalamualaikum Mak Cik Aminah. Apa khabar hari ini? Dah makan ubat pagi?<time>9:02</time></li>
+          <li class="msg out">Waalaikumsalam. Dah, lepas sarapan.<time>9:15</time></li>
+          <li class="msg in">Bagus. Ubat seterusnya: Metformin, malam ini selepas makan.<time>9:15</time></li>
+          <li class="day-sep">Hari 3 · Khamis</li>
+          <li class="msg out">Pening dan berpeluh ni.<time>16:17</time></li>
+          <li class="msg in flag">Klinik sudah dimaklumkan. Dr Priya akan telefon Mak Cik sekejap lagi. Kalau keadaan teruk, telefon 999.<time>16:17</time></li>
+          <li class="msg sys">Nurul, anak Mak Cik, juga diberitahu. Mak Cik sudah beri izin.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRY IT -->
+  <section class="scene" id="try" data-scene="try">
+    <div class="wrap two-col">
+      <div class="copy">
+        <p class="eyebrow">Try a reply</p>
+        <h2>Answer the way Aminah would.</h2>
+        <p>Type how you feel in BM, English, 中文 or தமிழ். Khabar sorts every reply into okay, watch or call now. Watch the thread on the left change with it.</p>
+        <label class="field-label" for="feel">Your reply</label>
+        <input class="field-input" id="feel" type="text" autocomplete="off" spellcheck="false" value="pening sikit">
+        <div class="examples" aria-label="Example replies">
+          <button type="button" class="ex" data-ex="dah makan ubat, sihat">dah makan ubat, sihat</button>
+          <button type="button" class="ex" data-ex="pening dan berpeluh">pening dan berpeluh</button>
+          <button type="button" class="ex" data-ex="sakit dada">sakit dada</button>
+          <button type="button" class="ex" data-ex="头晕" lang="zh-Hans">头晕</button>
+          <button type="button" class="ex" data-ex="நலம்" lang="ta">நலம்</button>
+          <button type="button" class="ex" data-ex="tired but fine">tired but fine</button>
+        </div>
+        <p class="fineprint">Keyword demo only, not medical advice. The real triage pairs a doctor-approved word list with an AI check, and alerts the clinic if either one flags.</p>
+      </div>
+      <div class="verdict rise" id="verdict" data-level="watch" aria-live="polite">
+        <p class="verdict-level" id="vLevel">Watch</p>
+        <p class="verdict-msg" id="vMsg">Added to today’s call list. The clinic checks in today.</p>
+        <p class="verdict-why" id="vWhy">Matched “pening” (dizzy)</p>
+        <div class="verdict-pt"><span>What Aminah sees</span><p id="vPt" lang="ms">Terima kasih. Klinik akan hubungi Mak Cik hari ini.</p></div>
+        <ol class="route"><li>Her reply</li><li>Khabar triage</li><li id="vRoute">Today’s call list</li></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLINIC -->
+  <section class="scene" id="clinic" data-scene="clinic">
+    <div class="wrap">
+      <header class="scene-head">
+        <p class="eyebrow">For the clinic</p>
+        <h2>Start the day knowing who needs a call.</h2>
+        <p>Replies, missed doses and silence are ranked into one short list. Nothing is finalised over a critical safety finding, and patients can see exactly who opened their record.</p>
+      </header>
+      <div class="dash rise">
+        <div class="panel calls">
+          <div class="panel-head"><h3>Call today</h3><span class="muted">Thu 24 Sep · 41 patients in follow-up</span></div>
+          <ul class="call-list">
+            <li class="call"><span class="sev sev-red">Call now</span><div class="who"><strong>Aminah B., 67</strong><span>Day 3 · “Pening dan berpeluh” · on gliclazide</span></div><button type="button" class="btn btn-primary btn-small" id="callAminah">Call</button></li>
+            <li class="call"><span class="sev sev-amber">Watch</span><div class="who"><strong>Tan K. H., 72</strong><span>Day 9 · no reply for 2 days</span></div><button type="button" class="btn btn-ghost btn-small" id="callTan">Call</button></li>
+            <li class="call"><span class="sev sev-amber">Watch</span><div class="who"><strong>Muthu R., 65</strong><span>Day 6 · missed evening dose twice</span></div><button type="button" class="btn btn-ghost btn-small" id="callMuthu">Call</button></li>
+            <li class="call"><span class="sev sev-ok">Okay</span><div class="who"><strong>38 others</strong><span>All check-ins answered, nothing flagged</span></div><span></span></li>
+          </ul>
+        </div>
+        <div class="panel gate">
+          <div class="panel-head"><h3>Safety check</h3><span class="muted">Visit report · Aminah B.</span></div>
+          <p class="gate-find"><span class="sev sev-red">Critical</span><span>Metformin prescribed twice, under two brand names from two clinics.</span></p>
+          <label for="reason">Reason to continue</label>
+          <textarea id="reason" rows="2" placeholder="Required before finalising with a critical finding"></textarea>
+          <button type="button" class="btn btn-primary" id="finalise" disabled>Finalise report</button>
+          <p class="gate-note" id="gateNote">Blocked until a reason is written. The block is enforced in the app, the server and the database.</p>
+        </div>
+        <div class="panel log">
+          <div class="panel-head"><h3>Who viewed my record</h3><span class="muted">Aminah’s view</span></div>
+          <ol class="log-list">
+            <li><time>24 Sep 16:21</time><span>Dr Priya · Klinik</span><span class="act">Opened her record</span></li>
+            <li><time>24 Sep 16:19</time><span>Nurul · daughter, with consent</span><span class="act">Read the alert</span></li>
+            <li><time>24 Sep 16:17</time><span>Khabar</span><span class="act">Flagged her reply to the clinic</span></li>
+            <li><time>21 Sep 10:05</time><span>Dr Priya · Klinik</span><span class="act">Finalised the visit report</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RAMADAN -->
+  <section class="scene" id="ramadan" data-scene="ramadan">
+    <div class="wrap two-col">
+      <div class="copy">
+        <p class="eyebrow">Ramadan mode</p>
+        <h2>Sahur. Berbuka. Reminders that fast with her.</h2>
+        <p>About 9 in 10 Malaysians with type 2 diabetes fast. When the doctor turns on fasting mode, reminders move to the meals Aminah actually eats, and check-ins ask about shakiness before berbuka. Doses stay the doctor’s decision.</p>
+        <button type="button" class="switch" id="fastSwitch" role="switch" aria-checked="false"><span class="switch-track"><span class="switch-thumb"></span></span>Fasting mode</button>
+      </div>
+      <div class="panel rise">
+        <table class="sched" id="sched">
+          <thead><tr><th scope="col">Medicine</th><th scope="col">Reminder</th></tr></thead>
+          <tbody>
+            <tr><td>Metformin 500 mg</td><td class="when" data-normal="8:00 am and 8:00 pm, after food" data-fast="At sahur and at berbuka, after eating">8:00 am and 8:00 pm, after food</td></tr>
+            <tr><td>Gliclazide 80 mg</td><td class="when" data-normal="7:30 am, before breakfast" data-fast="At berbuka, before eating, as Dr Priya set">7:30 am, before breakfast</td></tr>
+            <tr><td>Amlodipine 5 mg</td><td class="when" data-normal="8:00 am" data-fast="At sahur">8:00 am</td></tr>
+            <tr><td>Check-in question</td><td class="when" data-normal="“Apa khabar? Dah makan ubat?”" data-fast="“Ada rasa menggeletar sebelum berbuka?”">“Apa khabar? Dah makan ubat?”</td></tr>
+          </tbody>
+        </table>
+        <p class="sched-note" id="schedNote">Normal schedule. Times follow the doctor’s prescription.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="finale" id="home" data-scene="finale">
+    <canvas id="web" aria-hidden="true"></canvas>
+    <div class="wrap finale-copy">
+      <h2>Every patient, followed home.</h2>
+      <p>Khabar is a student practice project, planned and built in the open ahead of SDC Hackathon 2026.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/blob/main/plan.md" target="_blank" rel="noopener">Read the plan</a>
+        <a class="btn btn-ghost" href="https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE" target="_blank" rel="noopener">See the code</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <p><strong style="color: var(--mist-2)">Khabar</strong> · Apa khabar? · 你好吗？ · நலமா?</p>
+      <p>People, clinics and brands on this page are fictional, and the demo uses fake data. Khabar is not a medical device and gives no medical advice. Inspired by CliniFlow AI (UM Hackathon 2026 champion). Drug interaction data: DDInter 2.0 (CC BY-NC 4.0).</p>
+    </div>
+    <div>
+      <p>Figures: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8197907/" target="_blank" rel="noopener">health literacy (NHMS 2019)</a> · <a href="https://focusmalaysia.my/malaysias-healthcare-system-is-under-strain-and-reforms-cannot-wait/" target="_blank" rel="noopener">clinic workload</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/42584433/" target="_blank" rel="noopener">medication adherence</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3253336/" target="_blank" rel="noopener">Ramadan fasting and diabetes</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const root = document.documentElement;
+  document.body.dataset.scene = "hero";
+
+  /* ---------- languages ---------- */
+  const LANG = {
+    ms: {
+      code: "ms", name: "Bahasa Melayu", greet: "Apa khabar?",
+      rx: [["Metformin 500 mg", "1 biji, pagi dan malam, selepas makan."], ["Amlodipine 5 mg", "1 biji, sekali sehari."], ["Gliclazide 80 mg", "1 biji setiap pagi, sebelum sarapan."]],
+      warn: ["Tanda bahaya", "Kalau rasa pening, berpeluh atau menggeletar, datang ke klinik segera."],
+      back: ["Temujanji", "Datang semula dalam 2 minggu untuk ujian gula darah."],
+      gloss: { "BD": "dua kali sehari", "OD": "sekali sehari", "OM": "setiap pagi", "PC": "selepas makan", "AC": "sebelum makan", "PRN": "bila perlu sahaja", "STAT": "segera", "TCA 2/52": "datang semula dalam 2 minggu" }
+    },
+    en: {
+      code: "en", name: "English", greet: "How are you?",
+      rx: [["Metformin 500 mg", "1 tablet, morning and night, after food."], ["Amlodipine 5 mg", "1 tablet, once a day."], ["Gliclazide 80 mg", "1 tablet every morning, before breakfast."]],
+      warn: ["Warning signs", "If you feel dizzy, sweaty or shaky, come back to the clinic straight away."],
+      back: ["Next visit", "Come back in 2 weeks for a blood sugar test."],
+      gloss: { "BD": "twice a day", "OD": "once a day", "OM": "every morning", "PC": "after food", "AC": "before food", "PRN": "only when needed", "STAT": "straight away", "TCA 2/52": "come back in 2 weeks" }
+    },
+    zh: {
+      code: "zh-Hans", name: "中文", greet: "你好吗？",
+      rx: [["Metformin 500 mg", "二甲双胍：每次一粒，早晚各一次，饭后服用。"], ["Amlodipine 5 mg", "氨氯地平：每天一次，每次一粒。"], ["Gliclazide 80 mg", "格列齐特：每天早上一粒，早餐前服用。"]],
+      warn: ["危险信号", "如果感到头晕、冒汗或发抖，请立即回诊所。"],
+      back: ["复诊", "两个星期后回来复诊，验血糖。"],
+      gloss: { "BD": "每天两次", "OD": "每天一次", "OM": "每天早上", "PC": "饭后", "AC": "饭前", "PRN": "需要时才服用", "STAT": "立即", "TCA 2/52": "两个星期后复诊" }
+    },
+    ta: {
+      code: "ta", name: "தமிழ்", greet: "நலமா?",
+      rx: [["Metformin 500 mg", "காலையிலும் இரவிலும், சாப்பிட்ட பிறகு 1 மாத்திரை."], ["Amlodipine 5 mg", "தினமும் ஒரு முறை, 1 மாத்திரை."], ["Gliclazide 80 mg", "தினமும் காலையில், காலை உணவுக்கு முன் 1 மாத்திரை."]],
+      warn: ["ஆபத்து அறிகுறிகள்", "தலைச்சுற்றல், வியர்வை அல்லது நடுக்கம் இருந்தால் உடனே கிளினிக்கிற்கு வாருங்கள்."],
+      back: ["அடுத்த வருகை", "இரத்த சர்க்கரை பரிசோதனைக்கு 2 வாரங்களில் மீண்டும் வாருங்கள்."],
+      gloss: { "BD": "தினமும் இரண்டு முறை", "OD": "தினமும் ஒரு முறை", "OM": "தினமும் காலையில்", "PC": "சாப்பிட்ட பிறகு", "AC": "சாப்பிடுவதற்கு முன்", "PRN": "தேவைப்படும்போது மட்டும்", "STAT": "உடனே", "TCA 2/52": "2 வாரங்களில் மீண்டும் வாருங்கள்" }
+    }
+  };
+  const ORDER = ["ms", "zh", "ta", "en"];
+  const greeting = $("#greeting"), decoded = $("#decoded"), decodedLang = $("#decodedLang");
+  let current = "ms";
+
+  function row(cls, k, v) {
+    const li = document.createElement("li");
+    if (cls) li.className = cls;
+    const a = document.createElement("span"); a.className = "k"; a.textContent = k;
+    const b = document.createElement("span"); b.className = "v"; b.textContent = v;
+    li.append(a, b);
+    return li;
+  }
+  function paint(l) {
+    const L = LANG[l];
+    greeting.textContent = L.greet; greeting.lang = L.code;
+    decoded.replaceChildren(...L.rx.map(([k, v]) => row("", k, v)), row("warn", L.warn[0], L.warn[1]), row("back", L.back[0], L.back[1]));
+    decoded.lang = L.code; decodedLang.textContent = L.name;
+    $$(".chip-mean").forEach(el => { el.textContent = L.gloss[el.dataset.term]; el.lang = L.code; });
+    $$(".lang-switch button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+  }
+  function setLang(l, animate) {
+    if (l === current) return;
+    current = l;
+    if (!animate || reduce) { paint(l); return; }
+    const targets = [greeting, decoded];
+    const out = targets.map(t => t.animate([{ opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(6px)" }], { duration: 180, fill: "forwards" }));
+    out[0].finished.then(() => {
+      paint(l);
+      targets.forEach(t => t.animate([{ opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)" }], { duration: 260, fill: "forwards" }));
+    });
+  }
+  let userPicked = false, heroVisible = true;
+  $$(".lang-switch button").forEach(b => b.addEventListener("click", () => { userPicked = true; setLang(b.dataset.lang, true); }));
+  if (!reduce) {
+    setInterval(() => {
+      if (userPicked || !heroVisible || document.hidden) return;
+      setLang(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length], true);
+    }, 3800);
+  }
+
+  /* ---------- scenes + rail ---------- */
+  const heroIO = new IntersectionObserver(es => es.forEach(e => { heroVisible = e.isIntersecting; }), { threshold: 0.35 });
+  heroIO.observe($("#top"));
+  const sceneIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) document.body.dataset.scene = e.target.dataset.scene; }), { rootMargin: "-45% 0px -50% 0px" });
+  $$("main [data-scene]").forEach(s => sceneIO.observe(s));
+
+  const rail = $("#rail"), railDay = $("#railDay");
+  let ticking = false;
+  function onScroll() {
+    ticking = false;
+    const max = root.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    rail.style.setProperty("--p", p.toFixed(4));
+    const label = p < 0.05 ? "Lawatan" : "Hari " + Math.min(30, 1 + Math.floor(((p - 0.05) / 0.95) * 30));
+    if (railDay.textContent !== label) railDay.textContent = label;
+  }
+  window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ---------- medicines scan ---------- */
+  const stage = $("#tableStage"), packets = $("#packets"), scanBtn = $("#scanBtn"), scanStatus = $("#scanStatus"), findings = $("#findings");
+  const idleFindings = findings.innerHTML;
+  const FINDINGS = [
+    ["sev-amber", "Duplicate", "Same medicine twice", "Brand A (Klinik A) and Brand B (Klinik Kesihatan) are both metformin 500 mg."],
+    ["sev-amber", "Clash", "Bleeding risk", "Ginkgo capsules taken with aspirin 100 mg."],
+    ["sev-amber", "Clash", "Blood sugar may drop further", "Bitter gourd extract taken with gliclazide."],
+    ["sev-ok", "Clear", "No issue found", "Amlodipine 5 mg."]
+  ];
+  function num(el, prop) { return parseFloat(el.style.getPropertyValue(prop)) || 0; }
+  scanBtn.addEventListener("click", () => {
+    const wasScanned = stage.dataset.scanned === "true";
+    const items = $$(".packet", packets);
+    const first = new Map(items.map(i => [i, i.getBoundingClientRect()]));
+    stage.dataset.scanned = String(!wasScanned);
+    if (!reduce) {
+      items.forEach(i => {
+        const f = first.get(i), l = i.getBoundingClientRect();
+        const tx = wasScanned ? num(i, "--x") : 0, ty = wasScanned ? num(i, "--y") : 0;
+        const dx = (f.left + f.width / 2) - (l.left + l.width / 2 - tx);
+        const dy = (f.top + f.height / 2) - (l.top + l.height / 2 - ty);
+        const r0 = wasScanned ? 0 : num(i, "--r");
+        i.animate([{ transform: `translate(${dx}px, ${dy}px) rotate(${r0}deg)`, offset: 0 }], { duration: 760, easing: "cubic-bezier(.2,.8,.2,1)" });
+      });
+    }
+    if (wasScanned) {
+      findings.innerHTML = idleFindings;
+      scanStatus.textContent = "7 items on the table";
+      scanBtn.textContent = "Scan with Khabar";
+    } else {
+      const ol = document.createElement("ol"); ol.className = "finding-list";
+      FINDINGS.forEach(([cls, tag, title, body]) => {
+        const li = document.createElement("li"); li.className = "finding";
+        const s = document.createElement("span"); s.className = "sev " + cls; s.textContent = tag;
+        const d = document.createElement("div");
+        const t = document.createElement("strong"); t.textContent = title;
+        const p = document.createElement("p"); p.textContent = body;
+        d.append(t, p); li.append(s, d); ol.append(li);
+      });
+      findings.replaceChildren(ol);
+      scanStatus.textContent = "3 issues · added to Dr Priya’s pre-visit report";
+      scanBtn.textContent = "Reset the table";
+    }
+  });
+
+  /* ---------- 30-day card ---------- */
+  const kad = $("#kadGrid");
+  for (let d = 1; d <= 30; d++) {
+    const li = document.createElement("li");
+    li.textContent = d;
+    if (d === 1) { li.className = "ci-ok"; li.title = "Day 1: replied, okay"; }
+    else if (d === 3) { li.className = "ci-flag"; li.title = "Day 3: flagged to clinic"; }
+    else if ([7, 14, 30].includes(d)) { li.className = "ci-next"; li.title = "Day " + d + ": check-in scheduled"; }
+    else if (d < 3) li.className = "past";
+    kad.append(li);
+  }
+
+  /* ---------- triage demo ---------- */
+  const RULES = [
+    { level: "red", words: ["sakit dada", "sesak nafas", "pengsan", "pitam", "chest pain", "can't breathe", "cannot breathe", "fainted", "胸痛", "呼吸困难", "昏倒", "நெஞ்சு வலி", "மூச்சுத் திணறல்"] },
+    { level: "watch", words: ["pening", "berpeluh", "menggeletar", "loya", "muntah", "dizzy", "sweating", "shaky", "vomit", "头晕", "冒汗", "发抖", "呕吐", "மயக்கம்", "தலைச்சுற்றல்", "வியர்வை"] },
+    { level: "ok", words: ["sihat", "baik", "dah makan", "okay", "ok", "fine", "good", "很好", "没事", "நலம்", "நன்றாக"] }
+  ];
+  const GLOSS = { "pening": "dizzy", "berpeluh": "sweating", "menggeletar": "shaking", "sakit dada": "chest pain", "sesak nafas": "short of breath", "pengsan": "fainted", "pitam": "fainted", "头晕": "dizzy", "冒汗": "sweating", "胸痛": "chest pain", "மயக்கம்": "dizzy", "நெஞ்சு வலி": "chest pain", "நலம்": "well", "sihat": "healthy", "很好": "very good" };
+  const VERDICT = {
+    red: { label: "Call now", msg: "The clinic is alerted and calls straight away.", pt: "Klinik sudah dimaklumkan dan akan telefon sekarang. Kalau keadaan teruk, telefon 999.", route: "Top of today’s call list", color: "#F26A4F" },
+    watch: { label: "Watch", msg: "Added to today’s call list. The clinic checks in today.", pt: "Terima kasih. Klinik akan hubungi Mak Cik hari ini.", route: "Today’s call list", color: "#F2B347" },
+    ok: { label: "Okay", msg: "Logged. The next check-in goes out as planned.", pt: "Terima kasih, Mak Cik. Kami tanya lagi pada hari 7.", route: "No call needed", color: "#62C79B" },
+    review: { label: "Needs a person", msg: "Khabar isn’t sure, so clinic staff read the reply themselves.", pt: "Terima kasih. Staf klinik akan baca mesej ini.", route: "Staff review queue", color: "#A9BCC2" },
+    empty: { label: "Waiting", msg: "Type a reply to see where it goes.", pt: "—", route: "—", color: "#62C79B" }
+  };
+  const latin = /^[a-z' ]+$/;
+  function hits(text, w) {
+    if (!latin.test(w)) return text.includes(w);
+    const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(^|[^a-z])" + esc + "([^a-z]|$)").test(text);
+  }
+  function classify(raw) {
+    const t = raw.toLowerCase().trim();
+    if (!t) return { level: "empty" };
+    for (const r of RULES) { const h = r.words.find(w => hits(t, w)); if (h) return { level: r.level, hit: h }; }
+    return { level: "review" };
+  }
+  const feel = $("#feel"), verdict = $("#verdict");
+  function judge() {
+    const res = classify(feel.value), V = VERDICT[res.level];
+    verdict.dataset.level = res.level;
+    $("#vLevel").textContent = V.label;
+    $("#vMsg").textContent = V.msg;
+    $("#vPt").textContent = V.pt;
+    $("#vRoute").textContent = V.route;
+    $("#vWhy").textContent = res.hit ? `Matched “${res.hit}”` + (GLOSS[res.hit] ? ` (${GLOSS[res.hit]})` : "") : (res.level === "review" ? "No known word matched, so a person decides" : "");
+    root.style.setProperty("--thread", V.color);
+  }
+  feel.addEventListener("input", judge);
+  $$(".ex").forEach(b => b.addEventListener("click", () => { feel.value = b.dataset.ex; judge(); feel.focus(); }));
+  judge();
+  root.style.setProperty("--thread", "#62C79B");
+
+  /* ---------- clinic ---------- */
+  $$(".call .btn").forEach(b => b.addEventListener("click", () => {
+    b.disabled = true; b.textContent = "Calling…";
+    setTimeout(() => { b.textContent = "Called 16:24"; }, reduce ? 0 : 1100);
+  }));
+  const reason = $("#reason"), finalise = $("#finalise"), gateNote = $("#gateNote");
+  reason.addEventListener("input", () => { finalise.disabled = reason.value.trim().length < 8; });
+  finalise.addEventListener("click", () => {
+    finalise.disabled = true; reason.disabled = true; finalise.textContent = "Finalised";
+    gateNote.textContent = "Finalised with a written reason. The override is saved to the audit log.";
+  });
+
+  /* ---------- ramadan ---------- */
+  const sw = $("#fastSwitch"), sched = $("#sched"), schedNote = $("#schedNote");
+  sw.addEventListener("click", () => {
+    const on = sw.getAttribute("aria-checked") !== "true";
+    sw.setAttribute("aria-checked", String(on));
+    sched.classList.toggle("fasting", on);
+    $$("td.when", sched).forEach(td => { td.textContent = on ? td.dataset.fast : td.dataset.normal; });
+    schedNote.textContent = on ? "Fasting mode is on. Reminders follow sahur and berbuka; doses are unchanged unless the doctor changes them." : "Normal schedule. Times follow the doctor’s prescription.";
+  });
+
+  /* ---------- canvases ---------- */
+  function sizeCanvas(c, ctx) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1), r = c.getBoundingClientRect();
+    c.width = Math.max(1, Math.round(r.width * dpr)); c.height = Math.max(1, Math.round(r.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: r.width, h: r.height };
+  }
+  function whenVisible(el, start, stop) {
+    new IntersectionObserver(es => es.forEach(e => (e.isIntersecting ? start() : stop()))).observe(el);
+  }
+
+  (function dust() {
+    const c = $("#dust"), ctx = c.getContext("2d");
+    let { w, h } = sizeCanvas(c, ctx), raf = 0;
+    const spawn = init => ({ x: w * (0.5 + Math.random() * 0.48), y: init ? Math.random() * h : h * (0.6 + Math.random() * 0.4), r: 0.6 + Math.random() * 1.8, vy: 0.12 + Math.random() * 0.42, vx: (Math.random() - 0.5) * 0.16, life: init ? Math.random() * 300 : 0, max: 300 + Math.random() * 320 });
+    const parts = Array.from({ length: 70 }, () => spawn(true));
+    function frame(step) {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of parts) {
+        if (step) { p.life++; p.x += p.vx; p.y -= p.vy; if (p.life >= p.max || p.y < -8) Object.assign(p, spawn(false)); }
+        const t = p.life / p.max, a = t < 0.2 ? t / 0.2 : t > 0.8 ? (1 - t) / 0.2 : 1;
+        ctx.beginPath(); ctx.fillStyle = `rgba(255, 216, 154, ${0.5 * a})`; ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    const loop = () => { frame(true); raf = requestAnimationFrame(loop); };
+    new ResizeObserver(() => { ({ w, h } = sizeCanvas(c, ctx)); frame(false); }).observe(c);
+    if (reduce) { frame(false); return; }
+    whenVisible(c, () => { if (!raf) raf = requestAnimationFrame(loop); }, () => { cancelAnimationFrame(raf); raf = 0; });
+  })();
+
+  (function web() {
+    const c = $("#web"), ctx = c.getContext("2d");
+    let size = sizeCanvas(c, ctx), raf = 0, links = [], bg = document.createElement("canvas"), last = 0;
+    const pulses = [];
+    function build() {
+      const { w, h } = size, cx = w / 2, cy = h * 0.52;
+      links = [];
+      for (let i = 0; i < 92; i++) {
+        const a = Math.random() * Math.PI * 2, rr = 0.25 + Math.random() * 0.75;
+        const x = cx + Math.cos(a) * rr * w * 0.5, y = cy + Math.sin(a) * rr * h * 0.46;
+        const mx = (x + cx) / 2, my = (y + cy) / 2, len = Math.hypot(x - cx, y - cy), bend = (Math.random() - 0.5) * 0.35 * len;
+        links.push({ x, y, cx: mx + (-(y - cy) / len) * bend, cy: my + ((x - cx) / len) * bend, tx: cx, ty: cy });
+      }
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      bg.width = c.width; bg.height = c.height;
+      const b = bg.getContext("2d"); b.setTransform(dpr, 0, 0, dpr, 0, 0);
+      b.lineWidth = 1;
+      for (const l of links) {
+        b.strokeStyle = "rgba(98, 199, 155, 0.10)";
+        b.beginPath(); b.moveTo(l.x, l.y); b.quadraticCurveTo(l.cx, l.cy, l.tx, l.ty); b.stroke();
+        b.fillStyle = "rgba(255, 216, 154, 0.75)"; b.beginPath(); b.arc(l.x, l.y, 1.8, 0, Math.PI * 2); b.fill();
+      }
+      const g = b.createRadialGradient(cx, cy, 0, cx, cy, 42);
+      g.addColorStop(0, "rgba(98, 199, 155, 0.9)"); g.addColorStop(1, "rgba(98, 199, 155, 0)");
+      b.fillStyle = g; b.beginPath(); b.arc(cx, cy, 42, 0, Math.PI * 2); b.fill();
+      b.fillStyle = "#62C79B"; b.beginPath(); b.arc(cx, cy, 5, 0, Math.PI * 2); b.fill();
+    }
+    function draw(t) {
+      const { w, h } = size;
+      ctx.clearRect(0, 0, w, h);
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(bg, 0, 0); ctx.restore();
+      if (t - last > 110) { last = t; pulses.push({ l: links[(Math.random() * links.length) | 0], p: 0, v: 0.004 + Math.random() * 0.006, amber: Math.random() < 0.1 }); }
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        const q = pulses[i]; q.p += q.v;
+        if (q.p >= 1) { pulses.splice(i, 1); continue; }
+        const u = 1 - q.p, l = q.l;
+        const x = u * u * l.x + 2 * u * q.p * l.cx + q.p * q.p * l.tx;
+        const y = u * u * l.y + 2 * u * q.p * l.cy + q.p * q.p * l.ty;
+        ctx.fillStyle = q.amber ? "rgba(242, 179, 71, 0.95)" : "rgba(160, 240, 200, 0.95)";
+        ctx.shadowColor = q.amber ? "#F2B347" : "#62C79B"; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+    const loop = t => { draw(t); raf = requestAnimationFrame(loop); };
+    build(); draw(0);
+    new ResizeObserver(() => { size = sizeCanvas(c, ctx); build(); draw(0); }).observe(c);
+    if (reduce) return;
+    whenVisible(c, () => { if (!raf) raf = requestAnimationFrame(loop); }, () => { cancelAnimationFrame(raf); raf = 0; });
+  })();
+})();
+</script>
