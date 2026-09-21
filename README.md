@@ -10,7 +10,7 @@
 **Live demo (Vercel):** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) (the app screens: landing page, doctor sign-in, triage desk and more)
 **Code:** [github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE)
 
-> ⚠️ **Status:** in development (practice build, Sep–Oct 2026). The backend foundation is built and tested; the app screens are clickable mock-ups not yet wired to it. All patient data is **fake**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md).
+> ⚠️ **Status:** in development (practice build, Sep–Oct 2026). The backend foundation is built and tested; the sign-in and triage desk screens work with it locally, the other screens are clickable mock-ups. All patient data is **fake**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md).
 
 ---
 
@@ -153,15 +153,15 @@ mindmap
 
 ## 3. Design & Prototype
 
-**Live app screens:** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) opens the landing page; [/index.html](https://khabar-landing-six.vercel.app/index.html) links every screen. They are clickable mock-ups with fictional data, not yet connected to the backend. The source is in [docs/](docs/FRONTEND.md).
+**Live app screens:** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) opens the landing page; [/index.html](https://khabar-landing-six.vercel.app/index.html) links every screen. They are clickable mock-ups with fictional data. The public site runs in demo mode; run the backend locally and the sign-in and triage desk show live data ([how](docs/FRONTEND.md#live-data-sign-in-and-triage-desk)). The source is in [docs/](docs/FRONTEND.md).
 
 An earlier interactive landing page (language switch, medicine scan, reply triage, safety gate) is in [prototype/khabar-landing.html](prototype/khabar-landing.html); open the file in a browser to try it.
 
 | Screen | File | What it shows | Status |
 |---|---|---|---|
 | Landing page | `docs/landing_page.html` | The product story, dialect voice demo, kitchen-table medicine case | Mock-up |
-| Doctor sign-in | `docs/login.html` | Clinic staff sign-in | Mock-up; sign-in checks built in the API |
-| Triage desk | `docs/clinic_command.html` | Patients ranked by urgency, with one-tap actions | Mock-up |
+| Doctor sign-in | `docs/login.html` | Clinic staff sign-in | **Works with the local API** (demo doctor); Supabase sign-in next |
+| Triage desk | `docs/clinic_command.html` | Patients ranked by urgency, with one-tap actions | **Live call list from the local API** (most urgent first, mark as called); sample cases below it |
 | Reply console | `docs/telemetry_chat.html` | A patient's replies and the clinic's responses | Mock-up; reply triage built in the agents service |
 | Medicine clash radar | `docs/polypharmacy_guard.html` | Duplicates and clashes across clinics and pharmacies | Mock-up; safety checks built in the agents service |
 | 30-day recovery view | `docs/recovery_arc.html` | Check-in stages and Ramadan timing | Mock-up |
@@ -250,16 +250,16 @@ We're one builder, so the scope is tiered. **Tier 1 alone is a complete, demonst
 
 If time runs short, features are dropped in reverse order of the tiers. The full day-by-day schedule, checkpoints and demo script are in [plan.md](plan.md).
 
-**Built so far** (86 automated tests passing: 54 in the agents service, 32 in the API):
+**Built so far** (97 automated tests passing: 54 in the agents service, 43 in the API):
 
 | Part | Done | Still to do |
 |---|---|---|
-| Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access | Sign-up flow; connecting the screens |
+| Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access; the sign-in screen signs in to the local API | Real Supabase sign-in on the screen; sign-up flow |
 | Privacy | IC and phone stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
 | Intake | Intake chat through the API to the agent (Gemini, or a scripted interview when no key is set) | Pre-visit report for the doctor |
 | Safety checks | Allergy, drug interaction, duplicate medicine, herb clash, dose limit, pregnancy, missing report fields, unrecognised drug | AI-assisted hallucination check; the three-place block on finalising; replacing seed drug data with DDInter |
-| Follow-up | Reply triage in BM, English, Chinese and Tamil (red / watch / ok / needs a person) | Check-in schedule, WhatsApp sending, the clinic's call list |
-| Running it | Both services run locally with no accounts (`local` mode with demo people) | Cloud hosting for the two backend services |
+| Follow-up | Reply triage in BM, English, Chinese and Tamil (red / watch / ok / needs a person); replies stored encrypted; the clinic's call list with "mark as called", shown live on the triage desk | Check-in schedule; receiving and sending on WhatsApp |
+| Running it | Both services and the screens run locally with no accounts (`scripts/run-local.ps1`, `local` mode with demo people) | Cloud hosting for the two backend services |
 
 ## Repository layout
 | Folder | What's in it |

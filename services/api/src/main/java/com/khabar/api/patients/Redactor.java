@@ -1,6 +1,5 @@
-package com.khabar.api.intake;
+package com.khabar.api.patients;
 
-import com.khabar.api.patients.Patient;
 
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -11,7 +10,7 @@ import java.util.regex.Pattern;
  * This side knows the patient's real name, IC and phone, so it can remove them exactly;
  * the AI service also scrubs anything that looks like an IC or phone number as a second lock.
  */
-final class Redactor {
+public final class Redactor {
 
     private static final Pattern ANY_IC = Pattern.compile("(?<!\\d)\\d{6}-?\\d{2}-?\\d{4}(?!\\d)");
     private static final Pattern ANY_MOBILE = Pattern.compile("(?<![\\d+])(?:\\+?60[\\s-]?|0)1\\d[\\s-]?\\d{3,4}[\\s-]?\\d{4}(?!\\d)");
@@ -20,7 +19,7 @@ final class Redactor {
     private Redactor() {
     }
 
-    static String redact(String text, Patient patient) {
+    public static String redact(String text, Patient patient) {
         if (text == null) {
             return null;
         }

@@ -649,8 +649,8 @@
                       <input
                         class="w-full pl-10 pr-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors shadow-inner"
                         id="workEmail"
-                        placeholder="dr.priya@klinikkesihatan.gov.my"
-                        value="dr.priya@klinikkesihatan.gov.my"
+                        placeholder="dr.priya@example.com"
+                        value="dr.priya@example.com"
                         required=""
                         type="email"
                       />
@@ -780,7 +780,8 @@
         </div>
       </div>
 
-      <script>
+      <script src="js/khabar-api.js"></script>
+    <script>
         // Password Visibility Toggle
         const togglePassword = document.getElementById("togglePassword");
         const passwordInput = document.getElementById("passwordInput");
@@ -807,15 +808,23 @@
         const googleBtn = document.getElementById("googleAuthBtn");
         const whatsappBtn = document.getElementById("whatsappPasskeyBtn");
 
-        function triggerFeedback(msg, redirectDelay = 1100) {
+        // Signs in to the Khabar API when it is running locally (see js/khabar-api.js);
+        // otherwise carries on in demo mode with the sample screens.
+        async function triggerFeedback(msg, redirectDelay = 1100) {
           if (notice && noticeText) {
             noticeText.textContent = msg;
             notice.classList.remove("hidden");
-            if (redirectDelay > 0) {
-              setTimeout(() => {
-                window.location.href = "clinical_handshake.html";
-              }, redirectDelay);
-            }
+          }
+          const me = window.KhabarApi ? await window.KhabarApi.signInAsDemoDoctor() : null;
+          if (noticeText) {
+            noticeText.textContent = me
+              ? "Signed in as " + me.displayName + " (" + me.clinicName + "). Opening live patient data..."
+              : msg + " Demo mode: no backend connected, showing sample data.";
+          }
+          if (redirectDelay > 0) {
+            setTimeout(() => {
+              window.location.href = "clinical_handshake.html";
+            }, redirectDelay);
           }
         }
 

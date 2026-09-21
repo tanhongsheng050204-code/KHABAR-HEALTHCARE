@@ -9,6 +9,8 @@ Two services. Spring Boot owns every piece of patient identity; the Python agent
 
 ## Run it on your machine (no accounts needed)
 
+Shortcut on Windows: `powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1` starts both services and the screens (see `docs/FRONTEND.md`).
+
 Needs Java 21 and Python 3.11+. On this PC a portable JDK lives in `%USERPROFILE%\.jdks\jdk-21.0.12.1+1`.
 
 ```bash
@@ -22,7 +24,7 @@ export JAVA_HOME="$HOME/.jdks/jdk-21.0.12.1+1"                # PowerShell: $env
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-The `local` profile uses an in-memory database, seeds fake demo people, and adds `POST /dev/token?as=doctor|patient|caregiver` so you can sign in without Supabase:
+The `local` profile uses an in-memory database, seeds fake demo people (four in follow-up, three with replies waiting for a call), and adds `POST /dev/token?as=doctor|patient|caregiver` so you can sign in without Supabase:
 
 ```bash
 TOKEN=$(curl -s -X POST "localhost:8080/dev/token?as=patient" | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
@@ -36,7 +38,7 @@ Without `GEMINI_API_KEY` the intake agent runs a scripted four-question intervie
 
 ```bash
 cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 54 tests
-cd services/api && ./mvnw test                                    # 32 tests
+cd services/api && ./mvnw test                                    # 43 tests
 ```
 
 ## Endpoints
@@ -50,6 +52,9 @@ cd services/api && ./mvnw test                                    # 32 tests
 | GET | `/api/patients/{id}` | doctor at the clinic, the patient, a consented caregiver | Record with IC masked; every non-patient view is written to the audit log |
 | GET | `/api/patients/{id}/access-log` | the patient, doctor at the clinic | "Who viewed my record", newest first |
 | POST | `/api/intake/chat` | patient | Pre-visit intake; the patient's name, IC and phone are removed before anything reaches the AI |
+| POST | `/api/followup/replies` | patient | A follow-up reply. Triaged by the agents service (identity removed first) and stored encrypted; if triage is down it still goes to a person |
+| GET | `/api/clinic/call-list` | doctor | "Call these patients today": the clinic's patients with unhandled replies, most urgent first, with counts |
+| POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Marks the patient's replies as handled and writes it to their access log |
 
 **Agents (`X-Internal-Service-Key` header required, except `/health`)**
 

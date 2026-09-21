@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -51,7 +53,23 @@ public class Patient {
 
     private boolean pregnant;
 
+    /** The day the 30-day follow-up started (the visit day). Null when the patient is not in follow-up. */
+    private LocalDate followUpStart;
+
     protected Patient() {
+    }
+
+    public void startFollowUp(LocalDate visitDay) {
+        this.followUpStart = visitDay;
+    }
+
+    /** Day 1 is the day after the visit. Null when not in follow-up. */
+    public Integer followUpDay(LocalDate today) {
+        return followUpStart == null ? null : (int) ChronoUnit.DAYS.between(followUpStart, today) + 1;
+    }
+
+    public LocalDate getFollowUpStart() {
+        return followUpStart;
     }
 
     public Patient(Clinic clinic, AppUser account, String fullName, String icNumber, String phone, String preferredLanguage) {

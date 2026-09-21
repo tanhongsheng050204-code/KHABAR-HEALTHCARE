@@ -20,6 +20,25 @@ The main UI for now is the set of static pages in this folder, designed in Antig
 
 `../prototype/khabar-landing.html` is the earlier landing page and is no longer deployed. `prototype/` is still linked to the same Vercel project, so don't run `vercel deploy --prod` from there, or it will replace these screens.
 
+## Live data: sign-in and triage desk
+
+Two screens talk to the real backend when it runs on your machine; everywhere else (including the public Vercel site) they stay in demo mode and never contact the visitor's computer.
+
+| Screen | With the backend running |
+|---|---|
+| `login.html` | Any sign-in button signs you in as the demo doctor through the API (`/dev/token`). Supabase sign-in replaces this later. |
+| `clinic_command.html` | A **"Call these patients today"** panel appears above the sample cases, filled from `GET /api/clinic/call-list`: most urgent first, the patient's reply, follow-up day and language. **Mark as called** records the call (it shows in the patient's "who viewed my record" log) and removes them from the list. The acuity counts at the top become real. It refreshes every 15 seconds. |
+
+**Run it:** `powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1`, wait about 30 seconds, then open http://localhost:5500/login.html. (Or start the three parts by hand: see `services/README.md`, plus `python -m http.server 5500 --directory docs`.)
+
+**Send a patient reply** to watch it arrive on the triage desk (it goes through the real triage in the agents service):
+```bash
+P=$(curl -s -X POST "localhost:8080/dev/token?as=patient" | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
+curl -s -X POST localhost:8080/api/followup/replies -H "Authorization: Bearer $P" -H "Content-Type: application/json" -d '{"text":"sakit dada sikit"}'
+```
+
+The code lives in `js/khabar-api.js` (API address, sign-in, requests) and `js/triage-desk.js` (the live panel). The pages open the API at `http://localhost:8080` only when they are served from `localhost`; add `?api=<address>` to point them elsewhere, or `?api=off` to force demo mode.
+
 ## Rules for anyone editing these pages (people or AI tools)
 
 Paste these into Antigravity or any other tool before it edits the frontend:

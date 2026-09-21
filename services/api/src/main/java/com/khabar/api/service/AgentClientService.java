@@ -49,6 +49,16 @@ public class AgentClientService {
         }
     }
 
+    /** Returns {"level": "red|watch|ok|review", "matched": word or null}. Throws if the agents service is unreachable. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> triageReply(String text) {
+        return restClient.post()
+                .uri("/agents/followup/triage")
+                .body(Map.of("text", text))
+                .retrieve()
+                .body(Map.class);
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> processIntake(String graphId, String preferredLanguage, List<Map<String, String>> messages) {
         Map<String, Object> payload = Map.of(

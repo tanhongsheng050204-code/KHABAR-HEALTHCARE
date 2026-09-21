@@ -5,6 +5,7 @@ import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
+import com.khabar.api.patients.Redactor;
 import com.khabar.api.service.AgentClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
