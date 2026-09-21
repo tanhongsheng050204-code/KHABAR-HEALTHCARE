@@ -1,0 +1,10 @@
+# Only the app screens are published. Notes, drafts and local redirect stubs stay out.
+*.md
+*_preview.html
+landing_page_v2.html
+stitch_landing_page.html
+triage_desk.html
+.playwright-mcp
+.env*
+.gitignore
+.vercelignore

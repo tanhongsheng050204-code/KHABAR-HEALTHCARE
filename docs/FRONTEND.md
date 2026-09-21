@@ -16,7 +16,9 @@ The main UI for now is the set of static pages in this folder, designed in Antig
 | `khabar_full_prototype.html` | Step-by-step interactive demo |
 | `app_portal.html` | Portal overview |
 
-`../prototype/khabar-landing.html` is the earlier landing page. It is still what the live Vercel production URL serves until you promote this frontend.
+**Live:** https://khabar-landing-six.vercel.app serves this folder. After changing a page, redeploy with `cd docs && npx vercel deploy --prod`. `.vercelignore` keeps the notes, drafts and redirect stubs off the site, and `vercel.json` tells Vercel there is no build step.
+
+`../prototype/khabar-landing.html` is the earlier landing page and is no longer deployed. `prototype/` is still linked to the same Vercel project, so don't run `vercel deploy --prod` from there, or it will replace these screens.
 
 ## Rules for anyone editing these pages (people or AI tools)
 

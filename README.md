@@ -7,8 +7,10 @@
 **Problem Statement:** Self-defined, SDG 3 (Good Health and Well-being): patients lose track of their treatment once they leave the clinic.
 **Video Presentation:** [Unlisted YouTube link: to be added after recording, ~9 Oct 2026]
 **Presentation Slides:** [Public link: to be added, ~9 Oct 2026]
+**Live demo (Vercel):** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) (the app screens: landing page, doctor sign-in, triage desk and more)
+**Code:** [github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE)
 
-> ⚠️ **Status:** in development (practice build, Sep–Oct 2026). All patient data is **fake**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md).
+> ⚠️ **Status:** in development (practice build, Sep–Oct 2026). The backend foundation is built and tested; the app screens are clickable mock-ups not yet wired to it. All patient data is **fake**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md).
 
 ---
 
@@ -151,20 +153,22 @@ mindmap
 
 ## 3. Design & Prototype
 
-**UI Prototype:** the main screens live in [docs/](docs/FRONTEND.md) (landing page, doctor sign-in, triage desk, chat console, medicine clash radar, 30-day recovery view, audit log). Open `docs/index.html` to click through them. All data in them is fictional.
+**Live app screens:** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) opens the landing page; [/index.html](https://khabar-landing-six.vercel.app/index.html) links every screen. They are clickable mock-ups with fictional data, not yet connected to the backend. The source is in [docs/](docs/FRONTEND.md).
 
-The earlier interactive landing page is live at [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) (source: [prototype/khabar-landing.html](prototype/khabar-landing.html)).
+An earlier interactive landing page (language switch, medicine scan, reply triage, safety gate) is in [prototype/khabar-landing.html](prototype/khabar-landing.html); open the file in a browser to try it.
 
-Planned key screens for the app itself. Screenshots will replace these descriptions once built (target 28 Sep 2026).
-
-| # | Screen | Interaction |
-|---|---|---|
-| 1 | **Patient intake chat** | The patient answers adaptive questions and photographs every medicine packet and supplement they take |
-| 2 | **Doctor pre-visit report** | The doctor sees the patient's history, symptoms and a reconciled medicine list, with duplicates flagged, before the patient walks in |
-| 3 | **Visit and safety panel** | The report is drafted live while the doctor talks or types. A CRITICAL finding disables "Finalise" until a reason is written. |
-| 4 | **Patient summary on WhatsApp** | A BM summary plus voice note: which medicine, when, what dose, and which warning signs mean come back |
-| 5 | **Clinic "call today" list** | Patients ranked by red flags, missed doses and no reply. One tap to see the conversation. |
-| 6 | **"Who viewed my record"** | The patient sees every doctor, caregiver or system access, with a timestamp |
+| Screen | File | What it shows | Status |
+|---|---|---|---|
+| Landing page | `docs/landing_page.html` | The product story, dialect voice demo, kitchen-table medicine case | Mock-up |
+| Doctor sign-in | `docs/login.html` | Clinic staff sign-in | Mock-up; sign-in checks built in the API |
+| Triage desk | `docs/clinic_command.html` | Patients ranked by urgency, with one-tap actions | Mock-up |
+| Reply console | `docs/telemetry_chat.html` | A patient's replies and the clinic's responses | Mock-up; reply triage built in the agents service |
+| Medicine clash radar | `docs/polypharmacy_guard.html` | Duplicates and clashes across clinics and pharmacies | Mock-up; safety checks built in the agents service |
+| 30-day recovery view | `docs/recovery_arc.html` | Check-in stages and Ramadan timing | Mock-up |
+| Audit log | `docs/moh_audit_logs.html` | Who opened which record, and why | Mock-up; "who viewed my record" built in the API |
+| Full walkthrough | `docs/khabar_full_prototype.html` | Step-by-step demo of the whole journey | Mock-up |
+| Patient intake chat | — | Adaptive pre-visit questions in the patient's language | API built; screen planned |
+| Patient summary on WhatsApp | — | Medicines, times, doses and warning signs in BM, English, Chinese or Tamil | Planned |
 
 ---
 
@@ -199,7 +203,7 @@ Planned key screens for the app itself. Screenshots will replace these descripti
 ### Tech stack
 | Layer | Choice | Why | Constraints we expect |
 |---|---|---|---|
-| Frontend | **Next.js** web app, installable on phones | One codebase for doctor, patient and caregiver; judges can open a link instantly; the camera works in the browser | Offline support is limited |
+| Frontend | Now: static HTML screens with Tailwind. Next: **Next.js** web app, installable on phones | One codebase for doctor, patient and caregiver; judges can open a link instantly; the camera works in the browser | The current screens use hard-coded data and Tailwind's CDN build, which is not meant for production |
 | Clinical backend | **Spring Boot** (Java) | Strong typing and structure for clinical data, access checks and encryption. It's the only service that holds the encryption key. | Steep learning curve (first backend) |
 | AI service | **FastAPI + LangGraph** (Python) | Four agents with explicit control flow (Intake, Report, Evaluator, Follow-up). Python has the best AI libraries. | A second language and service to deploy |
 | Database and logins | **Supabase** (Postgres + Auth) | Free tier, built-in email one-time codes, row-level security | Free projects pause when idle; we'll upgrade before demos |
@@ -209,7 +213,7 @@ Planned key screens for the app itself. Screenshots will replace these descripti
 | Messaging | **WhatsApp Cloud API** (Telegram fallback) | Where Malaysian patients already are | The test number reaches only 5 phones. Messages the clinic starts need templates approved by Meta. |
 | Drug data | **DDInter 2.0** + our own brand-name and herb tables | Free, peer-reviewed interaction data | Non-commercial licence (CC BY-NC 4.0). Brand names have to be mapped by hand. |
 | IoT (stretch) | **Favoriot** | Malaysian IoT platform with a REST API | Free tier unconfirmed |
-| Hosting | Vercel (web) + a container host in the Singapore region (APIs) | Free while building, low latency from Malaysia | Free tiers go to sleep, so we move to paid (~US$5–15/month) before demos |
+| Hosting | Vercel for the web ([live now](https://khabar-landing-six.vercel.app)) + a container host in the Singapore region for the two backend services | Free while building, low latency from Malaysia | Vercel can't run the Java API. Free container tiers go to sleep, so we move to paid (~US$5–15/month) before demos |
 
 ### System architecture diagram
 ```mermaid
@@ -240,11 +244,31 @@ We're one builder, so the scope is tiered. **Tier 1 alone is a complete, demonst
 
 | Tier | What's built | Status |
 |---|---|---|
-| **Tier 1: committed** | Logins and access rules · AI intake chat and pre-visit report · AI report drafting · the 8 safety checks, with critical findings blocked in UI, API and database · multilingual summary on WhatsApp · 30-day check-ins · two-way red-flag triage · clinic "call today" list · no names sent to the AI · 30 fake patients · demo clock | Target 28 Sep 2026 |
-| **Tier 2: planned** | Photo check (other clinics and traditional medicine) · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking | Target 28 Sep, with overflow until 4 Oct |
+| **Tier 1: committed** | Logins and access rules · AI intake chat and pre-visit report · AI report drafting · the 8 safety checks, with critical findings blocked in UI, API and database · multilingual summary on WhatsApp · 30-day check-ins · two-way red-flag triage · clinic "call today" list · no names sent to the AI · 30 fake patients · demo clock | In progress, target 28 Sep 2026 |
+| **Tier 2: planned** | Photo check (other clinics and traditional medicine) · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking | In progress, target 28 Sep with overflow until 4 Oct |
 | **Tier 3: stretch** | Voice-note summaries · speaking instead of typing during the visit · Favoriot readings · learning each doctor's writing style | Only if Tiers 1–2 are done |
 
 If time runs short, features are dropped in reverse order of the tiers. The full day-by-day schedule, checkpoints and demo script are in [plan.md](plan.md).
+
+**Built so far** (86 automated tests passing: 54 in the agents service, 32 in the API):
+
+| Part | Done | Still to do |
+|---|---|---|
+| Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access | Sign-up flow; connecting the screens |
+| Privacy | IC and phone stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
+| Intake | Intake chat through the API to the agent (Gemini, or a scripted interview when no key is set) | Pre-visit report for the doctor |
+| Safety checks | Allergy, drug interaction, duplicate medicine, herb clash, dose limit, pregnancy, missing report fields, unrecognised drug | AI-assisted hallucination check; the three-place block on finalising; replacing seed drug data with DDInter |
+| Follow-up | Reply triage in BM, English, Chinese and Tamil (red / watch / ok / needs a person) | Check-in schedule, WhatsApp sending, the clinic's call list |
+| Running it | Both services run locally with no accounts (`local` mode with demo people) | Cloud hosting for the two backend services |
+
+## Repository layout
+| Folder | What's in it |
+|---|---|
+| [plan.md](plan.md) | The full plan, schedule and decisions |
+| [docs/](docs/FRONTEND.md) | App screens (HTML, deployed on Vercel), frontend rules, design brief, daily `EXPLAIN.md` |
+| [prototype/](prototype/) | The earlier interactive landing page (no longer deployed) |
+| [services/](services/README.md) | Backend: `api/` (Spring Boot) and `agents/` (FastAPI). The README there explains how to run and test them |
+| [infra/](infra/) | Docker Compose and the environment variable template |
 
 **How we'll measure it:** a patient-understanding test with 5 people, comparing an English-only summary against a Khabar summary in the reader's own language. We'll report it honestly as a small pilot.
 
@@ -254,7 +278,7 @@ If time runs short, features are dropped in reverse order of the tiers. The full
 - **Inspiration:** CliniFlow AI (UM Hackathon 2026 champion), for the clinic workflow and the safety-gate pattern.
 - **Drug interaction data:** DDInter 2.0 (*Nucleic Acids Research*, 2025), licensed CC BY-NC 4.0.
 - **External services:** Google Gemini, Groq, Meta WhatsApp Cloud API, Supabase, Neo4j AuraDB, Vercel, Favoriot.
-- **AI tools used in development:** [declare the AI coding and writing tools you use]
+- **AI tools used in development:** Claude Code (Anthropic) for planning, research, the backend services and the Vercel landing page; Google Antigravity for the app screens in `docs/`. All AI-written code is reviewed, and explained in [docs/EXPLAIN.md](docs/EXPLAIN.md).
 - **Data:** all patient data in this repository is fake. No real patient data is used or stored.
 
 ### Sources
