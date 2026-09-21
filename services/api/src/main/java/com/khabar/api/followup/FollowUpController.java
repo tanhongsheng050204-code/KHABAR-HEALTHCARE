@@ -1,5 +1,6 @@
 package com.khabar.api.followup;
 
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -35,12 +36,15 @@ public class FollowUpController {
     private final PatientRepository patients;
     private final PatientReplyRepository replies;
     private final AgentClientService agents;
+    private final AdjustableClock clock;
 
-    public FollowUpController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AgentClientService agents) {
+    public FollowUpController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies,
+                              AgentClientService agents, AdjustableClock clock) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.replies = replies;
         this.agents = agents;
+        this.clock = clock;
     }
 
     public record ReplyRequest(String text) {
@@ -71,7 +75,7 @@ public class FollowUpController {
             log.warn("Triage unavailable, sending reply to a person: {}", e.getMessage());
             level = TriageLevel.REVIEW;
         }
-        replies.save(new PatientReply(patient, request.text(), Instant.now(), level, matched));
+        replies.save(new PatientReply(patient, request.text(), clock.instant(), level, matched));
         return new ReplyResponse(level);
     }
 }

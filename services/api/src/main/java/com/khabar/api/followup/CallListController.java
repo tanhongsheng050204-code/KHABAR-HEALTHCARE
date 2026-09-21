@@ -2,6 +2,7 @@ package com.khabar.api.followup;
 
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -35,12 +36,14 @@ public class CallListController {
     private final PatientRepository patients;
     private final PatientReplyRepository replies;
     private final AuditLog auditLog;
+    private final AdjustableClock clock;
 
-    public CallListController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AuditLog auditLog) {
+    public CallListController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AuditLog auditLog, AdjustableClock clock) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.replies = replies;
         this.auditLog = auditLog;
+        this.clock = clock;
     }
 
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
@@ -59,7 +62,7 @@ public class CallListController {
     public CallList callList(@AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = requireDoctor(jwt);
         UUID clinicId = doctor.getClinic().getId();
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Map<Patient, List<PatientReply>> byPatient = replies.findByPatientClinicIdAndHandledAtIsNull(clinicId).stream()
                 .filter(r -> r.getLevel().needsACall())
@@ -86,7 +89,7 @@ public class CallListController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         List<PatientReply> open = replies.findByPatientIdAndHandledAtIsNull(patientId);
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         open.forEach(r -> r.markHandled(doctor.getId(), now));
         if (!open.isEmpty()) {
             auditLog.record(doctor, patientId, AuditAction.CALLED_ABOUT_REPLY);

@@ -1,5 +1,6 @@
 package com.khabar.api.audit;
 
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +12,15 @@ import java.util.UUID;
 public class AuditLog {
 
     private final AuditEntryRepository entries;
+    private final AdjustableClock clock;
 
-    public AuditLog(AuditEntryRepository entries) {
+    public AuditLog(AuditEntryRepository entries, AdjustableClock clock) {
         this.entries = entries;
+        this.clock = clock;
     }
 
     public void record(AppUser actor, UUID patientId, AuditAction action) {
-        entries.save(new AuditEntry(patientId, actor.getId(), labelFor(actor), action, Instant.now()));
+        entries.save(new AuditEntry(patientId, actor.getId(), labelFor(actor), action, clock.instant()));
     }
 
     /** Newest first. */
