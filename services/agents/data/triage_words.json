@@ -1,0 +1,21 @@
+{
+  "_note": "Seed word lists for follow-up triage. A doctor must review these before any real use. Checked in order: red, then watch, then ok. Anything unmatched goes to a person.",
+  "red": {
+    "ms": ["sakit dada", "sesak nafas", "susah bernafas", "pengsan", "pitam", "tak sedar", "muntah darah", "lumpuh", "bibir herot"],
+    "en": ["chest pain", "can't breathe", "cannot breathe", "short of breath", "fainted", "passed out", "unconscious", "vomiting blood", "slurred speech"],
+    "zh": ["胸痛", "胸口痛", "呼吸困难", "喘不过气", "昏倒", "晕倒", "吐血"],
+    "ta": ["நெஞ்சு வலி", "மூச்சுத் திணறல்", "மயங்கி விழுந்தேன்", "இரத்த வாந்தி"]
+  },
+  "watch": {
+    "ms": ["pening", "berpeluh", "menggeletar", "loya", "muntah", "lemah", "cirit-birit", "bengkak", "gatal", "ruam", "demam"],
+    "en": ["dizzy", "sweating", "sweaty", "shaky", "nausea", "vomit", "weak", "diarrhoea", "diarrhea", "swelling", "rash", "fever"],
+    "zh": ["头晕", "冒汗", "发抖", "恶心", "呕吐", "无力", "腹泻", "肿", "皮疹", "发烧"],
+    "ta": ["மயக்கம்", "தலைச்சுற்றல்", "வியர்வை", "நடுக்கம்", "வாந்தி", "காய்ச்சல்"]
+  },
+  "ok": {
+    "ms": ["sihat", "baik", "dah makan ubat", "okay", "ok"],
+    "en": ["fine", "good", "okay", "ok", "took my medicine", "all good"],
+    "zh": ["很好", "没事", "吃了药"],
+    "ta": ["நலம்", "நன்றாக"]
+  }
+}

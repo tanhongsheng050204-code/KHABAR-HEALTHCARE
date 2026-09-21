@@ -1,0 +1,40 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: khabar-api
+
+  # PostgreSQL (Supabase in the cloud). Every secret comes from the environment:
+  # there are deliberately no working defaults, so a missing value fails at startup.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/khabar}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+khabar:
+  security:
+    internal-service-key: ${INTERNAL_SERVICE_KEY:}
+    # Supabase: set SUPABASE_JWKS_URL (new projects) or SUPABASE_JWT_SECRET (legacy HS256 projects)
+    supabase-jwks-url: ${SUPABASE_JWKS_URL:}
+    supabase-jwt-secret: ${SUPABASE_JWT_SECRET:}
+    # 64 hex characters. Generate with: openssl rand -hex 32
+    field-encryption-key: ${FIELD_ENCRYPTION_KEY:}
+  services:
+    agents-url: ${AGENTS_SERVICE_URL:http://localhost:8000}
+  web:
+    allowed-origins: ${WEB_ALLOWED_ORIGINS:http://localhost:3000}

@@ -1,0 +1,28 @@
+# Zero-setup profile for running on your own machine: in-memory database,
+# development-only keys, fake seed data and a /dev/token helper.
+# Start with:  mvn spring-boot:run -Dspring-boot.run.profiles=local
+# NEVER use these keys anywhere else.
+spring:
+  datasource:
+    url: jdbc:h2:mem:khabar;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: false
+
+khabar:
+  security:
+    internal-service-key: dev-internal-secret
+    supabase-jwks-url: ""
+    supabase-jwt-secret: local-dev-only-jwt-secret-do-not-use-in-production
+    field-encryption-key: 6b8f2c1d9e0a47b3a5c4d2e1f0987654321fedcba0123456789abcdef0123456
+  local:
+    seed: true

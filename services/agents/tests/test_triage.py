@@ -1,0 +1,39 @@
+import pytest
+
+from agents.triage import classify_reply
+
+
+@pytest.mark.parametrize("reply", ["sakit dada sejak pagi", "I have chest pain", "胸痛", "நெஞ்சு வலி", "sesak nafas"])
+def test_emergency_symptoms_are_red_in_every_language(reply):
+    assert classify_reply(reply).level == "red"
+
+
+@pytest.mark.parametrize("reply", ["pening sikit", "rasa berpeluh", "feeling dizzy", "头晕", "மயக்கம்"])
+def test_warning_symptoms_are_watch(reply):
+    assert classify_reply(reply).level == "watch"
+
+
+@pytest.mark.parametrize("reply", ["dah makan ubat, sihat", "fine thanks", "很好", "நலம்"])
+def test_reassuring_replies_are_ok(reply):
+    assert classify_reply(reply).level == "ok"
+
+
+def test_red_wins_when_a_reply_mixes_reassurance_and_emergency():
+    assert classify_reply("okay je, cuma sakit dada").level == "red"
+
+
+def test_unrecognised_replies_go_to_a_person():
+    assert classify_reply("hmm entah").level == "review"
+
+
+def test_negated_symptoms_still_alert_because_triage_errs_towards_safety():
+    assert classify_reply("tak pening pun").level == "watch"
+
+
+def test_short_words_only_match_whole_words():
+    # "ok" must not match inside "look"
+    assert classify_reply("look at this").level == "review"
+
+
+def test_result_names_the_word_that_matched():
+    assert classify_reply("Pening dan berpeluh").matched == "pening"

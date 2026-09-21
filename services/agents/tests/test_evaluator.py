@@ -1,0 +1,79 @@
+from agents.evaluator import CurrentMed, Draft, PatientFacts, Rx, evaluate
+
+COMPLETE_REPORT = {"diagnosis": "T2DM, HTN", "plan": "Continue meds", "follow_up": "TCA 2/52"}
+
+
+def draft(**overrides):
+    base = dict(patient=PatientFacts(), prescription=[], current_meds=[], herbs=[], report=COMPLETE_REPORT)
+    base.update(overrides)
+    return Draft(**base)
+
+
+def checks(findings, severity=None):
+    return [f.check for f in findings if severity is None or f.severity == severity]
+
+
+def test_clean_draft_has_no_findings():
+    assert evaluate(draft(prescription=[Rx(name="Metformin", dose_mg=500, times_per_day=2)])) == []
+
+
+def test_allergy_to_a_drug_class_blocks_a_drug_in_that_class():
+    findings = evaluate(draft(patient=PatientFacts(allergies=["Penicillin"]), prescription=[Rx(name="Amoxicillin")]))
+    assert checks(findings, "CRITICAL") == ["allergy"]
+
+
+def test_allergy_to_the_exact_drug_is_critical():
+    findings = evaluate(draft(patient=PatientFacts(allergies=["aspirin"]), prescription=[Rx(name="Aspirin", dose_mg=100)]))
+    assert "allergy" in checks(findings, "CRITICAL")
+
+
+def test_major_interaction_with_a_medicine_from_another_clinic_is_critical():
+    findings = evaluate(draft(current_meds=[CurrentMed(name="Warfarin", source="Specialist clinic")], prescription=[Rx(name="Aspirin", dose_mg=100)]))
+    assert "interaction" in checks(findings, "CRITICAL")
+
+
+def test_moderate_interaction_is_a_warning():
+    findings = evaluate(draft(current_meds=[CurrentMed(name="Amlodipine")], prescription=[Rx(name="Simvastatin", dose_mg=40)]))
+    assert checks(findings) == ["interaction"]
+    assert findings[0].severity == "WARN"
+
+
+def test_same_medicine_under_two_brand_names_is_a_critical_duplicate():
+    findings = evaluate(draft(current_meds=[CurrentMed(name="Brand A 500 mg", source="Klinik A")], prescription=[Rx(name="Brand B", dose_mg=500, times_per_day=2)]))
+    assert checks(findings, "CRITICAL") == ["duplicate"]
+    assert "metformin" in findings[0].detail.lower()
+
+
+def test_herb_that_affects_a_prescribed_drug_is_flagged():
+    findings = evaluate(draft(herbs=["Ginkgo capsules"], prescription=[Rx(name="Aspirin", dose_mg=100)]))
+    assert checks(findings) == ["herb"]
+
+
+def test_daily_dose_above_the_maximum_is_critical():
+    findings = evaluate(draft(prescription=[Rx(name="Metformin", dose_mg=1000, times_per_day=4)]))
+    assert checks(findings, "CRITICAL") == ["dose"]
+
+
+def test_drug_to_avoid_in_pregnancy_is_critical_for_a_pregnant_patient():
+    findings = evaluate(draft(patient=PatientFacts(pregnant=True), prescription=[Rx(name="Perindopril", dose_mg=4)]))
+    assert checks(findings, "CRITICAL") == ["pregnancy"]
+
+
+def test_missing_report_fields_are_a_warning():
+    findings = evaluate(draft(report={"diagnosis": "URTI", "plan": "", "follow_up": ""}))
+    assert checks(findings) == ["completeness"]
+    assert findings[0].severity == "WARN"
+
+
+def test_unrecognised_medicine_is_flagged_for_manual_checking():
+    findings = evaluate(draft(prescription=[Rx(name="Mysterymycin")]))
+    assert checks(findings) == ["unrecognised"]
+
+
+def test_critical_findings_come_first():
+    findings = evaluate(draft(
+        report={"diagnosis": "", "plan": "x", "follow_up": "x"},
+        patient=PatientFacts(allergies=["aspirin"]),
+        prescription=[Rx(name="Aspirin", dose_mg=100)],
+    ))
+    assert [f.severity for f in findings] == ["CRITICAL", "WARN"]
