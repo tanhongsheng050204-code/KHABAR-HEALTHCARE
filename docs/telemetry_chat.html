@@ -1,0 +1,1781 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_dashboard" name="shell-type" />
+    <title>
+      Khabar — Dialect Telemetry &amp; WhatsApp Live Chat (Colloquial NLU v3.8)
+    </title>
+    <!-- Material Symbols & Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+        main > :first-child {
+          margin-top: 0 !important;
+        }
+        main > :last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "inverse-primary": "#96d4b2",
+              tertiary: "#6a3e00",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#ffb869",
+              "on-tertiary-container": "#ffd3a8",
+              "secondary-container": "#a1f0c5",
+              "error-container": "#ffdad6",
+              "surface-container-low": "#fff1ea",
+              "on-secondary-fixed": "#002113",
+              "inverse-surface": "#3a2e26",
+              background: "#fff8f5",
+              "on-tertiary-fixed": "#2c1700",
+              "on-primary-fixed": "#002113",
+              "primary-fixed": "#b1f0cd",
+              "on-secondary": "#ffffff",
+              "on-secondary-fixed-variant": "#005235",
+              "on-tertiary": "#ffffff",
+              "primary-container": "#2f6b4f",
+              outline: "#707972",
+              surface: "#fff8f5",
+              "on-surface-variant": "#404943",
+              "on-primary-fixed-variant": "#105137",
+              "secondary-fixed-dim": "#88d7ac",
+              "on-error-container": "#93000a",
+              "on-secondary-container": "#1d704d",
+              error: "#ba1a1a",
+              "surface-container": "#ffeade",
+              secondary: "#176b49",
+              "tertiary-fixed": "#ffdcbb",
+              "outline-variant": "#c0c9c1",
+              "surface-bright": "#fff8f5",
+              "surface-dim": "#ead6cb",
+              "on-primary": "#ffffff",
+              "surface-tint": "#2d694d",
+              "secondary-fixed": "#a4f3c7",
+              primary: "#125238",
+              "on-surface": "#241913",
+              "inverse-on-surface": "#ffede4",
+              "surface-container-highest": "#f3ded3",
+              "on-background": "#241913",
+              "primary-fixed-dim": "#96d4b2",
+              "on-primary-container": "#aae9c6",
+              "tertiary-container": "#8b5300",
+              "surface-variant": "#f3ded3",
+              "on-tertiary-fixed-variant": "#683d00",
+              "surface-container-high": "#f9e4d9",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-lg": "1.75rem",
+              "margin-mobile": "1.25rem",
+              "space-xs": "0.25rem",
+              "gutter-mobile": "1rem",
+              "space-sm": "0.5rem",
+              margin: "3rem",
+              "space-md": "1rem",
+              gutter: "1.5rem",
+              "space-xl": "3rem",
+            },
+            fontFamily: {
+              "body-sm": ["Plus Jakarta Sans"],
+              "body-md": ["Plus Jakarta Sans"],
+              "headline-sm": ["Playfair Display"],
+              "label-md": ["Plus Jakarta Sans"],
+              "body-lg": ["Plus Jakarta Sans"],
+              "headline-lg": ["Playfair Display"],
+              "headline-md": ["Playfair Display"],
+              "body-xl": ["Plus Jakarta Sans"],
+              "label-lg": ["Plus Jakarta Sans"],
+              "label-sm": ["Plus Jakarta Sans"],
+              "display-hero-mobile": ["Playfair Display"],
+              "display-hero": ["Playfair Display"],
+              "headline-lg-mobile": ["Playfair Display"],
+            },
+            fontSize: {
+              "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }],
+              "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+              "headline-sm": [
+                "22px",
+                { lineHeight: "30px", fontWeight: "500" },
+              ],
+              "label-md": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-lg": ["17px", { lineHeight: "28px", fontWeight: "400" }],
+              "headline-lg": [
+                "40px",
+                {
+                  lineHeight: "48px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-md": [
+                "28px",
+                { lineHeight: "36px", fontWeight: "500" },
+              ],
+              "body-xl": ["20px", { lineHeight: "32px", fontWeight: "400" }],
+              "label-lg": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-sm": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.06em",
+                  fontWeight: "600",
+                },
+              ],
+              "display-hero-mobile": [
+                "36px",
+                {
+                  lineHeight: "44px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "display-hero": [
+                "56px",
+                {
+                  lineHeight: "68px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg-mobile": [
+                "28px",
+                { lineHeight: "36px", letterSpacing: "0em", fontWeight: "600" },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface antialiased">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+    <!-- LEFT PERSISTENT CLINICAL SIDEBAR -->
+    <aside
+      class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto border-r border-surface-container-high/60"
+    >
+      <div class="p-space-md flex flex-col gap-space-md">
+        <!-- Clinic Brand Header -->
+        <div
+          class="flex items-start gap-space-sm pb-space-sm border-b border-surface-container-high/60"
+        >
+          <a
+            href="landing_page.html"
+            class="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-sm shrink-0 hover:scale-105 transition-transform"
+            title="Back to Landing Page"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >local_hospital</span
+            >
+          </a>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span
+                class="font-headline-sm text-headline-sm text-primary leading-tight truncate"
+                >Khabar</span
+              >
+              <span
+                class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+                >DEMO</span
+              >
+            </div>
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider truncate"
+              >Clinical Command</span
+            >
+            <div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+              <span class="material-symbols-outlined text-[13px] text-secondary"
+                >location_on</span
+              >
+              <span
+                class="font-label-sm text-label-sm text-secondary truncate font-medium"
+                >Klinik Kesihatan Taman Harmoni</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Medical Officer Profile Card -->
+        <div
+          class="flex items-center gap-space-sm p-space-sm rounded-xl bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] border border-surface-container-high/50"
+        >
+          <div
+            class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0 text-white font-bold text-xs"
+          >
+            DF
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span
+              class="font-label-lg text-label-lg text-on-surface font-semibold truncate"
+              >Dr. Faridah A.</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant truncate"
+              >Medical Officer (UD52) • Staff ID DEMO-48291</span
+            >
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav
+          class="flex flex-col gap-space-xs"
+          data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"
+        >
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="priority-triage"
+            href="clinic_command.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >emergency</span
+              >
+              <span class="font-label-lg text-label-lg">Priority Triage</span>
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold"
+              >3 Urgent</span
+            >
+          </a>
+
+          <a
+            aria-current="page"
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary-container font-semibold shadow-sm"
+            data-path="telemetry-and-chat"
+            href="telemetry_chat.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >vital_signs</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Telemetry &amp; Chat</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"
+              ></span
+              >Live
+            </span>
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="polypharmacy-guard"
+            href="polypharmacy_guard.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >medication_liquid</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Polypharmacy Guard</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold"
+              >2 Conflicts</span
+            >
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="consultation-room"
+            href="khabar_full_prototype.html#stage-doctor"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >stethoscope</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Consultation Suite</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm"
+              >8 Gates</span
+            >
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="30-day-recovery-arc"
+            href="recovery_arc.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >monitoring</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >30-Day Recovery Arc</span
+              >
+            </div>
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="moh-audit-logs"
+            href="moh_audit_logs.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >verified_user</span
+              >
+              <span class="font-label-lg text-label-lg">Audit Logs</span>
+            </div>
+            <span class="material-symbols-outlined text-[16px] text-secondary"
+              >verified</span
+            >
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sidebar Bottom Controls -->
+      <div
+        class="p-space-md flex flex-col gap-space-sm border-t border-surface-container-high/60"
+      >
+        <div
+          class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between"
+        >
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-primary"
+              >chevron_forward</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+              >Patient app (planned)</span
+            >
+          </div>
+          <span
+            class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Active
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span
+            class="font-label-sm text-label-sm text-on-surface-variant px-1 font-semibold"
+            >Clinical Language</span
+          >
+          <div
+            class="grid grid-cols-4 gap-1 p-1 bg-surface-container-low rounded-xl"
+          >
+            <button
+              class="py-1 text-center rounded-lg bg-surface-container-lowest font-label-sm text-label-sm font-semibold text-primary shadow-sm"
+              type="button"
+            >
+              BM
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              EN
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              中文
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              தமிழ்
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="pt-1 flex items-center justify-between text-[11px] text-on-surface-variant"
+        >
+          <a
+            href="landing_page.html"
+            class="hover:text-primary transition-colors"
+            >← Landing</a
+          >
+          <span>•</span>
+          <a
+            href="clinic_command.html"
+            class="hover:text-primary transition-colors"
+            >Triage Desk</a
+          >
+          <span>•</span>
+          <a
+            href="khabar_full_prototype.html"
+            class="hover:text-primary transition-colors"
+            >Prototype →</a
+          >
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <div class="pl-72">
+      <!-- Top Header -->
+      <header
+        class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md border-b border-surface-container-high/60"
+      >
+        <div class="flex items-center gap-space-md flex-1 max-w-xl">
+          <div class="relative w-full max-w-md">
+            <span
+              class="material-symbols-outlined text-[18px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2"
+              >search</span
+            >
+            <input
+              class="w-full pl-9 pr-4 py-1.5 rounded-full bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all"
+              placeholder="Search patient IC, RN, or diagnosis..."
+              type="text"
+            />
+          </div>
+          <div
+            class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low"
+          >
+            <span class="material-symbols-outlined text-[16px] text-primary"
+              >schedule</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+              >Shift Window:
+              <strong class="text-on-surface font-semibold"
+                >08:00 - 09:30 AM</strong
+              ></span
+            >
+          </div>
+        </div>
+
+        <div class="flex items-center gap-space-sm">
+          <button
+            onclick="
+              alert(
+                'Exporting signed audit ledger (demo) (PDF/FHIR Bundle)...',
+              )
+            "
+            class="px-3.5 py-2 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface hover:bg-surface-container-high hover:text-on-surface transition-colors flex items-center gap-1.5"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]"
+              >file_download</span
+            >
+            <span>Export Audit</span>
+          </button>
+          <button
+            onclick="
+              alert(
+                'Broadcast Alert sent to all 14 active duty nurses across Subang & PJ cluster.',
+              )
+            "
+            class="px-3.5 py-2 rounded-full bg-primary-container font-label-md text-label-md text-on-primary hover:bg-primary transition-colors flex items-center gap-1.5 shadow-sm"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]">campaign</span>
+            <span>Broadcast Alert</span>
+          </button>
+          <a
+            href="khabar_full_prototype.html"
+            title="Open Full Prototype"
+            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 hover:scale-105 transition-transform"
+          >
+            <span class="material-symbols-outlined text-on-primary text-[18px]"
+              >person</span
+            >
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="w-full pt-16 px-space-md bg-background min-h-screen">
+        <div class="flex flex-col w-full pb-10">
+          <!-- Dialect & Live Engine Operational Status Bar -->
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 my-6 p-4 rounded-2xl bg-surface-container-low shadow-sm border border-surface-container-high/60"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="relative flex items-center justify-center w-8 h-8 rounded-full bg-secondary-container text-secondary"
+              >
+                <span
+                  class="w-2.5 h-2.5 rounded-full bg-secondary animate-ping absolute"
+                ></span>
+                <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span
+                    class="font-label-lg text-label-lg font-bold text-on-surface"
+                    >Malaysian Colloquial NLU Engine v3.8 Active</span
+                  >
+                  <span
+                    class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold"
+                    >Tuned on synthetic Malaysian patient phrases</span
+                  >
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Real-time dialect transcription &amp; triage enabled for BM
+                  (Utara, Pantai Timur, Pasar), Cantonese (粵語), Tamil &amp;
+                  English
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest shadow-sm border border-surface-container-high/50"
+              >
+                <span
+                  class="material-symbols-outlined text-secondary text-[16px]"
+                  >record_voice_over</span
+                >
+                <span
+                  class="font-label-sm text-label-sm text-on-surface font-medium"
+                  >Auto-ASR Latency:
+                  <strong class="text-primary font-semibold"
+                    >140ms</strong
+                  ></span
+                >
+              </div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest shadow-sm border border-surface-container-high/50"
+              >
+                <span class="material-symbols-outlined text-primary text-[16px]"
+                  >lock</span
+                >
+                <span
+                  class="font-label-sm text-label-sm text-on-surface font-medium"
+                  >WhatsApp Cloud API:
+                  <strong class="text-secondary font-semibold"
+                    >Verified</strong
+                  ></span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Split-Pane Interface -->
+          <div class="grid grid-cols-12 gap-6 items-start">
+            <!-- Left Pane: Live Incoming Stream List -->
+            <section
+              class="col-span-12 lg:col-span-4 xl:col-span-4 flex flex-col gap-3"
+            >
+              <div
+                class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-col gap-3 border border-surface-container-high/60"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="material-symbols-outlined text-primary text-[20px]"
+                      >forum</span
+                    >
+                    <h2
+                      class="font-headline-sm text-headline-sm text-on-surface font-semibold"
+                    >
+                      Live Feeds
+                    </h2>
+                  </div>
+                  <span
+                    class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold animate-pulse"
+                    >4 Active</span
+                  >
+                </div>
+
+                <!-- Filter Row -->
+                <div class="flex gap-1.5 overflow-x-auto pb-1">
+                  <button
+                    class="px-3 py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-semibold shrink-0 shadow-sm"
+                    type="button"
+                  >
+                    Semua
+                  </button>
+                  <button
+                    class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shrink-0 transition-colors"
+                    type="button"
+                  >
+                    Audio Notes
+                  </button>
+                  <button
+                    class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shrink-0 transition-colors flex items-center gap-1"
+                    type="button"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-error"></span> Red
+                    Flags
+                  </button>
+                  <button
+                    class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shrink-0 transition-colors"
+                    type="button"
+                  >
+                    Unread (2)
+                  </button>
+                </div>
+
+                <!-- Dialect Filter Badges -->
+                <div
+                  class="flex items-center gap-1.5 text-on-surface-variant text-label-sm"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >translate</span
+                  >
+                  <span class="font-label-sm text-label-sm">Bahasa:</span>
+                  <span
+                    class="px-2 py-0.5 rounded-md bg-surface-container-low text-primary font-semibold"
+                    >Malay</span
+                  >
+                  <span
+                    class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant"
+                    >粵語</span
+                  >
+                  <span
+                    class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant"
+                    >தமிழ்</span
+                  >
+                  <span
+                    class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant"
+                    >Eng</span
+                  >
+                </div>
+              </div>
+
+              <!-- Feed List Cards -->
+              <div
+                class="flex flex-col gap-2.5 max-h-[750px] overflow-y-auto pr-0.5"
+              >
+                <!-- Card 1: Active Patient (Pakcik Kassim) -->
+                <div
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-md transition-all cursor-pointer ring-2 ring-primary border border-surface-container-high/60"
+                >
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div
+                        class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm"
+                      >
+                        <img
+                          class="w-full h-full object-cover"
+                          alt="Pakcik Kassim portrait"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQbou860KeLob0Yd6nFWgbswEV5V2dwedHiUdPJx3cUTNJ1knWD_8jVbKQ0cmmls5RnHl537rwJI4gpA0cY7EhZ9ACh0vm53j-Itx9_sPtX4wyQQzrluEOPt5OZviMZot-NlRcKf1cBpEdnnl-tvI3lpMaCBsT5MKZQnUXenMPsVIJ4G2GCq9szNkD8Llcj_MCZHYyyk5CGBOvF6rKumXuH-JyghyIx711KzjDP1v8Ky08pPxTVD68"
+                        />
+                        <span
+                          class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-secondary ring-2 ring-white"
+                        ></span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <h3
+                            class="font-label-lg text-label-lg font-bold text-on-surface truncate"
+                          >
+                            Pakcik Kassim
+                          </h3>
+                          <span
+                            class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                            >64 thn</span
+                          >
+                        </div>
+                        <p
+                          class="font-label-sm text-label-sm text-primary font-medium"
+                        >
+                          Hernia Inguinal (D-5 Post-Op)
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >08:42 AM</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-2 p-2.5 rounded-xl bg-surface-container-low mb-2.5 border border-surface-container-high/40"
+                  >
+                    <span
+                      class="material-symbols-outlined text-primary text-[20px]"
+                      >mic</span
+                    >
+                    <div class="flex-1 min-w-0">
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface truncate italic"
+                      >
+                        "Luka operate dah kering sikit, gatal sikit-sikit ja
+                        doktor..."
+                      </p>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >0:24</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-secondary"
+                        ></span>
+                        Normal Healing
+                      </span>
+                      <span
+                        class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                        >BM Utara</span
+                      >
+                    </div>
+                    <span
+                      class="material-symbols-outlined text-primary text-[18px]"
+                      >chevron_right</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Card 2: Madam Chan Wai Meng -->
+                <div
+                  onclick="
+                    alert(
+                      'Loading Madam Chan Wai Meng (粤語 Cantonese) chat history...',
+                    )
+                  "
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all cursor-pointer border border-surface-container-high/60"
+                >
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div
+                        class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm"
+                      >
+                        <img
+                          class="w-full h-full object-cover"
+                          alt="Madam Chan portrait"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8R6h1GrUl8xpM-LIP5uoQAaKi_H-OW2gC3oxjGhA9WNCYPZGoNnfl4zFPnZgrEWJLYCukzAAK86xbT8PvHpbfeEZyos0wq-bhFcjSPUUXR6nGN8gPpYZT8i5EYINP3A4lC3zrolxbzRgDM2D5jtFfgSWdydm2N1P1pT8CWfWxGRUNbAsqO_CQrbKctBVkOn4iyaXuRdPKIaZlOp5d1rPlfcWWURgeLWT-tdGHEtKX573pUm5126fG"
+                        />
+                        <span
+                          class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-secondary ring-2 ring-white"
+                        ></span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <h3
+                            class="font-label-lg text-label-lg font-bold text-on-surface truncate"
+                          >
+                            Madam Chan Wai Meng
+                          </h3>
+                          <span
+                            class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                            >68 yr</span
+                          >
+                        </div>
+                        <p
+                          class="font-label-sm text-label-sm text-secondary font-medium"
+                        >
+                          Total Knee Replacement (D-12)
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >08:15 AM</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-2 p-2.5 rounded-xl bg-surface-container-low mb-2.5 border border-surface-container-high/40"
+                  >
+                    <span
+                      class="material-symbols-outlined text-secondary text-[20px]"
+                      >mic</span
+                    >
+                    <div class="flex-1 min-w-0">
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface truncate italic"
+                      >
+                        "今日膝頭哥好似無咁痛，可以行到去廚房斟水啦..."
+                      </p>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >0:38</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-secondary"
+                        ></span>
+                        Mobility Improving
+                      </span>
+                      <span
+                        class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                        >粵語 Cantonese</span
+                      >
+                    </div>
+                    <span
+                      class="material-symbols-outlined text-on-surface-variant text-[18px]"
+                      >chevron_right</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Card 3: Ravi Marimuthu -->
+                <div
+                  onclick="
+                    alert(
+                      'Loading Ravi Marimuthu (Tamil) diabetic foot record...',
+                    )
+                  "
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all cursor-pointer border border-surface-container-high/60"
+                >
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div
+                        class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm"
+                      >
+                        <img
+                          class="w-full h-full object-cover"
+                          alt="Ravi portrait"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5iY7FpUw7AJLUBNsh7hdYrRjU7Ct1a3RctQauoEbWvNDA2XJCt-KIzSu68Qw-1WZwrU3a9aOXSNwPX9eSP2pLviq_nYK0D6foGKpU1qGqNKYMxA9zD-jtdLc1hvz18JQtBnI3m-iP4Ul4_2WCxTP_WjbODIbDRHBL3WLju1uakIU8jQBwG38bdmpMHyskREyjQWo4kygTnAW5A2uJ6aO3rwTF6IV8CKJkoz6AhTJfZRsqyBxvM9Pf"
+                        />
+                        <span
+                          class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-surface-variant ring-2 ring-white"
+                        ></span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <h3
+                            class="font-label-lg text-label-lg font-bold text-on-surface truncate"
+                          >
+                            Ravi Marimuthu
+                          </h3>
+                          <span
+                            class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                            >52 yr</span
+                          >
+                        </div>
+                        <p
+                          class="font-label-sm text-label-sm text-tertiary-container font-medium"
+                        >
+                          Diabetic Foot Ulcer (D-18)
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >07:58 AM</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-2 p-2.5 rounded-xl bg-surface-container-low mb-2.5 border border-surface-container-high/40"
+                  >
+                    <span
+                      class="material-symbols-outlined text-tertiary text-[20px]"
+                      >image</span
+                    >
+                    <div class="flex-1 min-w-0">
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface truncate"
+                      >
+                        FBS: 6.8 mmol/L • Clean dressing photo submitted
+                      </p>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-secondary font-semibold"
+                      >FBS OK</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+                        >Under Review</span
+                      >
+                      <span
+                        class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                        >தமிழ் Tamil</span
+                      >
+                    </div>
+                    <span
+                      class="material-symbols-outlined text-on-surface-variant text-[18px]"
+                      >chevron_right</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Card 4: Puan Aminah -->
+                <div
+                  onclick="
+                    alert(
+                      'Loading Puan Aminah (Kelantanese) nausea triage case...',
+                    )
+                  "
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all cursor-pointer border border-surface-container-high/60"
+                >
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div
+                        class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm"
+                      >
+                        <img
+                          class="w-full h-full object-cover"
+                          alt="Puan Aminah portrait"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-0qyyyc7ci15TaCk7LhjPVII8zWxiGcsrplOvff8GLizrfKrAuGRN0RgZmylBVUrxnEe97iTJXJUkO0iNl0qfXZangjJJlCP3vxdj6VDTnP1crNQnLllDTaweSbohfp-3vfuQUb3XgqB35LXh_1h_pPQxEH91nZYolEO2Q8BAI-f4IY_8EH_1fiW5mjl1q-xw_SbYxoBEhBRaDqFEzOxwwrw8lbQqtpM78ai7kDmr94xt34NZ-R7R"
+                        />
+                        <span
+                          class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-error ring-2 ring-white"
+                        ></span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <h3
+                            class="font-label-lg text-label-lg font-bold text-on-surface truncate"
+                          >
+                            Puan Aminah
+                          </h3>
+                          <span
+                            class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                            >45 thn</span
+                          >
+                        </div>
+                        <p
+                          class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+                        >
+                          Cholecystectomy (D-4 Post-Op)
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant shrink-0 font-mono"
+                      >07:31 AM</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-2 p-2.5 rounded-xl bg-error-container/40 mb-2.5 border border-error/20"
+                  >
+                    <span
+                      class="material-symbols-outlined text-error text-[20px]"
+                      >warning</span
+                    >
+                    <div class="flex-1 min-w-0">
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface truncate italic"
+                      >
+                        "Loya rasa nok muntah lepas make gulai lemak satni..."
+                      </p>
+                    </div>
+                    <span
+                      class="font-label-sm text-label-sm text-error font-semibold"
+                      >Triage</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold"
+                        >Dietary Nausea</span
+                      >
+                      <span
+                        class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm"
+                        >BM Kelantan</span
+                      >
+                    </div>
+                    <span
+                      class="material-symbols-outlined text-on-surface-variant text-[18px]"
+                      >chevron_right</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Center/Right Main Pane: Active Patient Conversational Record -->
+            <section
+              class="col-span-12 lg:col-span-8 xl:col-span-8 flex flex-col gap-4"
+            >
+              <!-- Patient Banner -->
+              <div
+                class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 border border-surface-container-high/60"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-14 h-14 rounded-full overflow-hidden shrink-0 shadow-sm ring-2 ring-primary"
+                  >
+                    <img
+                      class="w-full h-full object-cover"
+                      alt="Pakcik Kassim"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqwQ8VBclYPrrytYsQpKIPywZueGxgJx0AYFJnQgkwefOkQeoluoSglWoiSWl1NPni7_-LeKtvPSx3qMd0XENdiKagY4NfnNtL7fILw81Nic7jhkcYjkwG5mERtdYKZ-NBbSnI62B43xyqDAUvTh8EpNv-xdQ-AXa1K2cqtQJkI7H_-DfZGou8B8H4GRNT35Jxu3gqPxmx9v-JrI-_0cX-Ajl4WhKHe0qPS7_0zA0jMnccVdiWis50"
+                    />
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h1
+                        class="font-headline-sm text-headline-sm text-on-surface font-bold"
+                      >
+                        Kassim bin Hj. Othman
+                      </h1>
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold"
+                        >MRN: KKB-77124</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm"
+                        >IC: 600412-08-5431</span
+                      >
+                    </div>
+                    <div
+                      class="flex flex-wrap items-center gap-y-1 gap-x-3 mt-1 font-body-sm text-body-sm text-on-surface-variant"
+                    >
+                      <span>Discharged: <strong>Ward 4B (Bed 12)</strong></span>
+                      <span>•</span>
+                      <span
+                        >Procedure:
+                        <strong>Lichtenstein Mesh Hernioplasty</strong></span
+                      >
+                      <span>•</span>
+                      <span
+                        >Attending:
+                        <strong>Dr. Tan Wei Lun (General Surgery)</strong></span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <button
+                    onclick="alert('Opening EMR Master Chart (FHIR v4.0.1)...')"
+                    class="px-3.5 py-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-colors border border-surface-container-high/50"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-[18px]"
+                      >medical_information</span
+                    >
+                    <span>EMR Chart</span>
+                  </button>
+                  <button
+                    onclick="
+                      alert(
+                        'DIALING DIRECT: Connecting to Pakcik Kassim via verified KKB Taman Harmoni VOIP line...',
+                      )
+                    "
+                    class="px-3.5 py-2 rounded-full bg-error-container text-on-error-container hover:opacity-90 font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-opacity active:scale-95"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-[18px]"
+                      >call</span
+                    >
+                    <span>Direct Tele-Call</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Conversational WhatsApp Dual Log Container -->
+              <div
+                class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col border border-surface-container-high/60"
+              >
+                <!-- Chat Header Strip -->
+                <div
+                  class="px-5 py-3 bg-surface-container-low flex items-center justify-between border-b border-surface-container-high/50"
+                >
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="material-symbols-outlined text-secondary text-[20px]"
+                      >chat</span
+                    >
+                    <span
+                      class="font-label-lg text-label-lg font-bold text-on-surface"
+                      >Khabar Automated Tele-Care • WhatsApp Business API (planned)
+                      Stream</span
+                    >
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold"
+                      >End-to-End Encrypted</span
+                    >
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant font-mono"
+                    >Sync:
+                    <strong class="text-on-surface">3 mins ago</strong></span
+                  >
+                </div>
+
+                <!-- Chat Transcript Body -->
+                <div
+                  class="p-6 flex flex-col gap-5 max-h-[460px] overflow-y-auto bg-surface/30"
+                >
+                  <!-- System Automated Daily Check-in -->
+                  <div class="flex justify-center my-1">
+                    <span
+                      class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm shadow-xs border border-surface-container-high/50 font-mono"
+                    >
+                      Today • 08:30 AM (Scheduled Day 5 Recovery Ping)
+                    </span>
+                  </div>
+
+                  <!-- Outgoing automated bot message -->
+                  <div class="flex items-start gap-2.5 max-w-xl self-start">
+                    <div
+                      class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 shadow-sm"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >smart_toy</span
+                      >
+                    </div>
+                    <div
+                      class="p-4 rounded-2xl rounded-tl-none bg-surface-container-low shadow-sm border border-surface-container-high/50"
+                    >
+                      <div class="flex items-center justify-between gap-3 mb-1">
+                        <span
+                          class="font-label-sm text-label-sm font-bold text-primary"
+                          >Khabar Recovery AI (demo)</span
+                        >
+                        <span
+                          class="font-label-sm text-label-sm text-on-surface-variant font-mono"
+                          >08:30 AM</span
+                        >
+                      </div>
+                      <p
+                        class="font-body-md text-body-md text-on-surface leading-relaxed"
+                      >
+                        Assalamualaikum dan selamat pagi Pakcik Kassim. Hari ini
+                        hari ke-5 lepas pembedahan hernia. Bagaimanakah keadaan
+                        luka di ari-ari pagi ini? Ada rasa sakit, bengkak
+                        berdenyut atau rasa demam tak pakcik? Boleh taip atau
+                        hantar voice note ja.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Incoming Patient WhatsApp Voice Note Bubble -->
+                  <div
+                    class="flex items-start gap-2.5 max-w-xl self-end flex-row-reverse"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-primary"
+                    >
+                      <img
+                        class="w-full h-full object-cover"
+                        alt="Pakcik Kassim avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHIUvH9KvHYm1HN3-fu1L1zhYWEmZiknxIqeuTMtNdWg5260zwSo2tZPdoedb37i8FTyXs8DBa-7BLdzxIhw0sv5X9eArlELdFA5ivQp0nDjv8nu_bq3SwMZqo0sWAbeVS1HVLzrkg6LddXvHLeEFIcLQVeogOYGCY9nfyvsh6n7LNbkngXHZ-ruVw0oAsvqx_YzHOTsMFunkiIynI1KeEgxzWh1Nu8LB9-0YntX4i__Eufyf3xfyp"
+                      />
+                    </div>
+                    <div
+                      class="p-4 rounded-2xl rounded-tr-none bg-primary-container text-on-primary shadow-sm flex flex-col gap-3 w-full sm:w-[420px]"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span
+                          class="font-label-sm text-label-sm font-bold text-on-primary-container flex items-center gap-1"
+                        >
+                          <span class="material-symbols-outlined text-[16px]"
+                            >mic</span
+                          >
+                          <span>Voice Note (WhatsApp)</span>
+                        </span>
+                        <span
+                          class="font-label-sm text-label-sm text-on-primary-container font-mono"
+                          >08:42 AM</span
+                        >
+                      </div>
+
+                      <!-- Interactive Voice Waveform Component -->
+                      <div
+                        class="flex items-center gap-3 p-2.5 rounded-xl bg-primary/30"
+                      >
+                        <button
+                          id="voicePlayBtn"
+                          onclick="togglePlayVoice()"
+                          class="w-10 h-10 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center shrink-0 shadow hover:scale-105 transition-transform"
+                          type="button"
+                        >
+                          <span
+                            class="material-symbols-outlined text-[24px]"
+                            id="playIcon"
+                            >play_arrow</span
+                          >
+                        </button>
+                        <!-- Audio Waveform -->
+                        <div class="flex-1 flex flex-col gap-1">
+                          <div
+                            class="h-6 flex items-center gap-0.5 w-full"
+                            id="waveformBars"
+                          >
+                            <span
+                              class="w-1 h-2 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-3 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-5 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-6 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-4 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-5 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-3 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-4 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-6 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-5 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-2 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-4 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-6 bg-on-primary rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-3 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-1 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-4 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-5 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                            <span
+                              class="w-1 h-2 bg-on-primary-container rounded-full transition-all duration-300"
+                            ></span>
+                          </div>
+                          <div
+                            class="flex justify-between font-label-sm text-label-sm text-on-primary-container font-mono"
+                          >
+                            <span id="audioCurrentTime">0:00</span>
+                            <span>0:24</span>
+                          </div>
+                        </div>
+                        <div class="flex flex-col gap-1 items-end">
+                          <span
+                            class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm font-semibold"
+                            >1.0x</span
+                          >
+                        </div>
+                      </div>
+
+                      <!-- Collapsible Transcription Card inside Bubble -->
+                      <div
+                        class="p-3 rounded-xl bg-surface-container-lowest text-on-surface shadow-xs flex flex-col gap-1.5 border border-surface-container-high/40"
+                      >
+                        <div
+                          class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"
+                        >
+                          <div
+                            class="flex items-center gap-1 font-semibold text-secondary"
+                          >
+                            <span class="material-symbols-outlined text-[14px]"
+                              >transcribe</span
+                            >
+                            <span>Speech-to-Text (BM Utara Colloquial)</span>
+                          </div>
+                          <span class="text-primary font-semibold font-mono"
+                            >98% Accuracy</span
+                          >
+                        </div>
+                        <p
+                          class="font-body-sm text-body-sm text-on-surface italic leading-relaxed"
+                        >
+                          "Waalaikummussalam doktor. Alhamdulillah harini rasa
+                          cergas skit dah. Luka operate tu nampak dah kering
+                          sikit, takda nanah apa, cuma rasa merenyam gatal
+                          sikit-sikit ja doktor... rasa nak garu tapi takut
+                          terbuka jahitan. Selera makan pun molek."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Clinical AI NLU Analysis Card -->
+                <div
+                  class="p-4 bg-surface-container-low shadow-inner border-t border-surface-container-high/60"
+                >
+                  <div
+                    class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-6 h-6 rounded-full bg-secondary-container text-secondary flex items-center justify-center"
+                      >
+                        <span class="material-symbols-outlined text-[16px]"
+                          >analytics</span
+                        >
+                      </div>
+                      <span
+                        class="font-label-lg text-label-lg font-bold text-on-surface"
+                        >Clinical NLU Diagnostic Synthesis</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold shadow-xs border border-surface-container-high/50 font-mono"
+                        >AI Confidence: 96%</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant"
+                    >
+                      <span
+                        class="material-symbols-outlined text-[16px] text-secondary"
+                        >check_circle</span
+                      >
+                      <span>Matched against Malaysian CPG Hernia Protocol</span>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-surface-container-high/40"
+                    >
+                      <span
+                        class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold"
+                        >Extracted Symptoms</span
+                      >
+                      <ul
+                        class="mt-1 flex flex-col gap-1 text-on-surface font-body-sm text-body-sm"
+                      >
+                        <li class="flex items-center gap-1.5">
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Mild pruritus / wound itching (merenyam)
+                        </li>
+                        <li class="flex items-center gap-1.5">
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Afebrile (No fever reported)
+                        </li>
+                        <li class="flex items-center gap-1.5">
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Good appetite, dry wound edge
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-surface-container-high/40"
+                    >
+                      <span
+                        class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold"
+                        >Clinical Interpretation</span
+                      >
+                      <p
+                        class="mt-1 font-body-sm text-body-sm text-on-surface leading-snug"
+                      >
+                        Classic post-operative healing cascade (proliferative /
+                        epithelialization stage). Pruritus indicates histamine
+                        release during dermal matrix remodeling. No infection
+                        signs.
+                      </p>
+                    </div>
+
+                    <div
+                      class="p-3 rounded-xl bg-secondary-container/40 shadow-xs border border-secondary/20"
+                    >
+                      <span
+                        class="font-label-sm text-label-sm text-secondary uppercase font-semibold"
+                        >Suggested Action</span
+                      >
+                      <p
+                        class="mt-1 font-body-sm text-body-sm text-on-surface font-medium leading-snug"
+                      >
+                        Reassure patient that itching is normal healing. Caution
+                        strictly against scratching dressing. Advise gentle dry
+                        patting or loose cotton sarong.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Clinic Response Composer & Quick Snippets -->
+                <div
+                  class="p-4 bg-surface-container-lowest flex flex-col gap-3 border-t border-surface-container-high/60"
+                >
+                  <div
+                    class="flex items-center justify-between flex-wrap gap-2"
+                  >
+                    <span
+                      class="font-label-sm text-label-sm font-semibold text-on-surface-variant"
+                      >Verified Clinical Quick-Replies (Doctor / Staff
+                      Nurse):</span
+                    >
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant"
+                      >Logged as:
+                      <strong class="text-primary font-semibold"
+                        >SN Halimah (KKB Taman Harmoni)</strong
+                      ></span
+                    >
+                  </div>
+
+                  <!-- Quick Action Buttons -->
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      onclick="setSnippet('audio')"
+                      class="px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs border border-surface-container-high/50"
+                      type="button"
+                    >
+                      <span
+                        class="material-symbols-outlined text-primary text-[16px]"
+                        >record_voice_over</span
+                      >
+                      <span>Send Wound Care Audio Advice</span>
+                    </button>
+                    <button
+                      onclick="setSnippet('photo')"
+                      class="px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs border border-surface-container-high/50"
+                      type="button"
+                    >
+                      <span
+                        class="material-symbols-outlined text-secondary text-[16px]"
+                        >add_a_photo</span
+                      >
+                      <span>Request Incision Photo</span>
+                    </button>
+                    <button
+                      onclick="setSnippet('antihistamine')"
+                      class="px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs border border-surface-container-high/50"
+                      type="button"
+                    >
+                      <span
+                        class="material-symbols-outlined text-tertiary text-[16px]"
+                        >local_pharmacy</span
+                      >
+                      <span>Verify Oral Antihistamine</span>
+                    </button>
+                    <button
+                      onclick="
+                        alert(
+                          'Case escalated to MO On-Call: Dr. Faridah A. via WhatsApp alert!',
+                        )
+                      "
+                      class="px-3 py-1.5 rounded-full bg-error-container text-on-error-container hover:opacity-90 font-label-sm text-label-sm font-semibold flex items-center gap-1.5 transition-opacity shadow-xs"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >forward</span
+                      >
+                      <span>Escalate to MO On-Call</span>
+                    </button>
+                  </div>
+
+                  <!-- Input Composer Form -->
+                  <div
+                    class="relative flex items-end gap-2 bg-surface-container-low p-2 rounded-2xl shadow-xs border border-surface-container-high/60"
+                  >
+                    <button
+                      onclick="
+                        alert(
+                          'File attachment: Select clinical guideline PDF or photo advisory.',
+                        )
+                      "
+                      class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container transition-colors shrink-0"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-[20px]"
+                        >attach_file</span
+                      >
+                    </button>
+                    <textarea
+                      id="replyTextarea"
+                      class="w-full bg-transparent resize-none font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none p-1.5 leading-relaxed"
+                      placeholder="Taip nasihat klinikal atau pilih templat audio untuk dihantar ke WhatsApp Pakcik Kassim..."
+                      rows="2"
+                    >
+Waalaikumussalam Pakcik Kassim. Alhamdulillah, rasa merenyam gatal tu tanda luka sedang bercantum elok (proses biasa). Jangan garu ya pakcik, kalau gatal sangat boleh tepuk perlahan-lahan di atas kain. Pakai kain pelikat longgar. Jika ada merah merebak atau demam, terus maklumkan pada kami.</textarea
+                    >
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onclick="
+                          alert(
+                            'Recording 15-second audio note in Bahasa Melayu...',
+                          )
+                        "
+                        class="p-2 text-on-surface-variant hover:text-secondary rounded-full hover:bg-surface-container transition-colors"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-[20px]"
+                          >mic</span
+                        >
+                      </button>
+                      <button
+                        onclick="sendReply()"
+                        class="px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary/90 flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                        type="button"
+                      >
+                        <span>Send WhatsApp</span>
+                        <span class="material-symbols-outlined text-[18px]"
+                          >send</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Dispatch Feedback Toast -->
+                  <div
+                    class="hidden p-2.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-semibold flex items-center gap-2 animate-bounce"
+                    id="dispatchToast"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >check_circle</span
+                    >
+                    <span
+                      >WhatsApp advisory dispatched to Pakcik Kassim
+                      (+6013-942-8812) &amp; CC'd to daughter Nurul Ain.</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Historical Recovery Telemetry Sparkline & Vitals Preview -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Metric 1: Pain VAS Trend -->
+                <div
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between border border-surface-container-high/60"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant font-semibold"
+                      >Pain Score (VAS 1-10)</span
+                    >
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold"
+                      >Score: 2 (Mild)</span
+                    >
+                  </div>
+                  <div class="my-2">
+                    <!-- Inline SVG Sparkline for Pain Trend (Days 1 to 5) -->
+                    <svg class="w-full h-12" fill="none" viewBox="0 0 160 40">
+                      <path
+                        class="text-secondary"
+                        d="M0 35 L40 28 L80 18 L120 12 L160 8"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                      ></path>
+                      <circle
+                        class="fill-secondary"
+                        cx="160"
+                        cy="8"
+                        r="4"
+                      ></circle>
+                    </svg>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant"
+                    >Down from Day 1 post-op (VAS 7)</span
+                  >
+                </div>
+
+                <!-- Metric 2: Wound Healing Index -->
+                <div
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between border border-surface-container-high/60"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant font-semibold"
+                      >Tissue Recovery Index</span
+                    >
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold"
+                      >88% Normal</span
+                    >
+                  </div>
+                  <div class="my-2">
+                    <div
+                      class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="bg-primary h-full rounded-full"
+                        style="width: 88%"
+                      ></div>
+                    </div>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant"
+                    >Next Clinic Review: <strong>24 Oct (Day 7)</strong></span
+                  >
+                </div>
+
+                <!-- Metric 3: Family Caregiver Connection -->
+                <div
+                  class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between border border-surface-container-high/60"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant font-semibold"
+                      >Registered Caregiver</span
+                    >
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm"
+                      >Daughter</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 my-1">
+                    <div
+                      class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold"
+                    >
+                      N
+                    </div>
+                    <div class="min-w-0">
+                      <p
+                        class="font-label-sm text-label-sm text-on-surface font-bold truncate"
+                      >
+                        Nurul Ain binti Kassim
+                      </p>
+                      <p
+                        class="font-label-sm text-label-sm text-on-surface-variant truncate font-mono"
+                      >
+                        +60 12-398 4410
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold"
+                  >
+                    <span class="material-symbols-outlined text-[15px]"
+                      >done_all</span
+                    >
+                    <span>Caregiver WhatsApp CC Active</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Audio Player Simulation
+      let isPlaying = false;
+      let audioTimer = null;
+      let seconds = 0;
+
+      function togglePlayVoice() {
+        const playIcon = document.getElementById("playIcon");
+        const timeLabel = document.getElementById("audioCurrentTime");
+        const bars = document.getElementById("waveformBars").children;
+
+        if (!isPlaying) {
+          isPlaying = true;
+          playIcon.textContent = "pause";
+          audioTimer = setInterval(() => {
+            seconds++;
+            if (seconds > 24) {
+              resetAudio();
+              return;
+            }
+            const secStr = seconds < 10 ? "0" + seconds : seconds;
+            timeLabel.textContent = "0:" + secStr;
+            // Animate waveform bars
+            for (let bar of bars) {
+              const h = Math.floor(Math.random() * 20) + 4;
+              bar.style.height = h + "px";
+            }
+          }, 1000);
+        } else {
+          resetAudio();
+        }
+      }
+
+      function resetAudio() {
+        isPlaying = false;
+        clearInterval(audioTimer);
+        document.getElementById("playIcon").textContent = "play_arrow";
+        document.getElementById("audioCurrentTime").textContent = "0:00";
+        seconds = 0;
+      }
+
+      // Quick Snippet Insertion
+      function setSnippet(type) {
+        const area = document.getElementById("replyTextarea");
+        if (type === "audio") {
+          area.value =
+            "Pakcik, saya hantar nota suara cara penjagaan luka jahitan hernia. Sila dengar dan amalkan ya pakcik.";
+        } else if (type === "photo") {
+          area.value =
+            "Pakcik Kassim, boleh tolong ambil gambar bahagian luka ari-ari yang jelas dengan pencahayaan terang? Doktor nak periksa keadaan jahitan.";
+        } else if (type === "antihistamine") {
+          area.value =
+            "Pakcik boleh ambil ubat gatal Loratadine 10mg sebiji sehari sebelum tidur jika rasa merenyam mengganggu tidur.";
+        }
+      }
+
+      // WhatsApp Dispatch Simulation
+      function sendReply() {
+        const toast = document.getElementById("dispatchToast");
+        toast.classList.remove("hidden");
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 4500);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khabar — Simple, Caring Clinic Aftercare</title>
+  <!-- Google Fonts: Fraunces & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F8F5EE;
+      color: #2D221C;
+    }
+    .font-serif-fraunces { font-family: 'Fraunces', serif; }
+    .bg-pandan { background-color: #266447; }
+    .text-pandan { color: #266447; }
+    .border-pandan { border-color: #266447; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 15px 35px -10px rgba(38, 100, 71, 0.08);
+    }
+    .input-focus:focus {
+      outline: none;
+      border-color: #266447;
+      box-shadow: 0 0 0 3px rgba(38, 100, 71, 0.15);
+    }
+    .fade-in {
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col selection:bg-emerald-200">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. USER-FRIENDLY ONBOARDING & LOGIN SCREEN                                -->
+  <!-- ========================================================================= -->
+  <div id="authScreen" class="min-h-full flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    
+    <!-- Soft ambient background glow -->
+    <div class="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-100/60 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+    <div class="max-w-xl mx-auto w-full text-center space-y-3">
+      <!-- Friendly Logo -->
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-pandan text-white shadow-lg shadow-emerald-900/20 mb-1">
+        <span class="font-serif-fraunces font-bold text-3xl">K</span>
+      </div>
+      <h1 class="font-serif-fraunces text-3xl sm:text-4xl font-bold text-stone-900">
+        Welcome to Khabar
+      </h1>
+      <p class="text-sm sm:text-base text-stone-600 max-w-md mx-auto leading-relaxed">
+        Post-clinic recovery made simple. Choose your role below to explore the experience:
+      </p>
+    </div>
+
+    <!-- Clear, Visual Role Picker Cards -->
+    <div class="max-w-2xl mx-auto w-full mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      
+      <!-- Option A: Doctor Portal -->
+      <div onclick="selectRoleAndLogin('doctor')" class="cursor-pointer glass-card rounded-3xl p-6 border-2 border-transparent hover:border-emerald-500 hover:scale-[1.02] transition-all shadow-md group space-y-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-pandan flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          🩺
+        </div>
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-pandan bg-emerald-50 px-2 py-0.5 rounded">For Clinic Doctors</span>
+          <h3 class="font-serif-fraunces text-xl font-bold text-stone-900 mt-1">Dr. Priya's Suite</h3>
+          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+            See how AI drafts clinical reports live, runs the 8 safety checks, and blocks duplicate medicine overdoses before they reach patients.
+          </p>
+        </div>
+        <div class="pt-2 flex items-center text-xs font-bold text-pandan group-hover:translate-x-1 transition-transform">
+          <span>Enter Doctor Workspace →</span>
+        </div>
+      </div>
+
+      <!-- Option B: Patient Portal -->
+      <div onclick="selectRoleAndLogin('patient')" class="cursor-pointer glass-card rounded-3xl p-6 border-2 border-transparent hover:border-amber-500 hover:scale-[1.02] transition-all shadow-md group space-y-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          👵
+        </div>
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded">For Patients & Seniors</span>
+          <h3 class="font-serif-fraunces text-xl font-bold text-stone-900 mt-1">Mak Cik Aminah (67)</h3>
+          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+            See how older patients get plain-language instructions in Bahasa Melayu on WhatsApp, audio voice notes, and 30 days of caring follow-ups.
+          </p>
+        </div>
+        <div class="pt-2 flex items-center text-xs font-bold text-amber-800 group-hover:translate-x-1 transition-transform">
+          <span>Enter Patient View (Bahasa Melayu) →</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Quick explanation footer -->
+    <div class="mt-8 text-center text-xs text-stone-500 max-w-md mx-auto">
+      <span>💡 <strong>SDC Practice Demo:</strong> All patient data is synthetic. Zero private health data is stored or transmitted.</span>
+    </div>
+
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. LOGGED-IN PORTAL: INTUITIVE, USER-FRIENDLY & GUIDED                    -->
+  <!-- ========================================================================= -->
+  <div id="mainPortal" class="h-full flex-col hidden fade-in">
+    
+    <!-- Top Friendly Bar -->
+    <header class="bg-white border-b border-stone-200 px-4 sm:px-8 py-3 sticky top-0 z-40 shadow-xs flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-pandan text-white flex items-center justify-center font-serif-fraunces font-bold text-lg">
+          K
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-serif-fraunces font-bold text-lg text-stone-900">Khabar</span>
+            <span id="badgeCurrentRole" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-pandan uppercase">
+              Doctor Suite
+            </span>
+          </div>
+          <span class="text-[11px] text-stone-500">Klinik Kesihatan Taman Bahagia</span>
+        </div>
+      </div>
+
+      <!-- Quick Switcher & Logout -->
+      <div class="flex items-center space-x-3">
+        <!-- Switch Persona Button -->
+        <button onclick="toggleRoleSwitch()" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors flex items-center space-x-1.5">
+          <span>⇄</span>
+          <span id="btnSwitchLabel">Switch to Patient View</span>
+        </button>
+
+        <button onclick="logoutToWelcome()" class="text-xs text-stone-500 hover:text-red-600 font-semibold px-2 py-1">
+          Exit
+        </button>
+      </div>
+    </header>
+
+    <!-- GUIDED STORY BANNER (Explains the product in plain English so NO ONE gets lost) -->
+    <div class="bg-amber-50/90 border-b border-amber-200/80 px-4 sm:px-8 py-2.5 text-xs text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">📖</span>
+        <span>
+          <strong>The Story:</strong> Mak Cik Aminah takes Metformin from Klinik Kesihatan <em>and</em> Glucophage from a private GP. They are the same drug! Watch how Khabar catches it and keeps her safe.
+        </span>
+      </div>
+      <div class="flex items-center space-x-1.5 shrink-0">
+        <span class="font-bold text-[11px] text-amber-900">Jump to:</span>
+        <button onclick="showDoctorTab('visit')" class="px-2 py-0.5 rounded bg-white border border-amber-300 font-bold hover:bg-amber-100 text-[10px]">1. Safety Gate</button>
+        <button onclick="showDoctorTab('calldeck')" class="px-2 py-0.5 rounded bg-white border border-amber-300 font-bold hover:bg-amber-100 text-[10px]">2. Day 3 Red Flag</button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW A: DOCTOR EXPERIENCE (Clean, step-by-step, organized)                -->
+    <!-- ========================================================================= -->
+    <div id="doctorWorkspace" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      
+      <!-- Step Navigation Pills -->
+      <div class="flex items-center space-x-2 bg-stone-200/80 p-1 rounded-2xl max-w-md mx-auto text-xs font-bold text-stone-600">
+        <button onclick="showDoctorTab('visit')" id="dtab-visit" class="flex-1 py-2 rounded-xl bg-white text-pandan shadow-xs text-center transition-all">
+          1. Active Consultation
+        </button>
+        <button onclick="showDoctorTab('calldeck')" id="dtab-calldeck" class="flex-1 py-2 rounded-xl hover:text-pandan text-center transition-all">
+          2. Patient Call List (2)
+        </button>
+        <button onclick="showDoctorTab('audit')" id="dtab-audit" class="flex-1 py-2 rounded-xl hover:text-pandan text-center transition-all">
+          3. Privacy Audit Log
+        </button>
+      </div>
+
+      <!-- TAB A1: CONSULTATION ROOM WITH 8 CHECKS -->
+      <div id="docTab-visit" class="space-y-6 max-w-5xl mx-auto fade-in">
+        
+        <!-- Patient Overview Card -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-xl font-serif-fraunces">
+              MA
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="font-bold text-base text-stone-900">Mak Cik Aminah (67)</h2>
+                <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-pandan font-bold">Type 2 Diabetes</span>
+              </div>
+              <p class="text-xs text-stone-500 mt-0.5">
+                Attending Doctor: <strong>Dr. Priya</strong> • Prefers instructions in <strong>Bahasa Melayu</strong>
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="openPhotoModal()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold flex items-center space-x-1.5 transition-colors">
+              <span>📷</span>
+              <span>View Reconciled Medicine Photos (4)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Two Column Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Column 1: Doctor Scribe / Clinical Notes (7 Cols) -->
+          <div class="lg:col-span-7 glass-card rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-stone-900 text-sm">Doctor Consultation Scribe</h3>
+                <p class="text-[11px] text-stone-500">Type or speak your clinical observations.</p>
+              </div>
+              <button onclick="triggerVoiceDictation()" id="btnVoiceDictate" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-pandan border border-emerald-300 text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                <span>🎙️</span>
+                <span id="voiceLabel">Speak (Groq Whisper)</span>
+              </button>
+            </div>
+
+            <textarea id="doctorNotesBox" rows="4" class="w-full p-3.5 rounded-xl border border-stone-200 text-xs text-stone-800 bg-white leading-relaxed input-focus" oninput="updateLiveDraft()">Patient reports feeling dizzy in the morning. Fasting sugar is 8.4. Taking Metformin 500mg daily. Photo check revealed she also takes Glucophage 500mg from private GP and traditional Pegaga herbal tea.</textarea>
+
+            <!-- Ramadan Fasting Switch -->
+            <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-200 flex items-center justify-between">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-xl">🌙</span>
+                <div>
+                  <span class="font-bold text-xs text-amber-950 block">Enable Ramadan Fasting Schedule</span>
+                  <span class="text-[10px] text-amber-800">Shifts WhatsApp reminders to Sahur (5:15am) & Berbuka (7:25pm).</span>
+                </div>
+              </div>
+              <input type="checkbox" id="chkRamadan" checked class="w-4 h-4 rounded text-pandan focus:ring-emerald-500">
+            </div>
+
+            <!-- Live AI Draft Preview -->
+            <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold text-pandan">AI Scribe Output (Ready for Finalize)</span>
+                <span class="text-stone-400">Gemini 1.5 Flash</span>
+              </div>
+              <div class="text-xs text-stone-700 space-y-1">
+                <p>• <strong>Assessment:</strong> Episodic morning hypoglycemia caused by accidental double-dosing of Metformin under 2 brand names.</p>
+                <p>• <strong>Plan:</strong> Discontinue private GP Glucophage. Continue Klinik Kesihatan Metformin 500mg 1x BD. Avoid Jamu Pegaga.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: The 8 Safety Checks & Finalize Action (5 Cols) -->
+          <div class="lg:col-span-5 glass-card rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+              <div>
+                <h3 class="font-bold text-stone-900 text-sm">The 8 Clinical Safety Gates</h3>
+                <p class="text-[10px] text-stone-500">Checked against DDInter drug interaction data</p>
+              </div>
+              <span id="badgeGateStatus" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                1 CRITICAL
+              </span>
+            </div>
+
+            <!-- Simplified, clear checklist -->
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between p-2 rounded-lg bg-stone-50 text-stone-600">
+                <span>1. Drug Allergy Check</span><span class="text-emerald-700 font-bold">Clear ✓</span>
+              </div>
+              <div class="flex justify-between p-2 rounded-lg bg-stone-50 text-stone-600">
+                <span>2. Drug-Drug Interactions</span><span class="text-emerald-700 font-bold">Clear ✓</span>
+              </div>
+
+              <!-- Critical conflict highlighted clearly -->
+              <div class="p-3 rounded-xl bg-red-50 border-2 border-red-300 text-red-950 space-y-2">
+                <div class="flex items-center justify-between font-bold text-xs">
+                  <span>⚠️ 7. Duplicate Medicine Detected</span>
+                  <span class="px-1.5 py-0.5 rounded bg-red-600 text-white text-[9px]">BLOCKING</span>
+                </div>
+                <p class="text-[11px] text-red-800 leading-snug">
+                  Patient is taking <strong>Metformin (KK)</strong> + <strong>Glucophage (Private GP)</strong>. Both are the exact same active drug, creating an accidental overdose!
+                </p>
+                <button onclick="openDoctorOverrideModal()" id="btnOverrideAction" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition-colors">
+                  Resolve & Write Override Reason →
+                </button>
+              </div>
+
+              <div class="flex justify-between p-2 rounded-lg bg-amber-50 text-amber-900">
+                <span>8. Herb Interaction (Jamu Pegaga)</span><span class="text-amber-700 font-bold">Advisory</span>
+              </div>
+            </div>
+
+            <!-- Finalize Button -->
+            <div class="pt-3 border-t border-stone-200 space-y-2">
+              <button id="btnDoctorFinalize" disabled onclick="finalizeByDoctor()" class="w-full py-3.5 px-4 rounded-xl bg-stone-200 text-stone-400 font-bold text-xs cursor-not-allowed shadow-xs transition-all flex items-center justify-center space-x-1.5">
+                <span>🔒 Finalize & Send WhatsApp to Patient</span>
+              </button>
+              <p id="finalizeNote" class="text-[10px] text-red-600 text-center font-medium">
+                System locked: Resolve the duplicate Metformin conflict above to unlock.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- TAB A2: CLINIC CALL QUEUE -->
+      <div id="docTab-calldeck" class="hidden max-w-4xl mx-auto space-y-4 fade-in">
+        <div class="glass-card rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-stone-900 text-base">Patients Needing Follow-up Today</h3>
+              <p class="text-xs text-stone-500">Ranked automatically by red-flag symptoms reported over WhatsApp.</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">1 Urgent Call Due</span>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-stone-50 text-stone-500 uppercase text-[10px]">
+                <tr>
+                  <th class="p-3.5">Priority</th>
+                  <th class="p-3.5">Patient</th>
+                  <th class="p-3.5">Reported Reply on WhatsApp</th>
+                  <th class="p-3.5">Day</th>
+                  <th class="p-3.5">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-100">
+                <tr class="bg-red-50/60 font-semibold">
+                  <td class="p-3.5 text-red-700">#1 (Urgent)</td>
+                  <td class="p-3.5">
+                    <div class="font-bold text-stone-900">Mak Cik Aminah (67)</div>
+                    <span class="text-[10px] text-stone-500">012-491029</span>
+                  </td>
+                  <td class="p-3.5 text-red-800">
+                    "Pening dan berpeluh bila bangun pagi." (Hypoglycemia alert)
+                  </td>
+                  <td class="p-3.5">Day 3</td>
+                  <td class="p-3.5">
+                    <button onclick="alert('Calling Mak Cik Aminah via clinic VoIP phone...')" class="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs">
+                      Call Patient Now 📞
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 text-stone-500">#2</td>
+                  <td class="p-3.5 font-bold">Uncle Tan (72)</td>
+                  <td class="p-3.5 text-stone-600">Missed morning blood pressure tablet</td>
+                  <td class="p-3.5">Day 7</td>
+                  <td class="p-3.5">
+                    <button onclick="alert('Sent gentle WhatsApp refill reminder.')" class="px-3 py-1.5 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs hover:bg-stone-200">
+                      Send Text
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB A3: TRANSPARENCY AUDIT LOG -->
+      <div id="docTab-audit" class="hidden max-w-3xl mx-auto space-y-4 fade-in">
+        <div class="glass-card rounded-3xl p-6 space-y-4">
+          <div>
+            <h3 class="font-bold text-stone-900 text-base">"Who Viewed My Record" Audit Trail</h3>
+            <p class="text-xs text-stone-500">Every time a doctor, caregiver, or AI reads this chart, it is permanently logged.</p>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-xl bg-white border border-stone-200 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-stone-800 block">Dr. Priya (Doctor)</span>
+                <span class="text-stone-500 text-[11px]">Action: Reviewed notes and safety checks</span>
+              </div>
+              <span class="text-[10px] text-stone-400">Just now</span>
+            </div>
+            <div class="p-3 rounded-xl bg-white border border-stone-200 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-stone-800 block">Nurul binti Yusof (Daughter in KL)</span>
+                <span class="text-stone-500 text-[11px]">Action: Viewed post-visit summary via consented caregiver link</span>
+              </div>
+              <span class="text-[10px] text-stone-400">Today, 2:15 PM</span>
+            </div>
+            <div class="p-3 rounded-xl bg-white border border-stone-200 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-stone-800 block">Khabar Automated Service</span>
+                <span class="text-stone-500 text-[11px]">Action: Scheduled Day 3 WhatsApp check-in</span>
+              </div>
+              <span class="text-[10px] text-stone-400">Today, 8:30 AM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- VIEW B: PATIENT & SENIOR EXPERIENCE (Warm, simple, empowering)           -->
+    <!-- ========================================================================= -->
+    <div id="patientWorkspace" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 hidden">
+      <div class="max-w-xl mx-auto space-y-5 fade-in">
+        
+        <!-- Warm Greeting Header -->
+        <div class="glass-card rounded-3xl p-6 bg-gradient-to-r from-emerald-50 to-white border-emerald-100 space-y-2">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-2xl bg-amber-200 text-amber-900 flex items-center justify-center text-xl font-bold font-serif-fraunces">
+              MA
+            </div>
+            <div>
+              <span class="text-xs font-bold text-pandan uppercase tracking-wider">Portal Pesakit</span>
+              <h2 class="font-serif-fraunces text-2xl font-bold text-stone-900">Selamat Pagi, Mak Cik Aminah! 🌸</h2>
+            </div>
+          </div>
+          <p class="text-xs text-stone-600 leading-relaxed pt-1">
+            Rawatan anda diselia oleh <strong>Dr. Priya (Klinik Kesihatan)</strong>. Berikut ialah panduan ubat anda hari ini.
+          </p>
+        </div>
+
+        <!-- Today's Medicine Guide (Big, readable, senior-friendly) -->
+        <div class="glass-card rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+            <span class="font-bold text-sm text-stone-900">Jadual Ubat Hari Ini</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-pandan font-bold">Hari Ke-3</span>
+          </div>
+
+          <!-- Medicine Item 1 -->
+          <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-2xl">💊</span>
+                <div>
+                  <h4 class="font-bold text-stone-900 text-sm">Metformin 500mg</h4>
+                  <span class="text-xs text-stone-600">1 biji selepas sarapan pagi</span>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-emerald-800 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                Wajib Ambil ✓
+              </span>
+            </div>
+            
+            <!-- Voice note button -->
+            <button onclick="playVoiceNoteDemo()" id="btnVoiceDemo" class="w-full mt-2 py-2 px-3 rounded-xl bg-white border border-emerald-300 text-pandan font-bold text-xs hover:bg-emerald-100 flex items-center justify-center space-x-2 transition-colors">
+              <span id="voiceIcon">🔊</span>
+              <span id="voiceText">Dengar Arahan Suara (Bahasa Melayu)</span>
+            </button>
+          </div>
+
+          <!-- Important Note about Discontinued Brand -->
+          <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-1 text-xs">
+            <span class="font-bold block">⚠️ Peringatan Doktor Priya:</span>
+            <p class="text-amber-900">
+              Jangan makan ubat <em>Glucophage</em> dari klinik lama lagi kerana ia adalah ubat yang sama dengan Metformin. Elakkan minum teh pegaga bersama ubat ini.
+            </p>
+          </div>
+        </div>
+
+        <!-- Interactive "Apa Khabar Hari Ini?" Feedback Box -->
+        <div class="glass-card rounded-3xl p-6 space-y-3">
+          <h4 class="font-bold text-sm text-stone-900">Apa Khabar Hari Ini Mak Cik?</h4>
+          <p class="text-xs text-stone-500">Tekan satu butang di bawah untuk beritahu jururawat klinik keadaan anda:</p>
+          
+          <div class="grid grid-cols-2 gap-2.5">
+            <button onclick="sendPatientStatus('sihat')" class="p-3 rounded-2xl bg-white hover:bg-emerald-50 border border-stone-200 text-left transition-colors">
+              <span class="text-xl block mb-1">😊</span>
+              <span class="font-bold text-xs text-stone-900 block">Rasa Sihat</span>
+              <span class="text-[10px] text-stone-500">Dah makan ubat ikut jadual</span>
+            </button>
+            <button onclick="sendPatientStatus('pening')" class="p-3 rounded-2xl bg-white hover:bg-red-50 border border-red-200 text-left transition-colors">
+              <span class="text-xl block mb-1">🤢</span>
+              <span class="font-bold text-xs text-red-900 block">Pening / Berpeluh</span>
+              <span class="text-[10px] text-red-600">Klinik akan terus hubungi anda</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Family Caregiver Status -->
+        <div class="glass-card rounded-2xl p-4 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-xl">👨‍👩‍👧</span>
+            <div>
+              <span class="font-bold text-stone-900 block">Anak Anda Disambungkan: Nurul (KL)</span>
+              <span class="text-[10px] text-stone-500">Nurul akan dimaklumkan sekiranya ada amaran kecemasan.</span>
+            </div>
+          </div>
+          <span class="text-emerald-700 font-bold text-[11px]">Aktif</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: DOCTOR OVERRIDE CLINICAL GATE                                   -->
+  <!-- ========================================================================= -->
+  <div id="modalDoctorOverride" class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+        <h3 class="font-serif-fraunces text-lg font-bold text-red-950">⚠️ Safety Check Override</h3>
+        <button onclick="closeDoctorOverrideModal()" class="text-stone-400 hover:text-stone-600 font-bold">✕</button>
+      </div>
+      <div class="text-xs text-stone-700 space-y-2 leading-relaxed">
+        <p>
+          <strong>Duplicate Molecule Conflict:</strong> Metformin (KK) + Glucophage (Private GP).
+        </p>
+        <p class="text-stone-500">
+          State your clinical action to unlock visit finalization and write to the immutable audit log:
+        </p>
+      </div>
+      <textarea id="overrideReasonInput" rows="2" class="w-full p-2.5 rounded-xl border border-stone-300 text-xs bg-white input-focus" placeholder="e.g. Instructed patient to discontinue private GP Glucophage; keep KK Metformin only."></textarea>
+      <div class="flex space-x-2 pt-1">
+        <button onclick="closeDoctorOverrideModal()" class="flex-1 py-2 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs">Cancel</button>
+        <button onclick="confirmDoctorOverride()" class="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs">Confirm & Unlock Finalize →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: MEDICINE PHOTOS RECONCILED -->
+  <div id="modalPhotos" class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+        <h3 class="font-serif-fraunces text-base font-bold text-stone-900">Mak Cik Aminah's Home Medicine Photos</h3>
+        <button onclick="closePhotoModal()" class="text-stone-400 font-bold">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+          <span class="text-[10px] text-stone-400 font-bold block uppercase">Klinik Kesihatan</span>
+          <span class="font-bold text-stone-900 block">Metformin 500mg</span>
+          <span class="text-[10px] text-emerald-700">Generic tablet packet</span>
+        </div>
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+          <span class="text-[10px] text-amber-700 font-bold block uppercase">Private Clinic (Dr. Lee)</span>
+          <span class="font-bold text-amber-950 block">Glucophage 500mg</span>
+          <span class="text-[10px] text-amber-800 font-semibold">⚠️ Duplicate ingredient</span>
+        </div>
+        <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+          <span class="text-[10px] text-stone-400 font-bold block uppercase">Home Traditional</span>
+          <span class="font-bold text-stone-900 block">Jamu Pegaga</span>
+          <span class="text-[10px] text-stone-500">Herbal sachet</span>
+        </div>
+        <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+          <span class="text-[10px] text-stone-400 font-bold block uppercase">Hospital</span>
+          <span class="font-bold text-stone-900 block">Amlodipine 5mg</span>
+          <span class="text-[10px] text-emerald-700">Blood pressure</span>
+        </div>
+      </div>
+      <button onclick="closePhotoModal()" class="w-full py-2 rounded-xl bg-pandan text-white font-bold text-xs">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastAlert" class="fixed bottom-6 right-6 z-50 hidden p-4 rounded-2xl shadow-2xl text-xs font-semibold flex items-center space-x-3 bg-stone-900 text-white border border-stone-700 fade-in"></div>
+
+  <!-- JavaScript Controller -->
+  <script>
+    let activeRole = 'doctor';
+    let isOverrideComplete = false;
+
+    // 1. Role Selection & Login
+    function selectRoleAndLogin(role) {
+      activeRole = role;
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('mainPortal').classList.remove('hidden');
+      document.getElementById('mainPortal').classList.add('flex');
+      applyRoleView();
+    }
+
+    function toggleRoleSwitch() {
+      activeRole = (activeRole === 'doctor') ? 'patient' : 'doctor';
+      applyRoleView();
+    }
+
+    function applyRoleView() {
+      const badge = document.getElementById('badgeCurrentRole');
+      const btnSwitch = document.getElementById('btnSwitchLabel');
+      const docView = document.getElementById('doctorWorkspace');
+      const patView = document.getElementById('patientWorkspace');
+
+      if (activeRole === 'doctor') {
+        badge.innerText = 'DOCTOR SUITE';
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-pandan uppercase';
+        btnSwitch.innerText = 'Switch to Patient View (Aminah)';
+        docView.classList.remove('hidden');
+        patView.classList.add('hidden');
+        showToast('Logged into Dr. Priya\'s Clinical Workspace.', 'success');
+      } else {
+        badge.innerText = 'PATIENT VIEW';
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 uppercase';
+        btnSwitch.innerText = 'Switch to Doctor Suite (Dr. Priya)';
+        patView.classList.remove('hidden');
+        docView.classList.add('hidden');
+        showToast('Logged into Mak Cik Aminah\'s Patient Home (BM).', 'info');
+      }
+    }
+
+    function logoutToWelcome() {
+      document.getElementById('mainPortal').classList.add('hidden');
+      document.getElementById('mainPortal').classList.remove('flex');
+      document.getElementById('authScreen').classList.remove('hidden');
+    }
+
+    // 2. Doctor Tab Switcher
+    function showDoctorTab(tab) {
+      ['visit', 'calldeck', 'audit'].forEach(t => {
+        document.getElementById('docTab-' + t).classList.add('hidden');
+        document.getElementById('dtab-' + t).className = 'flex-1 py-2 rounded-xl hover:text-pandan text-center transition-all text-stone-600';
+      });
+      document.getElementById('docTab-' + tab).classList.remove('hidden');
+      document.getElementById('dtab-' + tab).className = 'flex-1 py-2 rounded-xl bg-white text-pandan shadow-xs text-center font-bold transition-all';
+    }
+
+    // 3. Voice Dictation
+    let isSpeaking = false;
+    function triggerVoiceDictation() {
+      const btn = document.getElementById('btnVoiceDictate');
+      const label = document.getElementById('voiceLabel');
+      const box = document.getElementById('doctorNotesBox');
+
+      if (!isSpeaking) {
+        isSpeaking = true;
+        btn.className = 'px-3 py-1.5 rounded-xl bg-red-100 text-red-800 border border-red-300 text-xs font-semibold flex items-center space-x-1.5 animate-pulse';
+        label.innerText = 'Listening (Whisper)...';
+        showToast('Microphone active. Dictating clinical consultation...', 'info');
+
+        setTimeout(() => {
+          box.value += " Patient advised to surrender private GP Glucophage to prevent double dosage.";
+          isSpeaking = false;
+          btn.className = 'px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-pandan border border-emerald-300 text-xs font-semibold flex items-center space-x-1.5';
+          label.innerText = 'Speak (Groq Whisper)';
+          showToast('Speech converted to text & structured by AI.', 'success');
+        }, 1800);
+      }
+    }
+
+    // 4. Override Gate
+    function openDoctorOverrideModal() {
+      document.getElementById('modalDoctorOverride').classList.remove('hidden');
+    }
+    function closeDoctorOverrideModal() {
+      document.getElementById('modalDoctorOverride').classList.add('hidden');
+    }
+    function confirmDoctorOverride() {
+      const reason = document.getElementById('overrideReasonInput').value;
+      if (!reason || reason.trim() === '') {
+        alert('Please write a quick reason (e.g. Discontinued duplicate drug).');
+        return;
+      }
+      isOverrideComplete = true;
+      closeDoctorOverrideModal();
+
+      document.getElementById('badgeGateStatus').className = 'px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+      document.getElementById('badgeGateStatus').innerText = 'OVERRIDDEN ✓';
+
+      document.getElementById('btnOverrideAction').innerText = 'Conflict Resolved & Audited ✓';
+      document.getElementById('btnOverrideAction').className = 'w-full py-2 rounded-xl bg-emerald-700 text-white font-bold text-xs cursor-default';
+
+      const btn = document.getElementById('btnDoctorFinalize');
+      btn.disabled = false;
+      btn.className = 'w-full py-3.5 px-4 rounded-xl bg-pandan hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all cursor-pointer';
+      btn.innerHTML = '<span>Finalize & Send WhatsApp Summary in BM →</span>';
+
+      document.getElementById('finalizeNote').innerText = '✓ Ready: Plain-language BM summary will be sent to Aminah + Nurul.';
+      document.getElementById('finalizeNote').className = 'text-[10px] text-emerald-700 text-center font-semibold';
+
+      showToast('Override recorded. Visit finalize unlocked!', 'success');
+    }
+
+    function finalizeByDoctor() {
+      if (!isOverrideComplete) return;
+      alert('🎉 Visit Finalized!\n\n1. Summary generated in Bahasa Melayu.\n2. Audio voice note rendered.\n3. Dispatched to Aminah on WhatsApp.\n4. Consented notification sent to Nurul in KL.');
+    }
+
+    // 5. Modals & Helpers
+    function openPhotoModal() { document.getElementById('modalPhotos').classList.remove('hidden'); }
+    function closePhotoModal() { document.getElementById('modalPhotos').classList.add('hidden'); }
+
+    function playVoiceNoteDemo() {
+      const btn = document.getElementById('btnVoiceDemo');
+      const text = document.getElementById('voiceText');
+      const icon = document.getElementById('voiceIcon');
+      icon.innerText = '🔊';
+      text.innerText = 'Memainkan nota suara: "Mak Cik Aminah, ambil 1 biji Metformin..."';
+      btn.classList.add('bg-emerald-100');
+      setTimeout(() => {
+        text.innerText = 'Dengar Arahan Suara (Bahasa Melayu)';
+        btn.classList.remove('bg-emerald-100');
+      }, 3200);
+    }
+
+    function sendPatientStatus(type) {
+      if (type === 'pening') {
+        alert('🚨 Mak Cik Aminah: Amaran Pening & Berpeluh dihantar ke klinik!\n\nDr. Priya telah dimaklumkan dan akan menghubungi anda sebentar lagi.');
+      } else {
+        alert('❤️ Mak Cik Aminah: Status sihat direkodkan dalam fail rawatan. Teruskan makan ubat ya!');
+      }
+    }
+
+    function showToast(msg, type) {
+      const t = document.getElementById('toastAlert');
+      t.innerText = msg;
+      t.classList.remove('hidden');
+      if (type === 'success') {
+        t.className = 'fixed bottom-6 right-6 z-50 p-3.5 rounded-2xl shadow-xl text-xs font-semibold bg-emerald-900 text-white border border-emerald-700 fade-in';
+      } else {
+        t.className = 'fixed bottom-6 right-6 z-50 p-3.5 rounded-2xl shadow-xl text-xs font-semibold bg-stone-900 text-white border border-stone-700 fade-in';
+      }
+      setTimeout(() => { t.classList.add('hidden'); }, 3000);
+    }
+
+    function updateLiveDraft() {
+      // live typing visual cue
+    }
+  </script>
+</body>
+</html>

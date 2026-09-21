@@ -1,0 +1,1933 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_dashboard" name="shell-type" />
+    <title>
+      Khabar — Polypharmacy Blindspot Radar &amp; Cross-Dispensary
+      Reconciliation
+    </title>
+    <!-- Material Symbols & Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+        main > :first-child {
+          margin-top: 0 !important;
+        }
+        main > :last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "inverse-primary": "#96d4b2",
+              tertiary: "#6a3e00",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#ffb869",
+              "on-tertiary-container": "#ffd3a8",
+              "secondary-container": "#a1f0c5",
+              "error-container": "#ffdad6",
+              "surface-container-low": "#fff1ea",
+              "on-secondary-fixed": "#002113",
+              "inverse-surface": "#3a2e26",
+              background: "#fff8f5",
+              "on-tertiary-fixed": "#2c1700",
+              "on-primary-fixed": "#002113",
+              "primary-fixed": "#b1f0cd",
+              "on-secondary": "#ffffff",
+              "on-secondary-fixed-variant": "#005235",
+              "on-tertiary": "#ffffff",
+              "primary-container": "#2f6b4f",
+              outline: "#707972",
+              surface: "#fff8f5",
+              "on-surface-variant": "#404943",
+              "on-primary-fixed-variant": "#105137",
+              "secondary-fixed-dim": "#88d7ac",
+              "on-error-container": "#93000a",
+              "on-secondary-container": "#1d704d",
+              error: "#ba1a1a",
+              "surface-container": "#ffeade",
+              secondary: "#176b49",
+              "tertiary-fixed": "#ffdcbb",
+              "outline-variant": "#c0c9c1",
+              "surface-bright": "#fff8f5",
+              "surface-dim": "#ead6cb",
+              "on-primary": "#ffffff",
+              "surface-tint": "#2d694d",
+              "secondary-fixed": "#a4f3c7",
+              primary: "#125238",
+              "on-surface": "#241913",
+              "inverse-on-surface": "#ffede4",
+              "surface-container-highest": "#f3ded3",
+              "on-background": "#241913",
+              "primary-fixed-dim": "#96d4b2",
+              "on-primary-container": "#aae9c6",
+              "tertiary-container": "#8b5300",
+              "surface-variant": "#f3ded3",
+              "on-tertiary-fixed-variant": "#683d00",
+              "surface-container-high": "#f9e4d9",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-lg": "1.75rem",
+              "margin-mobile": "1.25rem",
+              "space-xs": "0.25rem",
+              "gutter-mobile": "1rem",
+              "space-sm": "0.5rem",
+              margin: "3rem",
+              "space-md": "1rem",
+              gutter: "1.5rem",
+              "space-xl": "3rem",
+            },
+            fontFamily: {
+              "body-sm": ["Plus Jakarta Sans"],
+              "body-md": ["Plus Jakarta Sans"],
+              "headline-sm": ["Playfair Display"],
+              "label-md": ["Plus Jakarta Sans"],
+              "body-lg": ["Plus Jakarta Sans"],
+              "headline-lg": ["Playfair Display"],
+              "headline-md": ["Playfair Display"],
+              "body-xl": ["Plus Jakarta Sans"],
+              "label-lg": ["Plus Jakarta Sans"],
+              "label-sm": ["Plus Jakarta Sans"],
+              "display-hero-mobile": ["Playfair Display"],
+              "display-hero": ["Playfair Display"],
+              "headline-lg-mobile": ["Playfair Display"],
+            },
+            fontSize: {
+              "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }],
+              "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+              "headline-sm": [
+                "22px",
+                { lineHeight: "30px", fontWeight: "500" },
+              ],
+              "label-md": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-lg": ["17px", { lineHeight: "28px", fontWeight: "400" }],
+              "headline-lg": [
+                "40px",
+                {
+                  lineHeight: "48px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-md": [
+                "28px",
+                { lineHeight: "36px", fontWeight: "500" },
+              ],
+              "body-xl": ["20px", { lineHeight: "32px", fontWeight: "400" }],
+              "label-lg": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-sm": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.06em",
+                  fontWeight: "600",
+                },
+              ],
+              "display-hero-mobile": [
+                "36px",
+                {
+                  lineHeight: "44px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "display-hero": [
+                "56px",
+                {
+                  lineHeight: "68px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg-mobile": [
+                "28px",
+                { lineHeight: "36px", letterSpacing: "0em", fontWeight: "600" },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface antialiased">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+    <!-- LEFT PERSISTENT CLINICAL SIDEBAR -->
+    <aside
+      class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto border-r border-surface-container-high/60"
+    >
+      <div class="p-space-md flex flex-col gap-space-md">
+        <!-- Clinic Brand Header -->
+        <div
+          class="flex items-start gap-space-sm pb-space-sm border-b border-surface-container-high/60"
+        >
+          <a
+            href="landing_page.html"
+            class="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-sm shrink-0 hover:scale-105 transition-transform"
+            title="Back to Landing Page"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >local_hospital</span
+            >
+          </a>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span
+                class="font-headline-sm text-headline-sm text-primary leading-tight truncate"
+                >Khabar</span
+              >
+              <span
+                class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+                >DEMO</span
+              >
+            </div>
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider truncate"
+              >Clinical Command</span
+            >
+            <div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+              <span class="material-symbols-outlined text-[13px] text-secondary"
+                >location_on</span
+              >
+              <span
+                class="font-label-sm text-label-sm text-secondary truncate font-medium"
+                >Klinik Kesihatan Taman Harmoni</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Medical Officer Profile Card -->
+        <div
+          class="flex items-center gap-space-sm p-space-sm rounded-xl bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] border border-surface-container-high/50"
+        >
+          <div
+            class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0 text-white font-bold text-xs"
+          >
+            DF
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span
+              class="font-label-lg text-label-lg text-on-surface font-semibold truncate"
+              >Dr. Faridah A.</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant truncate"
+              >Medical Officer (UD52) • Staff ID DEMO-48291</span
+            >
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav
+          class="flex flex-col gap-space-xs"
+          data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-sm"
+        >
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="priority-triage"
+            href="clinic_command.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >emergency</span
+              >
+              <span class="font-label-lg text-label-lg">Priority Triage</span>
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold"
+              >3 Urgent</span
+            >
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="telemetry-and-chat"
+            href="telemetry_chat.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >vital_signs</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Telemetry &amp; Chat</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"
+              ></span
+              >Live
+            </span>
+          </a>
+
+          <a
+            aria-current="page"
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary-container font-semibold shadow-sm"
+            data-path="polypharmacy-guard"
+            href="polypharmacy_guard.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >medication_liquid</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Polypharmacy Guard</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold"
+              >2 Conflicts</span
+            >
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="consultation-room"
+            href="khabar_full_prototype.html#stage-doctor"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >stethoscope</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >Consultation Suite</span
+              >
+            </div>
+            <span
+              class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm"
+              >8 Gates</span
+            >
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="30-day-recovery-arc"
+            href="recovery_arc.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >monitoring</span
+              >
+              <span class="font-label-lg text-label-lg"
+                >30-Day Recovery Arc</span
+              >
+            </div>
+          </a>
+
+          <a
+            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            data-path="moh-audit-logs"
+            href="moh_audit_logs.html"
+          >
+            <div class="flex items-center gap-space-sm">
+              <span class="material-symbols-outlined text-[20px]"
+                >verified_user</span
+              >
+              <span class="font-label-lg text-label-lg">Audit Logs</span>
+            </div>
+            <span class="material-symbols-outlined text-[16px] text-secondary"
+              >verified</span
+            >
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sidebar Bottom Controls -->
+      <div
+        class="p-space-md flex flex-col gap-space-sm border-t border-surface-container-high/60"
+      >
+        <div
+          class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between"
+        >
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-primary"
+              >chevron_forward</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+              >Patient app (planned)</span
+            >
+          </div>
+          <span
+            class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Active
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span
+            class="font-label-sm text-label-sm text-on-surface-variant px-1 font-semibold"
+            >Clinical Language</span
+          >
+          <div
+            class="grid grid-cols-4 gap-1 p-1 bg-surface-container-low rounded-xl"
+          >
+            <button
+              class="py-1 text-center rounded-lg bg-surface-container-lowest font-label-sm text-label-sm font-semibold text-primary shadow-sm"
+              type="button"
+            >
+              BM
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              EN
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              中文
+            </button>
+            <button
+              class="py-1 text-center rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              type="button"
+            >
+              தமிழ்
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="pt-1 flex items-center justify-between text-[11px] text-on-surface-variant"
+        >
+          <a
+            href="landing_page.html"
+            class="hover:text-primary transition-colors"
+            >← Landing</a
+          >
+          <span>•</span>
+          <a
+            href="clinic_command.html"
+            class="hover:text-primary transition-colors"
+            >Triage</a
+          >
+          <span>•</span>
+          <a
+            href="telemetry_chat.html"
+            class="hover:text-primary transition-colors"
+            >Chat →</a
+          >
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE CONTAINER -->
+    <div class="pl-72">
+      <!-- Top Header -->
+      <header
+        class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md border-b border-surface-container-high/60"
+      >
+        <div class="flex items-center gap-space-md flex-1 max-w-xl">
+          <div class="relative w-full max-w-md">
+            <span
+              class="material-symbols-outlined text-[18px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2"
+              >search</span
+            >
+            <input
+              class="w-full pl-9 pr-4 py-1.5 rounded-full bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all"
+              placeholder="Search patient IC, RN, or drug clash..."
+              type="text"
+            />
+          </div>
+          <div
+            class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low"
+          >
+            <span class="material-symbols-outlined text-[16px] text-primary"
+              >schedule</span
+            >
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+              >Shift Window:
+              <strong class="text-on-surface font-semibold"
+                >08:00 - 09:30 AM</strong
+              ></span
+            >
+          </div>
+        </div>
+
+        <div class="flex items-center gap-space-sm">
+          <button
+            onclick="
+              alert(
+                'Exporting signed drug-safety audit ledger (demo)...',
+              )
+            "
+            class="px-3.5 py-2 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface hover:bg-surface-container-high hover:text-on-surface transition-colors flex items-center gap-1.5"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]"
+              >file_download</span
+            >
+            <span>Export Audit</span>
+          </button>
+          <button
+            onclick="
+              alert(
+                'Broadcast Alert: Pharmacy counters notified of active Paracetamol duplicate recalls.',
+              )
+            "
+            class="px-3.5 py-2 rounded-full bg-primary-container font-label-md text-label-md text-on-primary hover:bg-primary transition-colors flex items-center gap-1.5 shadow-sm"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]">campaign</span>
+            <span>Broadcast Alert</span>
+          </button>
+          <a
+            href="khabar_full_prototype.html"
+            title="Open Full Prototype"
+            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 hover:scale-105 transition-transform"
+          >
+            <span class="material-symbols-outlined text-on-primary text-[18px]"
+              >person</span
+            >
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="w-full pt-16 px-space-md bg-background min-h-screen">
+        <div class="flex flex-col w-full">
+          <div class="flex flex-col gap-space-lg pb-space-xl">
+            <!-- Top Editorial Header & Operational Context -->
+            <div
+              class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pt-space-sm"
+            >
+              <div class="flex flex-col gap-1 max-w-3xl">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold tracking-wider uppercase"
+                  >
+                    Clinical Safety Tier 1 • Real-Time Intercept
+                  </span>
+                  <span
+                    class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold"
+                  >
+                    <span
+                      class="w-2 h-2 rounded-full bg-secondary animate-ping"
+                    ></span>
+                    Telemetry Stream Guard Active
+                  </span>
+                </div>
+                <h1
+                  class="font-headline-lg text-headline-lg text-primary tracking-tight"
+                >
+                  Polypharmacy Blindspot Radar &amp; Cross-Dispensary
+                  Reconciliation
+                </h1>
+                <p
+                  class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
+                >
+                  Cross-referencing linked clinic EMR, private EMR networks,
+                  community retail pharmacies, and post-discharge
+                  self-medication data across Klang Valley.
+                </p>
+              </div>
+              <div class="flex items-center gap-space-sm shrink-0">
+                <div
+                  class="px-4 py-2 rounded-xl bg-surface-container-low flex flex-col items-end border border-surface-container-high/60"
+                >
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant font-medium"
+                    >Audit Cycle Protocol</span
+                  >
+                  <span
+                    class="font-label-lg text-label-lg text-primary font-semibold font-mono"
+                    >Khabar CDSS rev 4.2B (demo)</span
+                  >
+                </div>
+                <button
+                  onclick="
+                    alert(
+                      'Force Cross-EMR Sync: Refreshed 4 facilities (University Hospital, General Hospital, Seri Harmoni, Pharmacy POS). All pipelines active.',
+                    )
+                  "
+                  class="px-4 py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer"
+                  type="button"
+                >
+                  <span class="material-symbols-outlined text-[18px]"
+                    >sync_alt</span
+                  >
+                  <span>Force Cross-EMR Sync</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- KPI Summary Cards Grid -->
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md"
+            >
+              <!-- KPI 1 -->
+              <div
+                class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden group border border-surface-container-high/60"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex flex-col">
+                    <span
+                      class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold"
+                      >Audit Volume</span
+                    >
+                    <span
+                      class="font-display-hero text-display-hero text-on-surface font-headline-lg leading-none mt-1"
+                      >42</span
+                    >
+                  </div>
+                  <div
+                    class="w-11 h-11 rounded-xl bg-primary-fixed-dim/30 text-primary flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-[24px]"
+                      >fact_check</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 flex items-center justify-between bg-surface-container-low -mx-space-md -mb-space-md px-space-md py-2.5 border-t border-surface-container-high/60"
+                >
+                  <span
+                    class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >check_circle</span
+                    >
+                    Reconciled Today
+                  </span>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant font-mono"
+                    >Avg 4.8m/pt</span
+                  >
+                </div>
+              </div>
+
+              <!-- KPI 2 -->
+              <div
+                class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden group border border-surface-container-high/60"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex flex-col">
+                    <span
+                      class="font-label-sm text-label-sm uppercase tracking-wider text-error font-semibold"
+                      >Critical Hepatic Hazards</span
+                    >
+                    <span
+                      class="font-display-hero text-display-hero text-error font-headline-lg leading-none mt-1"
+                      >2</span
+                    >
+                  </div>
+                  <div
+                    class="w-11 h-11 rounded-xl bg-error-container text-on-error-container flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-[24px]"
+                      >warning</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 flex items-center justify-between bg-error-container/40 -mx-space-md -mb-space-md px-space-md py-2.5 border-t border-error/20"
+                >
+                  <span
+                    class="font-label-sm text-label-sm text-on-error-container font-semibold flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >shield</span
+                    >
+                    Intercepted in Time
+                  </span>
+                  <span
+                    class="font-label-sm text-label-sm text-error font-semibold"
+                    >Zero Poisonings</span
+                  >
+                </div>
+              </div>
+
+              <!-- KPI 3 -->
+              <div
+                class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden group border border-surface-container-high/60"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex flex-col">
+                    <span
+                      class="font-label-sm text-label-sm uppercase tracking-wider text-tertiary-container font-semibold"
+                      >Duplicate Scripts</span
+                    >
+                    <span
+                      class="font-display-hero text-display-hero text-tertiary-container font-headline-lg leading-none mt-1"
+                      >14</span
+                    >
+                  </div>
+                  <div
+                    class="w-11 h-11 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-[24px]"
+                      >content_copy</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 flex items-center justify-between bg-surface-container-low -mx-space-md -mb-space-md px-space-md py-2.5 border-t border-surface-container-high/60"
+                >
+                  <span
+                    class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >cancel</span
+                    >
+                    Blocked Dispensary
+                  </span>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant font-mono"
+                    >RM 1,840 Saved</span
+                  >
+                </div>
+              </div>
+
+              <!-- KPI 4 -->
+              <div
+                class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden group border border-surface-container-high/60"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex flex-col">
+                    <span
+                      class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold"
+                      >Interoperability Sync</span
+                    >
+                    <span
+                      class="font-display-hero text-display-hero text-secondary font-headline-lg leading-none mt-1"
+                      >100%</span
+                    >
+                  </div>
+                  <div
+                    class="w-11 h-11 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-[24px]"
+                      >cloud_sync</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 flex items-center justify-between bg-surface-container-low -mx-space-md -mb-space-md px-space-md py-2.5 border-t border-surface-container-high/60"
+                >
+                  <span
+                    class="font-label-sm text-label-sm text-on-secondary-container font-semibold flex items-center gap-1"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Clinic EMR • FHIR R4 (demo)
+                  </span>
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface-variant font-mono"
+                    >Latency 28ms</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Prominent Emergency Alert Banner (Interactive Case) -->
+            <div
+              class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-space-md relative overflow-hidden border border-surface-container-high/60"
+              id="urgentAlertCard"
+            >
+              <!-- Glow ambient backdrop -->
+              <div
+                class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-error/5 blur-3xl pointer-events-none"
+              ></div>
+
+              <!-- Alert Header -->
+              <div
+                class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm pb-space-sm bg-error-container/30 -mx-space-lg -mt-space-lg p-space-md border-b border-error/20"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center shrink-0 shadow-sm animate-pulse"
+                  >
+                    <span class="material-symbols-outlined text-[24px]"
+                      >emergency_home</span
+                    >
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-semibold uppercase tracking-wider"
+                      >
+                        Critical Threshold Breach
+                      </span>
+                      <span
+                        class="font-label-sm text-label-sm text-error font-bold"
+                        >Severity: Red 1 (Immediate Clinical Action)</span
+                      >
+                    </div>
+                    <h2
+                      class="font-headline-sm text-headline-sm text-on-error-container font-semibold mt-0.5"
+                    >
+                      Cumulative Paracetamol: 5,300 mg/24h — Acute
+                      Hepatotoxicity Risk
+                    </h2>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-2 bg-surface-container-lowest/80 px-3 py-1.5 rounded-xl shadow-sm self-start lg:self-auto border border-surface-container-high/50"
+                >
+                  <span class="material-symbols-outlined text-error text-[18px]"
+                    >timer</span
+                  >
+                  <span
+                    class="font-label-sm text-label-sm text-on-surface font-medium"
+                    >Auto-Flagged:
+                    <strong class="text-error font-semibold"
+                      >14 mins ago</strong
+                    >
+                    via pharmacy API (demo)</span
+                  >
+                </div>
+              </div>
+
+              <!-- Patient Context & Dosage Breakdown -->
+              <div
+                class="grid grid-cols-1 lg:grid-cols-12 gap-space-md pt-space-xs"
+              >
+                <!-- Patient Metadata -->
+                <div
+                  class="lg:col-span-4 p-space-md rounded-xl bg-surface-container-low flex flex-col justify-between border border-surface-container-high/40"
+                >
+                  <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm text-headline-sm font-bold"
+                      >
+                        NS
+                      </div>
+                      <div class="flex flex-col">
+                        <span
+                          class="font-label-lg text-label-lg text-on-surface font-semibold"
+                          >Noraini binti Salleh</span
+                        >
+                        <span
+                          class="font-body-sm text-body-sm text-on-surface-variant font-mono"
+                          >Age 62 • Female • IC: 620412-10-5842</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="grid grid-cols-2 gap-2 pt-2 text-on-surface-variant font-label-sm text-label-sm"
+                    >
+                      <div
+                        class="p-2 rounded-lg bg-surface-container-lowest border border-surface-container-high/30"
+                      >
+                        <span class="block text-on-surface-variant"
+                          >RN / MRN</span
+                        >
+                        <span class="font-semibold text-on-surface font-mono"
+                          >KKB-55912</span
+                        >
+                      </div>
+                      <div
+                        class="p-2 rounded-lg bg-surface-container-lowest border border-surface-container-high/30"
+                      >
+                        <span class="block text-on-surface-variant"
+                          >Liver Profile (ALT)</span
+                        >
+                        <span class="font-semibold text-error font-mono"
+                          >58 U/L (Elevated)</span
+                        >
+                      </div>
+                      <div
+                        class="p-2 rounded-lg bg-surface-container-lowest border border-surface-container-high/30"
+                      >
+                        <span class="block text-on-surface-variant"
+                          >Weight / eGFR</span
+                        >
+                        <span class="font-semibold text-on-surface font-mono"
+                          >54 kg • 68 mL/min</span
+                        >
+                      </div>
+                      <div
+                        class="p-2 rounded-lg bg-surface-container-lowest border border-surface-container-high/30"
+                      >
+                        <span class="block text-on-surface-variant"
+                          >Primary Clinic</span
+                        >
+                        <span class="font-semibold text-on-surface"
+                          >KK Taman Harmoni Zone 3</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="mt-4 p-2.5 rounded-lg bg-error-container/50 flex items-start gap-2 border border-error/20"
+                  >
+                    <span
+                      class="material-symbols-outlined text-error text-[20px] shrink-0"
+                      >info</span
+                    >
+                    <p
+                      class="font-body-sm text-body-sm text-on-error-container leading-tight"
+                    >
+                      Patient visited Private GP for lumbar strain yesterday
+                      morning and took OTC flu caplets today, unaware of active
+                      KK Taman Harmoni osteoarthritis refill.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Dosage Overdose Visualizer + 3 Sources Breakdown -->
+                <div class="lg:col-span-8 flex flex-col gap-space-sm">
+                  <div
+                    class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-3 border border-surface-container-high/40"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span
+                        class="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider"
+                        >Cumulative Active Ingestion Breakdown (24-Hour
+                        Cycle)</span
+                      >
+                      <span
+                        class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold"
+                      >
+                        Exceeds Max Safe Ceiling (4,000 mg) by +1,300 mg
+                      </span>
+                    </div>
+
+                    <!-- Visual Bar Segment -->
+                    <div
+                      class="w-full h-7 rounded-full bg-surface-container-highest p-1 flex items-center overflow-hidden gap-1 border border-surface-container-high/50"
+                    >
+                      <div
+                        class="h-full rounded-l-full bg-tertiary-container flex items-center justify-center text-on-tertiary font-label-sm text-label-sm px-2 truncate"
+                        style="width: 55%"
+                        title="Private GP: 3,990 mg"
+                      >
+                        Private GP (3,990mg)
+                      </div>
+                      <div
+                        class="h-full bg-primary flex items-center justify-center text-on-primary font-label-sm text-label-sm px-2 truncate"
+                        style="width: 30%"
+                        title="KK Taman Harmoni: 2,000 mg (overlap)"
+                      >
+                        KK Taman Harmoni (810mg safe zone)
+                      </div>
+                      <div
+                        class="h-full rounded-r-full bg-error flex items-center justify-center text-on-error font-label-sm text-label-sm px-2 truncate font-bold animate-pulse"
+                        style="width: 15%"
+                        title="Pharmacy OTC: 500mg (Toxic excess)"
+                      >
+                        Toxic Hazard (+1,300mg)
+                      </div>
+                    </div>
+
+                    <!-- Conflicting Sources Cards -->
+                    <div
+                      class="grid grid-cols-1 md:grid-cols-3 gap-space-xs mt-1"
+                    >
+                      <!-- Source A -->
+                      <div
+                        class="p-3 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-2 border border-surface-container-high/40"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span
+                            class="px-2 py-0.5 rounded-md bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold"
+                            >Source A: Private GP</span
+                          >
+                          <span
+                            class="material-symbols-outlined text-tertiary text-[18px]"
+                            >local_pharmacy</span
+                          >
+                        </div>
+                        <div>
+                          <h3
+                            class="font-label-lg text-label-lg text-on-surface font-bold"
+                          >
+                            Panadol Extend 665mg
+                          </h3>
+                          <p
+                            class="font-body-sm text-body-sm text-on-surface-variant"
+                          >
+                            2 tablets TDS (3x daily)
+                          </p>
+                        </div>
+                        <div
+                          class="pt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"
+                        >
+                          <span>Klinik Medic Taman Harmoni</span>
+                          <strong class="text-tertiary font-semibold"
+                            >3,990 mg/day</strong
+                          >
+                        </div>
+                      </div>
+
+                      <!-- Source B -->
+                      <div
+                        class="p-3 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-2 border border-surface-container-high/40"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span
+                            class="px-2 py-0.5 rounded-md bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold"
+                            >Source B: KK Taman Harmoni</span
+                          >
+                          <span
+                            class="material-symbols-outlined text-primary text-[18px]"
+                            >domain</span
+                          >
+                        </div>
+                        <div>
+                          <h3
+                            class="font-label-lg text-label-lg text-on-surface font-bold"
+                          >
+                            Paracetamol 500mg
+                          </h3>
+                          <p
+                            class="font-body-sm text-body-sm text-on-surface-variant"
+                          >
+                            2 tablets QDS (4x daily)
+                          </p>
+                        </div>
+                        <div
+                          class="pt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"
+                        >
+                          <span>Refill #44810</span>
+                          <strong class="text-primary font-semibold"
+                            >2,000 mg/day</strong
+                          >
+                        </div>
+                      </div>
+
+                      <!-- Source C -->
+                      <div
+                        class="p-3 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-2 border border-surface-container-high/40"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span
+                            class="px-2 py-0.5 rounded-md bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold"
+                            >Source C: Retail OTC</span
+                          >
+                          <span
+                            class="material-symbols-outlined text-error text-[18px]"
+                            >storefront</span
+                          >
+                        </div>
+                        <div>
+                          <h3
+                            class="font-label-lg text-label-lg text-on-surface font-bold"
+                          >
+                            Cold &amp; Flu Multi-cap
+                          </h3>
+                          <p
+                            class="font-body-sm text-body-sm text-on-surface-variant"
+                          >
+                            1 cap PRN with phenylephrine
+                          </p>
+                        </div>
+                        <div
+                          class="pt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"
+                        >
+                          <span>Community Pharmacy (demo)</span>
+                          <strong class="text-error font-semibold"
+                            >+500 mg dose</strong
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Immediate Clinical Action Buttons -->
+                  <div
+                    class="flex flex-wrap items-center justify-between gap-space-sm pt-1"
+                  >
+                    <div
+                      class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm"
+                    >
+                      <span
+                        class="material-symbols-outlined text-[16px] text-secondary"
+                        >verified</span
+                      >
+                      <span
+                        >Logged to the clinic safety log (demo)
+                        (NPCB)</span
+                      >
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <!-- Action 1: Deprescribe -->
+                      <button
+                        class="px-4 py-2 rounded-full bg-error text-on-error hover:bg-on-error-container transition-all font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                        id="btnDeprescribe"
+                        onclick="handleDeprescribe()"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-[16px]"
+                          >pause_circle</span
+                        >
+                        <span>One-Click Deprescribe KK Refill</span>
+                      </button>
+                      <!-- Action 2: Urgent WhatsApp -->
+                      <button
+                        class="px-4 py-2 rounded-full bg-primary-container text-on-primary hover:bg-primary transition-all font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                        id="btnWhatsApp"
+                        onclick="handleWhatsAppModal()"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-[16px]"
+                          >chat</span
+                        >
+                        <span>Send WhatsApp Alert (Caregiver + Patient)</span>
+                      </button>
+                      <!-- Action 3: Call Pharmacist -->
+                      <button
+                        class="px-4 py-2 rounded-full bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-all font-label-md text-label-md flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                        onclick="handlePhoneCall()"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-[16px]"
+                          >call</span
+                        >
+                        <span>Call Pharmacist</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Section: Interactive Drug-Drug Interaction Matrix & Cross-EMR Panel -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md">
+              <!-- Left 8 Cols: High Priority Interaction Matrix -->
+              <div class="xl:col-span-8 flex flex-col gap-space-md">
+                <div
+                  class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md border border-surface-container-high/60"
+                >
+                  <div
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-space-xs"
+                  >
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <h3
+                          class="font-headline-sm text-headline-sm text-on-surface font-semibold"
+                        >
+                          Cross-Dispensary Interaction Matrix
+                        </h3>
+                        <span
+                          class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold"
+                        >
+                          3 Flagged in Active Queue
+                        </span>
+                      </div>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant mt-0.5"
+                      >
+                        Multi-prescriber blindspot detection evaluating
+                        pharmacokinetic &amp; metabolic clash across
+                        public/private sectors.
+                      </p>
+                    </div>
+
+                    <!-- Table Filter Pills -->
+                    <div
+                      class="flex items-center gap-1 p-1 bg-surface-container-low rounded-xl self-start sm:self-auto border border-surface-container-high/60"
+                    >
+                      <button
+                        class="px-3 py-1 rounded-lg bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold shadow-xs"
+                        type="button"
+                      >
+                        All (3)
+                      </button>
+                      <button
+                        class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors"
+                        type="button"
+                      >
+                        Cardiovascular
+                      </button>
+                      <button
+                        class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors"
+                        type="button"
+                      >
+                        Renal
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Table Wrapper -->
+                  <div class="overflow-x-auto -mx-space-md">
+                    <div
+                      class="inline-block min-w-full align-middle px-space-md"
+                    >
+                      <table class="min-w-full text-left">
+                        <thead>
+                          <tr
+                            class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border border-surface-container-high/40"
+                          >
+                            <th class="py-3 px-4 rounded-l-xl" scope="col">
+                              Patient &amp; MRN
+                            </th>
+                            <th class="py-3 px-4" scope="col">
+                              Conflicting Regimens
+                            </th>
+                            <th class="py-3 px-4" scope="col">
+                              Hazard Risk &amp; Pathway
+                            </th>
+                            <th class="py-3 px-4" scope="col">Severity</th>
+                            <th
+                              class="py-3 px-4 rounded-r-xl text-right"
+                              scope="col"
+                            >
+                              CDSS Recommended Action
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody
+                          class="divide-none text-on-surface font-body-sm text-body-sm"
+                        >
+                          <!-- Patient 1: David Wong -->
+                          <tr
+                            class="hover:bg-surface-container-low/60 transition-colors border-b border-surface-container-high/30"
+                          >
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col">
+                                <span
+                                  class="font-label-lg text-label-lg font-bold text-on-surface"
+                                  >David Wong S.K.</span
+                                >
+                                <span
+                                  class="text-on-surface-variant text-label-sm font-label-sm font-mono"
+                                  >Age 74 • MRN: University Hospital-90214</span
+                                >
+                                <span
+                                  class="text-secondary font-label-sm text-label-sm flex items-center gap-1 mt-1"
+                                >
+                                  <span
+                                    class="material-symbols-outlined text-[14px]"
+                                    >history_edu</span
+                                  >
+                                  Atrial Fib • OA Knee
+                                </span>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col gap-1.5">
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-semibold text-label-sm font-mono"
+                                    >University Hospital</span
+                                  >
+                                  <span class="font-semibold text-on-surface"
+                                    >Warfarin 3mg OD</span
+                                  >
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-semibold text-label-sm font-mono"
+                                    >Private GP</span
+                                  >
+                                  <span class="font-semibold text-tertiary"
+                                    >Celecoxib 200mg BD</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top max-w-xs">
+                              <p class="font-semibold text-error leading-snug">
+                                Severe Gastrointestinal &amp; Intracranial
+                                Bleeding
+                              </p>
+                              <p
+                                class="text-on-surface-variant text-label-sm font-label-sm mt-1"
+                              >
+                                CYP2C9 competitive displacement; INR expected
+                                spike &gt; 4.5. High fall risk.
+                              </p>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <span
+                                class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold uppercase tracking-wide inline-block"
+                              >
+                                High Risk
+                              </span>
+                            </td>
+                            <td class="py-4 px-4 align-top text-right">
+                              <button
+                                class="px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm hover:bg-primary transition-all font-semibold inline-flex items-center gap-1 shadow-xs active:scale-95"
+                                onclick="
+                                  triggerActionModal(
+                                    'David Wong',
+                                    'Substitute Celecoxib with Topical Ketoprofen Patch 30mg or Paracetamol 1g PRN. Urgent INR check ordered at KK Taman Harmoni.',
+                                  )
+                                "
+                                type="button"
+                              >
+                                <span
+                                  class="material-symbols-outlined text-[16px]"
+                                  >swap_horiz</span
+                                >
+                                <span>Switch to Topical NSAID</span>
+                              </button>
+                            </td>
+                          </tr>
+
+                          <!-- Patient 2: Fatimah binti Ahmad -->
+                          <tr
+                            class="bg-surface-container-low/30 hover:bg-surface-container-low/70 transition-colors border-b border-surface-container-high/30"
+                          >
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col">
+                                <span
+                                  class="font-label-lg text-label-lg font-bold text-on-surface"
+                                  >Fatimah binti Ahmad</span
+                                >
+                                <span
+                                  class="text-on-surface-variant text-label-sm font-label-sm font-mono"
+                                  >Age 55 • MRN: KKB-88201</span
+                                >
+                                <span
+                                  class="text-primary font-label-sm text-label-sm flex items-center gap-1 mt-1"
+                                >
+                                  <span
+                                    class="material-symbols-outlined text-[14px]"
+                                    >local_hospital</span
+                                  >
+                                  T2DM • Nephropathy
+                                </span>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col gap-1.5">
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold text-label-sm font-mono"
+                                    >KK Taman Harmoni</span
+                                  >
+                                  <span class="font-semibold text-on-surface"
+                                    >Metformin 850mg BD</span
+                                  >
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold text-label-sm font-mono"
+                                    >General Hospital Rad</span
+                                  >
+                                  <span class="font-semibold text-tertiary"
+                                    >Contrast Abdominal CT</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top max-w-xs">
+                              <p
+                                class="font-semibold text-tertiary-container leading-snug"
+                              >
+                                Contrast-Induced Nephropathy &amp; Lactic
+                                Acidosis
+                              </p>
+                              <p
+                                class="text-on-surface-variant text-label-sm font-label-sm mt-1"
+                              >
+                                Scheduled CT with iodinated contrast at General Hospital
+                                tomorrow 10:00 AM without 48h Metformin
+                                withhold.
+                              </p>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <span
+                                class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-bold uppercase tracking-wide inline-block"
+                              >
+                                Moderate
+                              </span>
+                            </td>
+                            <td class="py-4 px-4 align-top text-right">
+                              <button
+                                class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm hover:bg-surface-container-highest transition-all font-semibold inline-flex items-center gap-1 active:scale-95"
+                                onclick="
+                                  triggerActionModal(
+                                    'Fatimah Ahmad',
+                                    'Hold Metformin 48 hours prior &amp; post-procedure. Hydration protocol 1ml/kg/hr pushed to General Hospital Radiology triage.',
+                                  )
+                                "
+                                type="button"
+                              >
+                                <span
+                                  class="material-symbols-outlined text-[16px]"
+                                  >pause</span
+                                >
+                                <span>Initiate 48h Hold Protocol</span>
+                              </button>
+                            </td>
+                          </tr>
+
+                          <!-- Patient 3: Subramaniam K. -->
+                          <tr
+                            class="hover:bg-surface-container-low/60 transition-colors"
+                          >
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col">
+                                <span
+                                  class="font-label-lg text-label-lg font-bold text-on-surface"
+                                  >Subramaniam K.</span
+                                >
+                                <span
+                                  class="text-on-surface-variant text-label-sm font-label-sm font-mono"
+                                  >Age 68 • MRN: PNT-10921</span
+                                >
+                                <span
+                                  class="text-secondary font-label-sm text-label-sm flex items-center gap-1 mt-1"
+                                >
+                                  <span
+                                    class="material-symbols-outlined text-[14px]"
+                                    >cardiology</span
+                                  >
+                                  HFrEF • CKD Stage 3a
+                                </span>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <div class="flex flex-col gap-1.5">
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-semibold text-label-sm font-mono"
+                                    >Seri Harmoni</span
+                                  >
+                                  <span class="font-semibold text-on-surface"
+                                    >Enalapril 10mg BD</span
+                                  >
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-semibold text-label-sm font-mono"
+                                    >KK Taman Harmoni</span
+                                  >
+                                  <span class="font-semibold text-on-surface"
+                                    >Spironolactone 25mg OD</span
+                                  >
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                  <span
+                                    class="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-semibold text-label-sm font-mono"
+                                    >Retail</span
+                                  >
+                                  <span class="font-semibold text-tertiary"
+                                    >K-Citrate Supp 15mEq</span
+                                  >
+                                </div>
+                              </div>
+                            </td>
+                            <td class="py-4 px-4 align-top max-w-xs">
+                              <p class="font-semibold text-error leading-snug">
+                                Severe Lethal Hyperkalemia Hazard
+                              </p>
+                              <p
+                                class="text-on-surface-variant text-label-sm font-label-sm mt-1"
+                              >
+                                Triple potassium-sparing synergy. Last serum K+
+                                was 5.2 mmol/L; risk of ventricular arrhythmia.
+                              </p>
+                            </td>
+                            <td class="py-4 px-4 align-top">
+                              <span
+                                class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold uppercase tracking-wide inline-block"
+                              >
+                                High Risk
+                              </span>
+                            </td>
+                            <td class="py-4 px-4 align-top text-right">
+                              <button
+                                class="px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm hover:bg-primary transition-all font-semibold inline-flex items-center gap-1 shadow-xs active:scale-95"
+                                onclick="
+                                  triggerActionModal(
+                                    'Subramaniam K.',
+                                    'Cancel Potassium supplement immediately. Titrate Spironolactone to 12.5mg alternate days. Urgent stat ECG ordered at KK Taman Harmoni.',
+                                  )
+                                "
+                                type="button"
+                              >
+                                <span
+                                  class="material-symbols-outlined text-[16px]"
+                                  >cancel</span
+                                >
+                                <span>Deprescribe Potassium</span>
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Bottom Micro-Interaction Banner for Nurse Coordinator -->
+                  <div
+                    class="p-space-sm rounded-xl bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-2 border border-surface-container-high/40"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="material-symbols-outlined text-secondary text-[20px]"
+                        >notifications_active</span
+                      >
+                      <span class="font-body-sm text-body-sm text-on-surface">
+                        <strong>Next Auto-Scan Window:</strong> In 18 minutes
+                        (Listening to pharmacy POS HL7 feeds (demo))
+                      </span>
+                    </div>
+                    <a
+                      class="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1"
+                      href="#"
+                      onclick="
+                        alert(
+                          'Viewing archived reconciliations: 14,200+ total intercepted drug clashes.',
+                        )
+                      "
+                    >
+                      <span>View Archived Reconciliations</span> →
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right 4 Cols: Connected Facilities Interoperability Status & WhatsApp Check-in Preview -->
+              <div class="xl:col-span-4 flex flex-col gap-space-md">
+                <!-- Interoperability Mesh Panel -->
+                <div
+                  class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-sm border border-surface-container-high/60"
+                >
+                  <div class="flex items-center justify-between">
+                    <h3
+                      class="font-headline-sm text-headline-sm text-on-surface font-semibold"
+                    >
+                      Healthcare Network Mesh
+                    </h3>
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1"
+                    >
+                      <span
+                        class="w-1.5 h-1.5 rounded-full bg-secondary"
+                      ></span>
+                      4 / 4 Live
+                    </span>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Encrypted FHIR R4 &amp; National Health Data Exchange
+                    pipeline.
+                  </p>
+
+                  <div class="flex flex-col gap-space-xs mt-1">
+                    <!-- Facility 1: University Hospital -->
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between hover:bg-surface-container transition-colors border border-surface-container-high/40"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-8 h-8 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center font-bold text-label-sm shadow-xs border border-surface-container-high/40 font-mono"
+                        >
+                          UM
+                        </div>
+                        <div class="flex flex-col">
+                          <span
+                            class="font-label-md text-label-md text-on-surface font-bold"
+                            >University Hospital (demo)</span
+                          >
+                          <span
+                            class="font-label-sm text-label-sm text-on-surface-variant"
+                            >Academic Tertiary EMR • FHIR R4</span
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-col items-end">
+                        <span
+                          class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+                        >
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Live
+                        </span>
+                        <span
+                          class="font-label-sm text-label-sm text-on-surface-variant font-mono text-[10px]"
+                          >Synced 2m ago</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Facility 2: General Hospital -->
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between hover:bg-surface-container transition-colors border border-surface-container-high/40"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-8 h-8 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center font-bold text-label-sm shadow-xs border border-surface-container-high/40 font-mono"
+                        >
+                          General Hospital
+                        </div>
+                        <div class="flex flex-col">
+                          <span
+                            class="font-label-md text-label-md text-on-surface font-bold"
+                            >State General Hospital</span
+                          >
+                          <span
+                            class="font-label-sm text-label-sm text-on-surface-variant"
+                            >National core hub (demo)</span
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-col items-end">
+                        <span
+                          class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+                        >
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Live
+                        </span>
+                        <span
+                          class="font-label-sm text-label-sm text-on-surface-variant font-mono text-[10px]"
+                          >Synced 4m ago</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Facility 3: Seri Harmoni Specialist Hospital -->
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between hover:bg-surface-container transition-colors border border-surface-container-high/40"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-8 h-8 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center font-bold text-label-sm shadow-xs border border-surface-container-high/40 font-mono"
+                        >
+                          PHB
+                        </div>
+                        <div class="flex flex-col">
+                          <span
+                            class="font-label-md text-label-md text-on-surface font-bold"
+                            >Seri Harmoni Specialist Hospital</span
+                          >
+                          <span
+                            class="font-label-sm text-label-sm text-on-surface-variant"
+                            >IHH Private Care Gateway</span
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-col items-end">
+                        <span
+                          class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+                        >
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Synced
+                        </span>
+                        <span
+                          class="font-label-sm text-label-sm text-on-surface-variant font-mono text-[10px]"
+                          >Synced 9m ago</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Facility 4: Community Pharmacy (demo) API -->
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between hover:bg-surface-container transition-colors border border-surface-container-high/40"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-8 h-8 rounded-lg bg-surface-container-lowest text-tertiary flex items-center justify-center font-bold text-label-sm shadow-xs border border-surface-container-high/40 font-mono"
+                        >
+                          CAR
+                        </div>
+                        <div class="flex flex-col">
+                          <span
+                            class="font-label-md text-label-md text-on-surface font-bold"
+                            >Community Pharmacy (demo) Cloud</span
+                          >
+                          <span
+                            class="font-label-sm text-label-sm text-on-surface-variant"
+                            >Retail POS Dispensing API</span
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-col items-end">
+                        <span
+                          class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1"
+                        >
+                          <span
+                            class="w-1.5 h-1.5 rounded-full bg-secondary"
+                          ></span>
+                          Connected
+                        </span>
+                        <span
+                          class="font-label-sm text-label-sm text-on-surface-variant font-mono text-[10px]"
+                          >Latency 18ms</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-2">
+                    <button
+                      onclick="
+                        alert(
+                          'Network Expansion: Connecting additional GP or community pharmacy POS to National Health Data Exchange.',
+                        )
+                      "
+                      class="w-full py-2.5 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-md text-label-md flex items-center justify-center gap-2 border border-surface-container-high/50"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-[18px]"
+                        >add_circle</span
+                      >
+                      <span>Connect Additional GP / Pharmacy</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Conversational Check-in Preview Card (Bahasa Melayu & English) -->
+                <div
+                  class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-sm border border-surface-container-high/60"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="material-symbols-outlined text-secondary text-[20px]"
+                        >forum</span
+                      >
+                      <h3
+                        class="font-label-lg text-label-lg text-on-surface font-bold"
+                      >
+                        Automated Caregiver Check-in
+                      </h3>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold"
+                    >
+                      WhatsApp API
+                    </span>
+                  </div>
+                  <p
+                    class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed"
+                  >
+                    Simulated conversational alert ready for Noraini binti
+                    Salleh's designated daughter (Anis, 012-398XXXX):
+                  </p>
+
+                  <!-- Chat bubble preview -->
+                  <div
+                    class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-2 border border-surface-container-high/40"
+                  >
+                    <div
+                      class="p-3 rounded-xl bg-surface-container-lowest shadow-xs text-on-surface flex flex-col gap-1 max-w-[90%] self-start border border-surface-container-high/30"
+                    >
+                      <span
+                        class="font-label-sm text-label-sm text-primary font-bold"
+                        >Khabar Care Command • Dr. Faridah</span
+                      >
+                      <p class="font-body-sm text-body-sm leading-snug">
+                        Assalamualaikum Puan Anis. Kami kesan Mak Cik Noraini
+                        ada ambil ubat Panadol dari klinik swasta DAN ubat demam
+                        dari farmasi serentak.
+                      </p>
+                      <p
+                        class="font-body-sm text-body-sm leading-snug font-medium text-error mt-1"
+                      >
+                        ⚠️ Tolong JANGAN beri ubat Panadol 500mg dari Klinik
+                        Kesihatan hari ini ya. Sukatan sudah melebihi had
+                        selamat hati mak.
+                      </p>
+                      <span
+                        class="font-label-sm text-label-sm text-on-surface-variant text-right mt-1 font-mono text-[10px]"
+                        >08:42 AM • Terkirim</span
+                      >
+                    </div>
+
+                    <div
+                      class="p-3 rounded-xl bg-primary-container text-on-primary flex flex-col gap-1 max-w-[85%] self-end"
+                    >
+                      <span
+                        class="font-label-sm text-label-sm text-on-primary-container font-semibold"
+                        >Anis (Anak / Penjaga)</span
+                      >
+                      <p class="font-body-sm text-body-sm leading-snug">
+                        Baik doktor, nasib baik Khabar beritahu! Saya simpankan
+                        kotak Panadol KK dulu. Mak cuma makan ubat dari klinik
+                        medic je hari ni. Terima kasih banyak doktor.
+                      </p>
+                      <span
+                        class="font-label-sm text-label-sm text-on-primary-container text-right mt-1 font-mono text-[10px]"
+                        >08:45 AM • Dibaca</span
+                      >
+                    </div>
+                  </div>
+
+                  <div
+                    class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm pt-1"
+                  >
+                    <span
+                      >Caregiver Response Rate:
+                      <strong>94% within 15 mins</strong></span
+                    >
+                    <span class="text-secondary font-semibold"
+                      >Verified Safe</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Micro-Interaction Confirmation Modal -->
+    <div
+      class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4"
+      id="actionModal"
+    >
+      <div
+        class="bg-surface-container-lowest max-w-md w-full p-space-lg rounded-2xl shadow-xl flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150 border border-surface-container-high/60"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0"
+          >
+            <span class="material-symbols-outlined text-[22px]"
+              >medical_services</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <h4
+              class="font-headline-sm text-headline-sm text-on-surface font-semibold leading-tight"
+              id="modalTitle"
+            >
+              Action Protocol
+            </h4>
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant"
+              id="modalPatient"
+              >Patient: Selected Record</span
+            >
+          </div>
+        </div>
+        <div
+          class="p-3 rounded-xl bg-surface-container-low border border-surface-container-high/40"
+        >
+          <p
+            class="font-body-sm text-body-sm text-on-surface leading-relaxed"
+            id="modalDescription"
+          ></p>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button
+            class="px-4 py-2 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-colors cursor-pointer"
+            onclick="closeActionModal()"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            class="px-5 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer"
+            onclick="confirmActionModal()"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]">check</span>
+            <span>Authorize Prescription Override</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function triggerActionModal(patientName, actionPlan) {
+        document.getElementById("modalTitle").textContent =
+          "Clinical Decision Override";
+        document.getElementById("modalPatient").textContent =
+          "Patient: " + patientName;
+        document.getElementById("modalDescription").textContent = actionPlan;
+        document.getElementById("actionModal").classList.remove("hidden");
+        document.getElementById("actionModal").classList.add("flex");
+      }
+
+      function closeActionModal() {
+        document.getElementById("actionModal").classList.add("hidden");
+        document.getElementById("actionModal").classList.remove("flex");
+      }
+
+      function confirmActionModal() {
+        alert(
+          "Prescription reconciliation submitted to drug reference data and pharmacy dispensing records (demo).",
+        );
+        closeActionModal();
+      }
+
+      function handleDeprescribe() {
+        const btn = document.getElementById("btnDeprescribe");
+        btn.innerHTML =
+          '<span class="material-symbols-outlined text-[16px]">check_circle</span> KK Dispensation Blocked';
+        btn.classList.remove("bg-error");
+        btn.classList.add("bg-secondary");
+        alert(
+          "Klinik Kesihatan Paracetamol 500mg QDS dispensation halted in PhIS. Pharmacy counter alerted.",
+        );
+      }
+
+      function handleWhatsAppModal() {
+        alert(
+          "WhatsApp High-Priority Advisory dispatched to Puan Anis (Caregiver) and Noraini binti Salleh.",
+        );
+        const btn = document.getElementById("btnWhatsApp");
+        btn.innerHTML =
+          '<span class="material-symbols-outlined text-[16px]">done_all</span> Alert Sent (Delivered)';
+        btn.classList.add("opacity-90");
+      }
+
+      function handlePhoneCall() {
+        alert(
+          "Routing tele-connect to Dispensing Pharmacist at Klinik Kesihatan Taman Harmoni (Counter 4, Ext: 204)...",
+        );
+      }
+    </script>
+  </body>
+</html>

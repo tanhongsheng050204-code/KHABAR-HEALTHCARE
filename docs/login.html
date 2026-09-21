@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_blank" name="shell-type" />
+    <title>
+      Khabar — Clinic &amp; Doctor Login Portal (demo)
+    </title>
+    <!-- Material Symbols & Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+        main > :first-child {
+          margin-top: 0 !important;
+        }
+        main > :last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#005235",
+              "secondary-fixed-dim": "#88d7ac",
+              "surface-container-highest": "#f3ded3",
+              "on-primary-fixed-variant": "#105137",
+              "primary-fixed-dim": "#96d4b2",
+              "on-error-container": "#93000a",
+              "primary-container": "#2f6b4f",
+              "on-background": "#241913",
+              "on-secondary-container": "#1d704d",
+              "on-tertiary-fixed-variant": "#683d00",
+              "on-surface": "#241913",
+              "surface-dim": "#ead6cb",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#002113",
+              "surface-bright": "#fff8f5",
+              "inverse-on-surface": "#ffede4",
+              "inverse-primary": "#96d4b2",
+              background: "#fff8f5",
+              "tertiary-fixed-dim": "#ffb869",
+              "secondary-container": "#a1f0c5",
+              outline: "#707972",
+              tertiary: "#6a3e00",
+              surface: "#fff8f5",
+              "tertiary-container": "#8b5300",
+              "on-tertiary-fixed": "#2c1700",
+              "tertiary-fixed": "#ffdcbb",
+              "on-primary-container": "#aae9c6",
+              "surface-tint": "#2d694d",
+              "on-surface-variant": "#404943",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#3a2e26",
+              primary: "#125238",
+              "error-container": "#ffdad6",
+              "surface-container": "#ffeade",
+              "on-secondary": "#ffffff",
+              secondary: "#176b49",
+              "outline-variant": "#c0c9c1",
+              "on-primary": "#ffffff",
+              error: "#ba1a1a",
+              "surface-variant": "#f3ded3",
+              "primary-fixed": "#b1f0cd",
+              "surface-container-low": "#fff1ea",
+              "surface-container-high": "#f9e4d9",
+              "secondary-fixed": "#a4f3c7",
+              "on-primary-fixed": "#002113",
+              "on-tertiary-container": "#ffd3a8",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xl": "3rem",
+              "space-sm": "0.5rem",
+              "margin-mobile": "1.25rem",
+              "space-lg": "1.75rem",
+              "space-xs": "0.25rem",
+              gutter: "1.5rem",
+              margin: "3rem",
+              "space-md": "1rem",
+              "gutter-mobile": "1rem",
+            },
+            fontFamily: {
+              "display-hero": ["Playfair Display"],
+              "label-md": ["Plus Jakarta Sans"],
+              "headline-lg-mobile": ["Playfair Display"],
+              "body-lg": ["Plus Jakarta Sans"],
+              "headline-lg": ["Playfair Display"],
+              "headline-sm": ["Playfair Display"],
+              "display-hero-mobile": ["Playfair Display"],
+              "body-md": ["Plus Jakarta Sans"],
+              "headline-md": ["Playfair Display"],
+              "body-xl": ["Plus Jakarta Sans"],
+              "body-sm": ["Plus Jakarta Sans"],
+              "label-sm": ["Plus Jakarta Sans"],
+              "label-lg": ["Plus Jakarta Sans"],
+            },
+            fontSize: {
+              "display-hero": [
+                "56px",
+                {
+                  lineHeight: "68px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-md": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg-mobile": [
+                "28px",
+                { lineHeight: "36px", letterSpacing: "0em", fontWeight: "600" },
+              ],
+              "body-lg": ["17px", { lineHeight: "28px", fontWeight: "400" }],
+              "headline-lg": [
+                "40px",
+                {
+                  lineHeight: "48px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-sm": [
+                "22px",
+                { lineHeight: "30px", fontWeight: "500" },
+              ],
+              "display-hero-mobile": [
+                "36px",
+                {
+                  lineHeight: "44px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+              "headline-md": [
+                "28px",
+                { lineHeight: "36px", fontWeight: "500" },
+              ],
+              "body-xl": ["20px", { lineHeight: "32px", fontWeight: "400" }],
+              "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }],
+              "label-sm": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.06em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-lg": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-surface font-body-md text-on-surface antialiased">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+    <!-- Top Navigation Header -->
+    <header
+      class="w-full bg-white/80 backdrop-blur-md border-b border-surface-container-high px-6 py-2.5 flex items-center justify-between text-xs sticky top-0 z-50"
+    >
+      <div class="flex items-center gap-2">
+        <a
+          href="landing_page.html"
+          class="flex items-center gap-2 group font-semibold text-primary"
+        >
+          <span
+            class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs"
+            >K</span
+          >
+          <span class="text-on-surface hover:text-primary transition-colors"
+            >Khabar Clinical Platform</span
+          >
+        </a>
+        <span class="text-outline-variant">/</span>
+        <span class="text-on-surface-variant font-mono"
+          >clinic_portal_auth</span
+        >
+      </div>
+      <div class="flex items-center gap-2 font-medium">
+        <a
+          href="landing_page.html"
+          class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
+        >
+          <span class="material-symbols-outlined text-[14px]">arrow_back</span>
+          <span>Landing Page</span>
+        </a>
+        <a
+          href="clinical_handshake.html"
+          class="px-3 py-1 rounded-full bg-surface-container-low border border-primary/30 text-primary hover:bg-surface-container transition-colors flex items-center gap-1"
+        >
+          <span class="material-symbols-outlined text-[14px]">lock</span>
+          <span>Handshake Screen</span>
+        </a>
+        <a
+          href="khabar_full_prototype.html"
+          class="px-3 py-1 rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors flex items-center gap-1 shadow-sm"
+        >
+          <span class="material-symbols-outlined text-[14px]"
+            >space_dashboard</span
+          >
+          <span>Full Prototype</span>
+        </a>
+      </div>
+    </header>
+
+    <main
+      class="w-full min-h-[calc(100vh-50px)] flex items-center justify-center p-margin-mobile lg:p-margin"
+    >
+      <div class="flex flex-col w-full">
+        <div class="w-full max-w-7xl mx-auto py-6 lg:py-12">
+          <div
+            class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start"
+          >
+            <!-- Left Column: Clinical Trust, Real-time Metrics & Validation -->
+            <div class="lg:col-span-6 flex flex-col space-y-8 lg:pr-6">
+              <!-- Brand Signature & Tagline -->
+              <div class="space-y-4">
+                <div
+                  class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high"
+                >
+                  <span
+                    class="w-2 h-2 rounded-full bg-primary animate-pulse"
+                  ></span>
+                  <span
+                    class="font-label-sm text-primary tracking-wider uppercase font-bold"
+                    >Khabar Care v2.4 Active</span
+                  >
+                  <span class="text-outline-variant">•</span>
+                  <span
+                    class="font-label-sm text-on-surface-variant font-medium"
+                    >Built around clinical guidelines</span
+                  >
+                </div>
+                <div class="space-y-2">
+                  <h1
+                    class="font-display-hero text-headline-lg lg:text-display-hero text-primary tracking-tight"
+                  >
+                    Precision aftercare. <br />
+                    <span class="italic font-normal text-on-surface"
+                      >Zero clinic burden.</span
+                    >
+                  </h1>
+                  <p
+                    class="font-body-lg text-body-lg text-on-surface-variant max-w-lg leading-relaxed"
+                  >
+                    Empowering primary care doctors across Malaysia with
+                    intelligent, automated post-consultation recovery telemetry
+                    via high-trust patient WhatsApp streams.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Live Telemetry Hub Card -->
+              <div
+                class="bg-surface-container-lowest rounded-xl p-6 shadow-md relative overflow-hidden border border-surface-container-high/50"
+              >
+                <div
+                  class="flex items-center justify-between pb-4 border-b border-surface-container-high mb-5"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div
+                      class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center text-primary"
+                    >
+                      <span
+                        class="material-symbols-outlined text-lg"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >vital_signs</span
+                      >
+                    </div>
+                    <div>
+                      <p
+                        class="font-label-md text-label-md text-on-surface font-semibold"
+                      >
+                        Klinik Taman Harmoni Telemetry Stream
+                      </p>
+                      <p
+                        class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1.5"
+                      >
+                        <span
+                          class="inline-block w-1.5 h-1.5 rounded-full bg-secondary"
+                        ></span>
+                        Connected to Subang &amp; PJ Clusters
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    class="px-2.5 py-1 rounded-full bg-surface-container-low font-label-sm text-primary font-medium"
+                    >Live Feed</span
+                  >
+                </div>
+
+                <!-- Micro Metric Grid -->
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                  <div
+                    class="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-high/40"
+                  >
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant block mb-1"
+                      >Active Outpatients</span
+                    >
+                    <div class="flex items-baseline gap-2">
+                      <span
+                        class="font-headline-md text-headline-md text-primary font-bold"
+                        >342</span
+                      >
+                      <span class="font-label-sm text-secondary font-medium"
+                        >+18 today</span
+                      >
+                    </div>
+                    <p
+                      class="font-body-sm text-body-sm text-on-surface-variant mt-0.5"
+                    >
+                      Monitoring symptoms now
+                    </p>
+                  </div>
+                  <div
+                    class="p-3.5 rounded-lg bg-surface-container-low border border-surface-container-high/40"
+                  >
+                    <span
+                      class="font-label-sm text-label-sm text-on-surface-variant block mb-1"
+                      >Mean Triage Speed</span
+                    >
+                    <div class="flex items-baseline gap-2">
+                      <span
+                        class="font-headline-md text-headline-md text-tertiary-container font-bold"
+                        >11.4m</span
+                      >
+                      <span class="font-label-sm text-secondary font-medium"
+                        >94.8% SLA</span
+                      >
+                    </div>
+                    <p
+                      class="font-body-sm text-body-sm text-on-surface-variant mt-0.5"
+                    >
+                      Automated patient response
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Mini Pill Alert Highlight -->
+                <div
+                  class="flex items-center space-x-3.5 p-3.5 rounded-lg bg-surface-container border border-surface-container-high/60"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary shrink-0"
+                  >
+                    <span
+                      class="material-symbols-outlined text-base"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >medication_liquid</span
+                    >
+                  </div>
+                  <div class="min-w-0">
+                    <p
+                      class="font-label-md text-label-md text-on-surface font-semibold truncate"
+                    >
+                      14,200+ Drug Conflicts Prevented
+                    </p>
+                    <p
+                      class="font-body-sm text-body-sm text-on-surface-variant truncate"
+                    >
+                      Real-time alert engine cross-checks polypharmacy before
+                      1st dose
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Clinical Director Testimonial -->
+              <div
+                class="bg-surface-container-low rounded-xl p-6 shadow-sm relative border border-surface-container-high/60"
+              >
+                <div class="flex items-start gap-4">
+                  <img
+                    class="w-14 h-14 rounded-full object-cover shrink-0 shadow-sm border border-white"
+                    data-alt="Dignified, warm portrait of Dr Harjit Singh, a senior Malaysian Sikh medical director wearing stethoscope and modern clinical coat, serene natural clinic lighting, shallow depth of field, high-end editorial healthcare photography"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH61oP-P8-1JOLrYxuko51FvxUC6jYtLs8hAqieJIra0MpoYGTuQEWUBpL5osOfBXlLSOusBGqII9FYgfHv0Jal2BPRUHBOXyQFA8fDZXjGi7lgzP0v4jSSUZCoTWAQZvHKhsiCXQTTpgx1ACSz2R6kCH4tZ93hmMeYsuSTLU3MvXr5cbETQ4jLowIkBh9fwcARDpac6AoqPHRwwLV4jPop1CEOuNXjUw3vwPimfweLcYhXGQyt4cA"
+                  />
+                  <div class="space-y-2">
+                    <div class="flex items-center text-tertiary">
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >star</span
+                      >
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >star</span
+                      >
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >star</span
+                      >
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >star</span
+                      >
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >star</span
+                      >
+                    </div>
+                    <p
+                      class="font-headline-sm text-body-lg text-on-surface italic leading-snug"
+                    >
+                      “Khabar caught two early cellulitis cases on Day 3 before
+                      they required emergency surgical debridement. The WhatsApp
+                      triage runs smoothly without our staff manually calling 80
+                      patients a day.”
+                    </p>
+                    <div class="pt-1">
+                      <p
+                        class="font-label-md text-label-md text-on-surface font-bold"
+                      >
+                        Dr. Harjit Singh
+                      </p>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                      >
+                        Medical Director, Poliklinik MediCare (Subang Jaya)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compliance & Accreditation Ribbon -->
+              <div
+                class="flex flex-wrap items-center gap-6 pt-2 text-on-surface-variant"
+              >
+                <div class="flex items-center space-x-2">
+                  <span class="material-symbols-outlined text-primary text-xl"
+                    >verified_user</span
+                  >
+                  <span
+                    class="font-label-sm text-label-sm font-semibold tracking-wide"
+                    >Malaysia PDPA 2010</span
+                  >
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="material-symbols-outlined text-primary text-xl"
+                    >health_and_safety</span
+                  >
+                  <span
+                    class="font-label-sm text-label-sm font-semibold tracking-wide"
+                    >Demo</span
+                  >
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="material-symbols-outlined text-primary text-xl"
+                    >lock</span
+                  >
+                  <span
+                    class="font-label-sm text-label-sm font-semibold tracking-wide"
+                    >256-bit Sovereign HSM</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: High-Conversion Authentication Card -->
+            <div class="lg:col-span-6 w-full max-w-xl mx-auto lg:ml-auto">
+              <div
+                class="bg-surface-container-lowest rounded-xl p-8 lg:p-10 shadow-xl relative backdrop-blur-sm border border-surface-container-high/60"
+              >
+                <!-- Card Header -->
+                <div class="space-y-1 mb-8">
+                  <div class="flex items-center justify-between">
+                    <span
+                      class="font-label-sm text-label-sm text-primary uppercase tracking-widest font-semibold"
+                      >Authorized Portal</span
+                    >
+                    <span
+                      class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold"
+                      >SingPass / MyKad Ready</span
+                    >
+                  </div>
+                  <h2
+                    class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight"
+                  >
+                    Doctor &amp; Nurse Portal
+                  </h2>
+                  <p class="font-body-md text-body-md text-on-surface-variant">
+                    Access your clinic command center and automated aftercare
+                    stream.
+                  </p>
+                </div>
+
+                <!-- PRIMARY GOOGLE WORKSPACE AUTH BUTTON -->
+                <div class="space-y-2 mb-6">
+                  <button
+                    class="w-full flex items-center justify-center gap-3.5 py-3.5 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow group text-left cursor-pointer border border-surface-container-high/50"
+                    id="googleAuthBtn"
+                    type="button"
+                  >
+                    <!-- Official SVG Google 'G' -->
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      ></path>
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      ></path>
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                        fill="#FBBC05"
+                      ></path>
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                        fill="#EA4335"
+                      ></path>
+                    </svg>
+                    <div class="flex flex-col">
+                      <span
+                        class="font-label-lg text-label-lg text-on-surface font-semibold group-hover:text-primary transition-colors"
+                      >
+                        Continue with Google Workspace
+                      </span>
+                    </div>
+                  </button>
+                  <div
+                    class="flex items-center justify-center gap-1.5 font-label-sm text-[11px] text-on-surface-variant"
+                  >
+                    <span
+                      class="material-symbols-outlined text-xs text-primary"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >verified</span
+                    >
+                    <span
+                      >Demo sign-in • Google account</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative flex items-center justify-center my-6">
+                  <div class="w-full h-px bg-surface-container-high"></div>
+                  <span
+                    class="bg-surface-container-lowest px-3 font-label-sm text-on-surface-variant uppercase tracking-wider text-[11px] font-semibold"
+                  >
+                    or sign in with a clinic staff ID (demo)
+                  </span>
+                </div>
+
+                <!-- Credentials Form -->
+                <form
+                  class="space-y-4"
+                  id="clinicLoginForm"
+                  onsubmit="event.preventDefault()"
+                >
+                  <!-- Staff ID -->
+                  <div class="space-y-1.5">
+                    <label
+                      class="block font-label-md text-label-md text-on-surface font-medium"
+                      for="mmcNumber"
+                    >
+                      Clinic staff ID (demo)
+                    </label>
+                    <div class="relative">
+                      <div
+                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >badge</span
+                        >
+                      </div>
+                      <input
+                        class="w-full pl-10 pr-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors shadow-inner"
+                        id="mmcNumber"
+                        placeholder="e.g. DEMO-0001"
+                        value="DEMO-0001"
+                        required=""
+                        type="text"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Clinic Work Email -->
+                  <div class="space-y-1.5">
+                    <label
+                      class="block font-label-md text-label-md text-on-surface font-medium"
+                      for="workEmail"
+                    >
+                      Clinic Work Email
+                    </label>
+                    <div class="relative">
+                      <div
+                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >alternate_email</span
+                        >
+                      </div>
+                      <input
+                        class="w-full pl-10 pr-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors shadow-inner"
+                        id="workEmail"
+                        placeholder="dr.priya@klinikkesihatan.gov.my"
+                        value="dr.priya@klinikkesihatan.gov.my"
+                        required=""
+                        type="email"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Password with Reveal Toggle -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <label
+                        class="block font-label-md text-label-md text-on-surface font-medium"
+                        for="passwordInput"
+                        >Password</label
+                      >
+                      <a
+                        class="font-label-sm text-label-sm text-primary hover:underline font-semibold"
+                        href="#reset"
+                        >Forgot credentials?</a
+                      >
+                    </div>
+                    <div class="relative">
+                      <div
+                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >lock</span
+                        >
+                      </div>
+                      <input
+                        class="w-full pl-10 pr-11 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors shadow-inner"
+                        id="passwordInput"
+                        placeholder="••••••••••••"
+                        value="MalaysianHealth2026!"
+                        required=""
+                        type="password"
+                      />
+                      <button
+                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-on-surface-variant hover:text-on-surface cursor-pointer"
+                        id="togglePassword"
+                        type="button"
+                      >
+                        <span
+                          class="material-symbols-outlined text-lg"
+                          id="passwordIcon"
+                          >visibility</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Workstation Remember Checkbox -->
+                  <div class="flex items-center justify-between pt-1">
+                    <label class="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        checked=""
+                        class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary cursor-pointer"
+                        type="checkbox"
+                      />
+                      <span
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                        >Remember clinical workstation for 30 days</span
+                      >
+                    </label>
+                  </div>
+
+                  <!-- Primary Launch CTA -->
+                  <div class="pt-3">
+                    <button
+                      class="w-full py-3.5 px-6 rounded-full bg-primary hover:bg-secondary text-on-primary font-label-lg text-label-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      id="launchCommandBtn"
+                      type="submit"
+                    >
+                      <span>Launch Clinic Command Center</span>
+                      <span class="material-symbols-outlined text-lg"
+                        >arrow_forward</span
+                      >
+                    </button>
+                  </div>
+
+                  <!-- Secondary Magic Link Passkey -->
+                  <div class="pt-2">
+                    <button
+                      class="w-full py-3 px-4 rounded-full bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      id="whatsappPasskeyBtn"
+                      type="button"
+                    >
+                      <span
+                        class="material-symbols-outlined text-secondary text-lg"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >chat</span
+                      >
+                      <span
+                        >Sign in with WhatsApp Magic Link (One-Tap
+                        Passkey)</span
+                      >
+                    </button>
+                  </div>
+                </form>
+
+                <!-- Notification Toast Box (Hidden by default) -->
+                <div
+                  class="hidden mt-4 p-3 rounded-lg bg-secondary-container text-on-secondary-container font-body-sm text-body-sm flex items-center gap-2 animate-bounce"
+                  id="authNotice"
+                >
+                  <span class="material-symbols-outlined text-base"
+                    >check_circle</span
+                  >
+                  <span id="authNoticeText"
+                    >Routing to encrypted clinical stream...</span
+                  >
+                </div>
+
+                <!-- Trust & Compliance Subtext -->
+                <div
+                  class="mt-8 pt-5 border-t border-surface-container-high text-center space-y-1"
+                >
+                  <p class="font-label-sm text-[11px] text-on-surface-variant">
+                    Protected by sovereign on-premise PHI redaction engine.
+                  </p>
+                  <p class="font-label-sm text-[11px] text-outline font-mono">
+                    Demo build identifier: KH-DEMO-0842 • Ver: 4.8.1-BGS
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        // Password Visibility Toggle
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("passwordInput");
+        const passwordIcon = document.getElementById("passwordIcon");
+
+        if (togglePassword && passwordInput && passwordIcon) {
+          togglePassword.addEventListener("click", () => {
+            const isPassword =
+              passwordInput.getAttribute("type") === "password";
+            passwordInput.setAttribute(
+              "type",
+              isPassword ? "text" : "password",
+            );
+            passwordIcon.textContent = isPassword
+              ? "visibility_off"
+              : "visibility";
+          });
+        }
+
+        // Interactive Feedback & Redirect to Tier-4 Handshake
+        const form = document.getElementById("clinicLoginForm");
+        const notice = document.getElementById("authNotice");
+        const noticeText = document.getElementById("authNoticeText");
+        const googleBtn = document.getElementById("googleAuthBtn");
+        const whatsappBtn = document.getElementById("whatsappPasskeyBtn");
+
+        function triggerFeedback(msg, redirectDelay = 1100) {
+          if (notice && noticeText) {
+            noticeText.textContent = msg;
+            notice.classList.remove("hidden");
+            if (redirectDelay > 0) {
+              setTimeout(() => {
+                window.location.href = "clinical_handshake.html";
+              }, redirectDelay);
+            }
+          }
+        }
+
+        if (form) {
+          form.addEventListener("submit", () => {
+            triggerFeedback(
+              "Verifying DEMO-0001 certificate... Initiating Tier-4 Handshake.",
+            );
+          });
+        }
+
+        if (googleBtn) {
+          googleBtn.addEventListener("click", () => {
+            triggerFeedback(
+              "Redirecting to Google sign-in (demo)... Initiating Handshake.",
+            );
+          });
+        }
+
+        if (whatsappBtn) {
+          whatsappBtn.addEventListener("click", () => {
+            triggerFeedback(
+              "Encrypted WhatsApp Passkey verified. Connecting to Tier-4 Handshake.",
+            );
+          });
+        }
+      </script>
+    </main>
+  </body>
+</html>

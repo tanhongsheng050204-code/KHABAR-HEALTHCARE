@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+      Khabar — Establishing Secure Clinical Session (Khabar secure session)
+    </title>
+    <!-- Material Symbols & Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+        main > :first-child {
+          margin-top: 0 !important;
+        }
+        main > :last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#005235",
+              "secondary-fixed-dim": "#88d7ac",
+              "surface-container-highest": "#f3ded3",
+              "on-primary-fixed-variant": "#105137",
+              "primary-fixed-dim": "#96d4b2",
+              "on-error-container": "#93000a",
+              "primary-container": "#2f6b4f",
+              "on-background": "#241913",
+              "on-secondary-container": "#1d704d",
+              "on-tertiary-fixed-variant": "#683d00",
+              "on-surface": "#241913",
+              "surface-dim": "#ead6cb",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#002113",
+              "surface-bright": "#fff8f5",
+              "inverse-on-surface": "#ffede4",
+              "inverse-primary": "#96d4b2",
+              background: "#fff8f5",
+              "tertiary-fixed-dim": "#ffb869",
+              "secondary-container": "#a1f0c5",
+              outline: "#707972",
+              tertiary: "#6a3e00",
+              surface: "#fff8f5",
+              "tertiary-container": "#8b5300",
+              "on-tertiary-fixed": "#2c1700",
+              "tertiary-fixed": "#ffdcbb",
+              "on-primary-container": "#aae9c6",
+              "surface-tint": "#2d694d",
+              "on-surface-variant": "#404943",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#3a2e26",
+              primary: "#125238",
+              "error-container": "#ffdad6",
+              "surface-container": "#ffeade",
+              "on-secondary": "#ffffff",
+              secondary: "#176b49",
+              "outline-variant": "#c0c9c1",
+              "on-primary": "#ffffff",
+              error: "#ba1a1a",
+              "surface-variant": "#f3ded3",
+              "primary-fixed": "#b1f0cd",
+              "surface-container-low": "#fff1ea",
+              "surface-container-high": "#f9e4d9",
+              "secondary-fixed": "#a4f3c7",
+              "on-primary-fixed": "#002113",
+              "on-tertiary-container": "#ffd3a8",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xl": "3rem",
+              "space-sm": "0.5rem",
+              "margin-mobile": "1.25rem",
+              "space-lg": "1.75rem",
+              "space-xs": "0.25rem",
+              gutter: "1.5rem",
+              margin: "3rem",
+              "space-md": "1rem",
+              "gutter-mobile": "1rem",
+            },
+            fontFamily: {
+              "display-hero": ["Playfair Display"],
+              "label-md": ["Plus Jakarta Sans"],
+              "headline-lg-mobile": ["Playfair Display"],
+              "body-lg": ["Plus Jakarta Sans"],
+              "headline-lg": ["Playfair Display"],
+              "headline-sm": ["Playfair Display"],
+              "display-hero-mobile": ["Playfair Display"],
+              "body-md": ["Plus Jakarta Sans"],
+              "headline-md": ["Playfair Display"],
+              "body-xl": ["Plus Jakarta Sans"],
+              "body-sm": ["Plus Jakarta Sans"],
+              "label-sm": ["Plus Jakarta Sans"],
+              "label-lg": ["Plus Jakarta Sans"],
+            },
+            fontSize: {
+              "display-hero": [
+                "56px",
+                {
+                  lineHeight: "68px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-md": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg-mobile": [
+                "28px",
+                { lineHeight: "36px", letterSpacing: "0em", fontWeight: "600" },
+              ],
+              "body-lg": ["17px", { lineHeight: "28px", fontWeight: "400" }],
+              "headline-lg": [
+                "40px",
+                {
+                  lineHeight: "48px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-sm": [
+                "22px",
+                { lineHeight: "30px", fontWeight: "500" },
+              ],
+              "display-hero-mobile": [
+                "36px",
+                {
+                  lineHeight: "44px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+              "headline-md": [
+                "28px",
+                { lineHeight: "36px", fontWeight: "500" },
+              ],
+              "body-xl": ["20px", { lineHeight: "32px", fontWeight: "400" }],
+              "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }],
+              "label-sm": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.06em",
+                  fontWeight: "600",
+                },
+              ],
+              "label-lg": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-surface font-body-md text-on-surface antialiased">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+    <!-- Top Global Header for quick navigation across the prototype -->
+    <header
+      class="w-full bg-white/80 backdrop-blur-md border-b border-surface-container-high px-6 py-2.5 flex items-center justify-between text-xs sticky top-0 z-50"
+    >
+      <div class="flex items-center gap-2">
+        <a
+          href="landing_page.html"
+          class="flex items-center gap-2 group font-semibold text-primary"
+        >
+          <span
+            class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs"
+            >K</span
+          >
+          <span class="text-on-surface hover:text-primary transition-colors"
+            >Khabar Clinical Platform</span
+          >
+        </a>
+        <span class="text-outline-variant">/</span>
+        <span class="text-on-surface-variant font-mono"
+          >auth_handshake_session</span
+        >
+      </div>
+      <div class="flex items-center gap-2 font-medium">
+        <a
+          href="landing_page.html"
+          class="px-3 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
+        >
+          <span class="material-symbols-outlined text-[14px]">arrow_back</span>
+          <span>Landing Page</span>
+        </a>
+        <a
+          href="khabar_full_prototype.html"
+          class="px-3 py-1 rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors flex items-center gap-1 shadow-sm"
+        >
+          <span class="material-symbols-outlined text-[14px]"
+            >space_dashboard</span
+          >
+          <span>Full Prototype</span>
+        </a>
+      </div>
+    </header>
+
+    <main
+      class="w-full min-h-[calc(100vh-50px)] flex items-center justify-center p-margin-mobile lg:p-margin"
+    >
+      <div
+        class="flex flex-col w-full items-center justify-center py-6 px-2 sm:px-4"
+      >
+        <div
+          class="relative w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden p-6 sm:p-10 transition-all border border-surface-container-high/40"
+        >
+          <div
+            class="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-secondary-container opacity-40 blur-3xl pointer-events-none"
+          ></div>
+          <div
+            class="absolute -left-20 -bottom-20 w-72 h-72 rounded-full bg-surface-container-high opacity-60 blur-2xl pointer-events-none"
+          ></div>
+
+          <div class="relative z-10 flex flex-col items-center text-center">
+            <!-- Security Pill -->
+            <div
+              class="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full mb-8 shadow-sm"
+            >
+              <div class="flex items-center gap-1.5 text-primary">
+                <span
+                  class="material-symbols-outlined text-[20px]"
+                  style="font-variation-settings: &quot;FILL&quot; 1"
+                  >health_and_safety</span
+                >
+                <span
+                  class="font-label-md text-label-md uppercase tracking-wider text-primary font-bold"
+                  >Khabar secure session</span
+                >
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+              <div class="flex items-center gap-1.5 text-on-surface-variant">
+                <span class="material-symbols-outlined text-[18px]"
+                  >verified_user</span
+                >
+                <span
+                  class="font-label-md text-label-md text-on-surface-variant font-medium"
+                  >Khabar Guard v3.4</span
+                >
+              </div>
+              <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+              <span
+                class="flex items-center gap-1 text-secondary font-label-md text-label-md font-semibold"
+              >
+                <span class="relative flex h-2 w-2">
+                  <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"
+                  ></span>
+                  <span
+                    class="relative inline-flex rounded-full h-2 w-2 bg-secondary"
+                  ></span>
+                </span>
+                MY-Sovereign
+              </span>
+            </div>
+
+            <!-- Pulsing Circular ECG Gauge -->
+            <div
+              class="relative w-36 h-36 flex items-center justify-center mb-8"
+            >
+              <div
+                class="absolute inset-0 rounded-full bg-secondary-container opacity-30 animate-ping"
+              ></div>
+              <div
+                class="absolute inset-2 rounded-full bg-surface-container-low opacity-70 animate-pulse"
+              ></div>
+              <svg
+                class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+                viewBox="0 0 120 120"
+              >
+                <circle
+                  class="text-surface-container"
+                  cx="60"
+                  cy="60"
+                  fill="none"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <circle
+                  class="transition-all duration-700 text-primary"
+                  cx="60"
+                  cy="60"
+                  fill="none"
+                  id="progressCircle"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-dasharray="339.29"
+                  stroke-dashoffset="118.75"
+                  stroke-linecap="round"
+                  stroke-width="4.5"
+                ></circle>
+              </svg>
+              <div
+                class="relative z-10 flex flex-col items-center justify-center w-24 h-24 rounded-full bg-surface-container-lowest shadow-md border border-surface-container-high/50"
+              >
+                <svg
+                  class="w-14 h-10 text-primary animate-pulse"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 100 40"
+                >
+                  <polyline
+                    points="0,20 28,20 34,7 40,33 46,14 52,24 58,20 100,20"
+                  ></polyline>
+                </svg>
+                <span
+                  class="font-label-sm text-label-sm text-primary -mt-1 font-bold font-mono"
+                  id="progressPercent"
+                  >68%</span
+                >
+              </div>
+            </div>
+
+            <h1
+              class="font-headline-md text-headline-md text-on-surface mb-3 tracking-tight"
+            >
+              Establishing Secure Clinical Session
+            </h1>
+            <p
+              class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-8 leading-relaxed"
+            >
+              Verifying clinician credentials (demo),
+              hardware cryptographic token, and PDPA sovereign cloud tunnel.
+            </p>
+
+            <!-- Security Handshake Sequence -->
+            <div
+              class="w-full bg-surface-container-low p-5 sm:p-6 rounded-xl text-left space-y-3.5 mb-8 shadow-sm border border-surface-container-high/60"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-bold"
+                  >Security Handshake Sequence</span
+                >
+                <span
+                  class="font-label-sm text-label-sm text-secondary flex items-center gap-1 font-mono font-semibold"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >lock</span
+                  >
+                  256-Bit TLS 1.3
+                </span>
+              </div>
+
+              <div class="space-y-2.5 pt-1">
+                <!-- Step 1 -->
+                <div
+                  class="flex items-center justify-between bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-high/40 transition-all"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-secondary text-[22px]"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >check_circle</span
+                    >
+                    <div>
+                      <p
+                        class="font-label-lg text-label-lg text-on-surface font-semibold"
+                      >
+                        Validating demo clinician DEMO-0001
+                      </p>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                      >
+                        Dr. Farhana binti Zulkifli • Status: Active (demo)
+                        (Specialist Register)
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-medium"
+                    >Verified</span
+                  >
+                </div>
+
+                <!-- Step 2 -->
+                <div
+                  class="flex items-center justify-between bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-high/40 transition-all"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-secondary text-[22px]"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >check_circle</span
+                    >
+                    <div>
+                      <p
+                        class="font-label-lg text-label-lg text-on-surface font-semibold"
+                      >
+                        Establishing 256-bit AES End-to-End Encrypted Tunnel
+                      </p>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                      >
+                        HSM Session Key:
+                        <span
+                          class="font-mono text-[11px] bg-slate-100 px-1.5 py-0.5 rounded"
+                          >kkm-kv-092x-mycloud</span
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-medium"
+                    >Encrypted</span
+                  >
+                </div>
+
+                <!-- Step 3 -->
+                <div
+                  class="flex items-center justify-between bg-surface-container-lowest p-3.5 rounded-lg border border-surface-container-high/40 shadow-sm transition-all"
+                  id="stepThree"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-tertiary animate-spin text-[22px]"
+                      >sync</span
+                    >
+                    <div>
+                      <p
+                        class="font-label-lg text-label-lg text-on-surface font-semibold"
+                      >
+                        Verifying Zero-PHI WhatsApp Bridge Handshake
+                      </p>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                      >
+                        Hashing outpatient identifiers under PDPA 2010 protocol
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2.5 py-0.5 rounded-full font-medium animate-pulse"
+                    >In Progress</span
+                  >
+                </div>
+
+                <!-- Step 4 -->
+                <div
+                  class="flex items-center justify-between bg-surface-container-lowest/60 p-3.5 rounded-lg border border-surface-container-high/40 opacity-70 transition-all"
+                  id="stepFour"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="material-symbols-outlined text-outline text-[22px]"
+                      >pending</span
+                    >
+                    <div>
+                      <p
+                        class="font-label-lg text-label-lg text-on-surface-variant"
+                      >
+                        Loading Taman Harmoni Clinic Patient Telemetry Stream
+                      </p>
+                      <p class="font-body-sm text-body-sm text-outline">
+                        Bedside vitals &amp; recovery check-in stream
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2.5 py-0.5 rounded-full"
+                    >Queued</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Legal & Compliance Notice -->
+            <div
+              class="flex items-center justify-center gap-2 mb-8 text-outline text-center"
+            >
+              <span class="material-symbols-outlined text-[18px]">gavel</span>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Authorized Medical Personnel Only. All session activities logged
+                pursuant to
+                <span class="text-on-surface font-semibold"
+                  >Telemedicine Act 1997</span
+                >.
+              </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div
+              class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md"
+            >
+              <button
+                class="w-full sm:w-auto flex-1 bg-primary hover:bg-primary-container text-on-primary py-3 px-6 rounded-full font-label-lg text-label-lg shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+                id="bypassBtn"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-[18px]">bolt</span>
+                <span>Bypass Check (Dev Sandbox)</span>
+              </button>
+              <button
+                class="w-full sm:w-auto bg-surface-container-low hover:bg-surface-container text-on-surface py-3 px-6 rounded-full font-label-lg text-label-lg transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                id="cancelBtn"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-[18px]">close</span>
+                <span>Cancel Handshake</span>
+              </button>
+            </div>
+
+            <!-- Status Toast -->
+            <div
+              class="hidden mt-6 bg-secondary-container text-on-secondary-container px-5 py-2.5 rounded-full font-label-md text-label-md flex items-center gap-2 shadow-sm animate-bounce"
+              id="statusToast"
+            >
+              <span class="material-symbols-outlined text-[18px]"
+                >task_alt</span
+              >
+              <span class="font-medium"
+                >Secure Telemedicine Handshake Complete. Redirecting to Doctor
+                Workspace...</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          let progress = 68;
+          const progressCircle = document.getElementById("progressCircle");
+          const progressPercent = document.getElementById("progressPercent");
+          const stepThree = document.getElementById("stepThree");
+          const stepFour = document.getElementById("stepFour");
+          const toast = document.getElementById("statusToast");
+          const circumference = 339.29;
+          let isRedirecting = false;
+
+          function setProgress(val) {
+            const offset = circumference - (val / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+            progressPercent.textContent = Math.round(val) + "%";
+          }
+
+          const timer = setInterval(() => {
+            if (progress < 96) {
+              progress += 4;
+              setProgress(progress);
+              if (progress >= 84 && stepThree) {
+                stepThree.innerHTML = `
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-secondary text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                  <div>
+                    <p class="font-label-lg text-label-lg text-on-surface font-semibold">Zero-PHI WhatsApp Bridge Handshake Verified</p>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">E2E tunnel bound to WhatsApp Business Cloud API</p>
+                  </div>
+                </div>
+                <span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-medium">Verified</span>
+              `;
+                if (stepFour) {
+                  stepFour.classList.remove(
+                    "opacity-70",
+                    "bg-surface-container-lowest/60",
+                  );
+                  stepFour.classList.add(
+                    "bg-surface-container-lowest",
+                    "shadow-sm",
+                  );
+                  stepFour.innerHTML = `
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-tertiary animate-spin text-[22px]">sync</span>
+                    <div>
+                      <p class="font-label-lg text-label-lg text-on-surface font-semibold">Loading Taman Harmoni Clinic Patient Telemetry Stream</p>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">Subscribing to real-time recovery alerts (14 active patients)</p>
+                    </div>
+                  </div>
+                  <span class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2.5 py-0.5 rounded-full font-medium animate-pulse">Syncing</span>
+                `;
+                }
+              }
+            } else {
+              clearInterval(timer);
+              finishSession();
+            }
+          }, 800);
+
+          function finishSession() {
+            if (isRedirecting) return;
+            isRedirecting = true;
+            setProgress(100);
+            if (stepFour) {
+              stepFour.innerHTML = `
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                <div>
+                  <p class="font-label-lg text-label-lg text-on-surface font-semibold">Taman Harmoni Clinic Patient Telemetry Loaded</p>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">14 outpatients connected via encrypted messaging</p>
+                </div>
+              </div>
+              <span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-medium">Ready</span>
+            `;
+            }
+            if (toast) {
+              toast.classList.remove("hidden");
+            }
+            // Redirect automatically to the Doctor Suite in the Full Prototype or App Portal
+            setTimeout(() => {
+              window.location.href = "clinic_command.html";
+            }, 1100);
+          }
+
+          const bypassBtn = document.getElementById("bypassBtn");
+          if (bypassBtn) {
+            bypassBtn.addEventListener("click", () => {
+              clearInterval(timer);
+              finishSession();
+            });
+          }
+
+          const cancelBtn = document.getElementById("cancelBtn");
+          if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => {
+              clearInterval(timer);
+              window.location.href = "landing_page.html";
+            });
+          }
+        })();
+      </script>
+    </main>
+  </body>
+</html>

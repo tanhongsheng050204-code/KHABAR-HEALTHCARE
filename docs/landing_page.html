@@ -1,0 +1,2306 @@
+<!doctype html>
+<html class="scroll-smooth" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+      Khabar — AI-Powered Post-Clinic Aftercare for Malaysian Healthcare
+    </title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,500;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Google Material Symbols -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              surface: "#fafbfa",
+              "surface-subtle": "#f4f6f4",
+              "surface-card": "#ffffff",
+              primary: "#059669",
+              "primary-hover": "#047857",
+              "primary-deep": "#064e3b",
+              "primary-soft": "#ecfdf5",
+              "emerald-glow": "#10b981",
+              slate: {
+                850: "#0f172a",
+                900: "#0b1324",
+              },
+            },
+            fontFamily: {
+              editorial: ["Newsreader", "serif"],
+              sans: [
+                "Plus Jakarta Sans",
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "Segoe UI",
+                "Roboto",
+                "sans-serif",
+              ],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            boxShadow: {
+              "subtle-card":
+                "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04)",
+              "elevated-card":
+                "0 12px 32px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03)",
+              "emerald-glow": "0 12px 30px -4px rgba(5, 150, 105, 0.22)",
+              "glass-float": "0 20px 40px -15px rgba(15, 23, 42, 0.07)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+      }
+      .bg-grid-pattern {
+        background-size: 32px 32px;
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(15, 23, 42, 0.025) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(15, 23, 42, 0.025) 1px,
+            transparent 1px
+          );
+      }
+      .soundwave-bar {
+        transition: height 0.18s ease-in-out;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#fafafa] text-slate-900 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900 min-h-screen relative overflow-x-hidden"
+  >
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+    <!-- Subtle Ambient Mesh Lighting (Clean, luminous, hospital-grade luxury) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div
+        class="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-emerald-100/50 via-teal-50/30 to-transparent rounded-full blur-3xl opacity-70"
+      ></div>
+      <div
+        class="absolute top-[35%] -right-40 w-[600px] h-[600px] bg-emerald-50/60 rounded-full blur-3xl"
+      ></div>
+      <div
+        class="absolute top-[65%] -left-40 w-[600px] h-[600px] bg-emerald-50/40 rounded-full blur-3xl"
+      ></div>
+      <div class="absolute inset-0 bg-grid-pattern opacity-60"></div>
+    </div>
+    <!-- ========================================================================= -->
+    <!-- SLEEK FLOATING FROSTED NAVBAR -->
+    <!-- ========================================================================= -->
+    <header
+      class="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-6xl z-50 transition-all duration-300"
+    >
+      <div
+        class="bg-white/85 backdrop-blur-xl border border-slate-200/80 shadow-sm rounded-full px-5 sm:px-6 py-3 flex items-center justify-between"
+      >
+        <!-- Brand Logo -->
+        <a class="flex items-center gap-2.5 group" href="#">
+          <span
+            class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm shadow-sm transition-transform group-hover:scale-105"
+          >
+            <span class="material-symbols-outlined text-[17px]">emergency</span>
+          </span>
+          <span class="text-xl font-bold tracking-tight text-slate-900"
+            >Khabar</span
+          >
+          <span
+            class="hidden sm:inline-flex items-center gap-1.5 ml-2 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-[11px] font-medium font-mono"
+          >
+            <span class="relative flex h-1.5 w-1.5">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600"
+              ></span>
+            </span>
+            140+ Clinics
+          </span>
+        </a>
+        <!-- Navigation Links -->
+        <nav
+          class="hidden md:flex items-center gap-7 text-[13px] font-medium text-slate-600"
+        >
+          <a
+            class="hover:text-emerald-700 transition-colors"
+            href="#reality-polypharmacy"
+            >Polypharmacy Guard</a
+          >
+          <a
+            class="hover:text-emerald-700 transition-colors"
+            href="#interactive-simulator"
+            >Clinical Triage</a
+          >
+          <a
+            class="hover:text-emerald-700 transition-colors"
+            href="#recovery-arc"
+            >30-Day Recovery</a
+          >
+          <a
+            class="hover:text-emerald-700 transition-colors"
+            href="#command-center"
+            >Command Center</a
+          >
+        </nav>
+        <!-- Language Selector & Demo Button -->
+        <div class="flex items-center gap-3">
+          <!-- Language Pill -->
+          <div
+            class="hidden lg:flex items-center bg-slate-100/90 border border-slate-200 rounded-full px-1.5 py-1 text-[11px] font-mono text-slate-600"
+          >
+            <button
+              class="px-2 py-0.5 rounded-full bg-white font-semibold text-slate-900 shadow-xs"
+            >
+              BM
+            </button>
+            <button
+              class="px-2 py-0.5 rounded-full hover:text-slate-900 transition-colors"
+            >
+              EN
+            </button>
+            <button
+              class="px-2 py-0.5 rounded-full hover:text-slate-900 transition-colors"
+            >
+              中文
+            </button>
+            <button
+              class="px-2 py-0.5 rounded-full hover:text-slate-900 transition-colors"
+            >
+              தமிழ்
+            </button>
+          </div>
+          <a
+            href="login.html"
+            class="hidden md:flex px-3 sm:px-3.5 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs sm:text-[13px] font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 items-center gap-1.5"
+          >
+            <span class="material-symbols-outlined text-[15px] text-emerald-700"
+              >lock</span
+            >
+            <span>Doctor Login</span>
+          </a>
+          <a
+            href="khabar_full_prototype.html"
+            target="_blank"
+            class="px-3.5 sm:px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-[13px] font-semibold transition-all shadow-sm hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
+          >
+            <span class="material-symbols-outlined text-[15px] text-emerald-400"
+              >space_dashboard</span
+            >
+            <span>Live Prototype</span>
+          </a>
+          <button
+            class="px-4 sm:px-5 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-[13px] font-semibold transition-all shadow-emerald-glow hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1.5"
+            onclick="
+              document
+                .getElementById('demo-request-modal')
+                .classList.remove('hidden')
+            "
+          >
+            <span>Book Clinic Demo</span>
+            <span class="material-symbols-outlined text-[15px]"
+              >arrow_forward</span
+            >
+          </button>
+        </div>
+      </div>
+    </header>
+    <!-- ========================================================================= -->
+    <!-- MAIN CONTENT -->
+    <!-- ========================================================================= -->
+    <main class="relative z-10 pt-36 pb-24 space-y-28 sm:space-y-36">
+      <!-- ======================================================================= -->
+      <!-- HERO SECTION -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6 pt-4">
+        <div
+          class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center"
+        >
+          <!-- Left Copy Column (7 cols) -->
+          <div class="lg:col-span-7 space-y-7">
+            <!-- Trust Compliance Badge -->
+            <div
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-200/80 shadow-xs"
+            >
+              <span class="relative flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"
+                ></span>
+              </span>
+              <span
+                class="text-xs font-mono font-medium text-emerald-900 tracking-tight"
+              >
+                Designed with PDPA and telemedicine rules in mind (not certified) ·
+                Piloting in 140+ Clinics
+              </span>
+            </div>
+            <!-- Headline -->
+            <h1
+              class="text-4xl sm:text-5xl lg:text-[58px] font-semibold text-slate-900 tracking-tight leading-[1.12]"
+            >
+              The visit ends.<br />
+              <span class="font-editorial italic font-normal text-emerald-800"
+                >The care never sleeps.</span
+              >
+            </h1>
+            <!-- Subheading -->
+            <p
+              class="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl"
+            >
+              Malaysian doctors consult 80+ patients a day in 6-minute windows.
+              <span class="text-slate-900 font-medium"
+                >Khabar quietly follows them home for 30 days via WhatsApp</span
+              >
+              in their native dialect—detecting silent medication errors,
+              surgical complications, and diabetic crashes before hospital
+              readmission.
+            </p>
+            <!-- CTA Buttons -->
+            <div class="flex flex-wrap items-center gap-3.5 pt-1">
+              <a
+                href="khabar_full_prototype.html"
+                target="_blank"
+                class="px-6 py-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+              >
+                <span
+                  class="material-symbols-outlined text-emerald-400 text-[19px]"
+                  >rocket_launch</span
+                >
+                <span>Launch Live Prototype</span>
+              </a>
+              <button
+                class="px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm shadow-emerald-glow transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+                onclick="
+                  document
+                    .getElementById('demo-request-modal')
+                    .classList.remove('hidden')
+                "
+              >
+                <span>Request Clinic Demo</span>
+                <span class="material-symbols-outlined text-[17px]"
+                  >schedule</span
+                >
+              </button>
+              <a
+                class="px-6 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 font-semibold text-sm shadow-xs transition-all flex items-center gap-2"
+                href="#interactive-simulator"
+              >
+                <span
+                  class="material-symbols-outlined text-emerald-700 text-[19px]"
+                  >play_circle</span
+                >
+                <span>Explore Live Triage</span>
+              </a>
+            </div>
+            <!-- Clean Metric Pills Strip -->
+            <div
+              class="pt-6 border-t border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6"
+            >
+              <div>
+                <div
+                  class="text-2xl sm:text-3xl font-bold font-sans text-slate-900 tracking-tight"
+                >
+                  94.2%
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  WhatsApp response rate
+                </div>
+              </div>
+              <div>
+                <div
+                  class="text-2xl sm:text-3xl font-bold font-sans text-slate-900 tracking-tight"
+                >
+                  0
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">Apps needed</div>
+              </div>
+              <div>
+                <div
+                  class="text-2xl sm:text-3xl font-bold font-sans text-slate-900 tracking-tight"
+                >
+                  4 Dialects
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  Mother tongue audio
+                </div>
+              </div>
+              <div>
+                <div
+                  class="text-2xl sm:text-3xl font-bold font-sans text-slate-900 tracking-tight"
+                >
+                  14,200+
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  Complications caught
+                </div>
+              </div>
+            </div>
+            <!-- Mother Tongue Dialect Preview Bar -->
+            <div
+              class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-subtle-card space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-xs font-mono font-semibold text-slate-600 flex items-center gap-1.5"
+                >
+                  <span
+                    class="material-symbols-outlined text-emerald-700 text-[16px]"
+                    >graphic_eq</span
+                  >
+                  Malaysian Mother Tongue Audio Telemetry
+                </span>
+                <span
+                  class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-medium"
+                  id="audio-status-pill"
+                >
+                  Voice Simulator Ready
+                </span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  class="dialect-pill text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/60 hover:border-emerald-300 transition-all text-xs"
+                  id="dialect-btn-kelantan"
+                  onclick="playDialectAudio('kelantan')"
+                >
+                  <span class="font-semibold text-slate-800 block"
+                    >Kelantanese BM</span
+                  >
+                  <span class="text-[10px] text-slate-500"
+                    >"Makan ubat ko tok..."</span
+                  >
+                </button>
+                <button
+                  class="dialect-pill text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/60 hover:border-emerald-300 transition-all text-xs"
+                  id="dialect-btn-hokkien"
+                  onclick="playDialectAudio('hokkien')"
+                >
+                  <span class="font-semibold text-slate-800 block"
+                    >Penang Hokkien</span
+                  >
+                  <span class="text-[10px] text-slate-500"
+                    >"Jia ba buay, lu eh..."</span
+                  >
+                </button>
+                <button
+                  class="dialect-pill text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/60 hover:border-emerald-300 transition-all text-xs"
+                  id="dialect-btn-cantonese"
+                  onclick="playDialectAudio('cantonese')"
+                >
+                  <span class="font-semibold text-slate-800 block"
+                    >Cantonese</span
+                  >
+                  <span class="text-[10px] text-slate-500"
+                    >"Ging yat yau mou..."</span
+                  >
+                </button>
+                <button
+                  class="dialect-pill text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200/60 hover:border-emerald-300 transition-all text-xs"
+                  id="dialect-btn-tamil"
+                  onclick="playDialectAudio('tamil')"
+                >
+                  <span class="font-semibold text-slate-800 block">Tamil</span>
+                  <span class="text-[10px] text-slate-500"
+                    >"Marunthu saaptacha..."</span
+                  >
+                </button>
+              </div>
+              <!-- Soundwave Simulator Playback -->
+              <div class="flex items-center gap-3 pt-1">
+                <button
+                  class="w-8 h-8 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center shrink-0 transition-all"
+                  id="play-pause-btn"
+                  onclick="toggleAudioPlayback()"
+                >
+                  <span
+                    class="material-symbols-outlined text-[18px]"
+                    id="play-pause-icon"
+                    >play_arrow</span
+                  >
+                </button>
+                <div
+                  class="flex-1 flex items-center gap-1 h-6 px-2 bg-slate-100 rounded-lg overflow-hidden"
+                  id="soundwave-container"
+                >
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[30%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[60%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[80%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-700 rounded-full h-[40%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[20%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[90%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[55%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[70%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[30%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-700 rounded-full h-[100%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[45%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[65%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[85%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[25%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[75%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-700 rounded-full h-[95%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[40%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[20%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[85%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[60%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[35%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-700 rounded-full h-[70%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[90%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[30%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-600 rounded-full h-[50%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-500 rounded-full h-[75%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-400 rounded-full h-[40%]"
+                  ></div>
+                  <div
+                    class="soundwave-bar w-1 bg-emerald-300 rounded-full h-[20%]"
+                  ></div>
+                </div>
+                <span
+                  class="text-xs font-mono text-slate-500 shrink-0"
+                  id="audio-timer"
+                  >0:00 / 0:24</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Right Column: Clean Modern Light WhatsApp Telemetry Mock (5 cols) -->
+          <div class="lg:col-span-5 relative">
+            <!-- Soft Glow behind mockup -->
+            <div
+              class="absolute -inset-2 bg-gradient-to-tr from-emerald-100/60 to-slate-200/40 rounded-3xl blur-xl opacity-70"
+            ></div>
+            <!-- Phone Shell -->
+            <div
+              class="relative bg-white rounded-3xl border border-slate-200/90 shadow-elevated-card p-5 sm:p-6 space-y-4"
+            >
+              <!-- WhatsApp Contact Header -->
+              <div
+                class="flex items-center justify-between pb-3.5 border-b border-slate-100"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <div
+                      class="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-sm flex items-center justify-center"
+                    >
+                      MK
+                    </div>
+                    <span
+                      class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"
+                    ></span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <h3 class="text-sm font-semibold text-slate-900">
+                        Mak Cik Aminah (62)
+                      </h3>
+                      <span
+                        class="material-symbols-outlined text-[15px] text-emerald-600"
+                        >verified</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-slate-500">
+                      Post-Knee Arthroscopy • Day 3 Follow-Up
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                >
+                  Active Telemetry
+                </span>
+              </div>
+              <!-- Message Thread Container -->
+              <div class="space-y-3 text-xs leading-relaxed">
+                <!-- Doctor Voice Note -->
+                <div
+                  class="bg-slate-50 rounded-2xl rounded-tl-sm p-3 border border-slate-100 max-w-[92%] space-y-1.5"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <button
+                      class="w-7 h-7 rounded-full bg-emerald-700 text-white flex items-center justify-center shrink-0"
+                    >
+                      <span class="material-symbols-outlined text-[15px]"
+                        >play_arrow</span
+                      >
+                    </button>
+                    <div class="flex-1">
+                      <div
+                        class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden"
+                      >
+                        <div
+                          class="h-full w-2/3 bg-emerald-600 rounded-full"
+                        ></div>
+                      </div>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-500"
+                      >0:42</span
+                    >
+                  </div>
+                  <p class="text-[11px] text-slate-500 italic">
+                    Pesanan Suara Dr. Farah (Klinik Kesihatan Cheras)
+                  </p>
+                </div>
+                <!-- Automated System Follow-up -->
+                <div
+                  class="bg-slate-50 rounded-2xl rounded-tl-sm p-3.5 border border-slate-100 max-w-[94%] space-y-1 text-slate-800"
+                >
+                  <p>
+                    Assalamualaikum Mak Cik Aminah, macam mana rasa lutut pagi
+                    ni? Ada rasa kebas atau berdenyut luar biasa tak? Ubat
+                    Metformin dah makan lepas sarapan?
+                  </p>
+                  <div
+                    class="flex items-center justify-end gap-1 text-[10px] text-slate-400 pt-0.5"
+                  >
+                    <span>8:15 AM</span>
+                    <span
+                      class="material-symbols-outlined text-[13px] text-emerald-600"
+                      >done_all</span
+                    >
+                  </div>
+                </div>
+                <!-- Patient Message Bubble -->
+                <div
+                  class="ml-auto bg-emerald-700 text-white rounded-2xl rounded-tr-sm p-3.5 max-w-[88%] space-y-1 shadow-sm"
+                >
+                  <p>
+                    Alhamdulillah kurang sakit doktor, tapi lepas makan ubat
+                    kencing manis rasa pening sikit berpeluh...
+                  </p>
+                  <div
+                    class="flex items-center justify-end gap-1 text-[10px] text-emerald-200 pt-0.5"
+                  >
+                    <span>8:19 AM</span>
+                    <span class="material-symbols-outlined text-[13px]"
+                      >done_all</span
+                    >
+                  </div>
+                </div>
+                <!-- Clinical Guard Alert Intervention -->
+                <div
+                  class="p-3 rounded-xl bg-amber-50/90 border border-amber-200 text-slate-800 space-y-1"
+                >
+                  <div
+                    class="flex items-center gap-1.5 text-amber-900 font-semibold text-xs"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[16px] text-amber-600"
+                      >warning</span
+                    >
+                    <span
+                      >Khabar Clinical Guard: Mild Hypoglycemia Suspected</span
+                    >
+                  </div>
+                  <p class="text-[11px] text-amber-800 leading-snug">
+                    Alert sent to Duty Pharmacist • Advised to consume 15g fast
+                    carbohydrate &amp; check blood glucometer.
+                  </p>
+                </div>
+                <!-- Follow-up Reassurance -->
+                <div
+                  class="bg-slate-50 rounded-2xl rounded-tl-sm p-3.5 border border-slate-100 max-w-[94%] space-y-1 text-slate-800"
+                >
+                  <p>
+                    Terima kasih beritahu kami Mak Cik. Dr. Farah dah terima
+                    nota ini. Sila minum setengah cawan jus manis sekarang dan
+                    rehat duduk dulu. Pembantu klinik kami akan WhatsApp sekejap
+                    lagi ya.
+                  </p>
+                  <div
+                    class="flex items-center justify-end gap-1 text-[10px] text-slate-400 pt-0.5"
+                  >
+                    <span>8:20 AM</span>
+                    <span
+                      class="material-symbols-outlined text-[13px] text-emerald-600"
+                      >done_all</span
+                    >
+                  </div>
+                </div>
+                <!-- Typing indicator -->
+                <div
+                  class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100/80 w-fit text-[11px] text-slate-500"
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce"
+                  ></span>
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:0.2s]"
+                  ></span>
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:0.4s]"
+                  ></span>
+                  <span class="ml-1.5 text-[10px] font-mono"
+                    >Clinic Nurse reviewing response</span
+                  >
+                </div>
+              </div>
+              <!-- Quick Action Buttons -->
+              <div
+                class="pt-2 border-t border-slate-100 flex items-center gap-2"
+              >
+                <span class="text-[11px] font-mono text-slate-400"
+                  >Quick Response:</span
+                >
+                <button
+                  class="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 transition-colors font-medium text-slate-700"
+                >
+                  Dah minum jus manis
+                </button>
+                <button
+                  class="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 transition-colors font-medium text-slate-700"
+                >
+                  Masih pening
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================================================================= -->
+      <!-- POLYPHARMACY SECTION: THREE CLINICS, ONE KITCHEN TABLE -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6" id="reality-polypharmacy">
+        <!-- Header -->
+        <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+          <span
+            class="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono font-semibold tracking-wider uppercase"
+          >
+            The Polypharmacy Blindspot
+          </span>
+          <h2
+            class="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight leading-snug"
+          >
+            Three Clinics. One Kitchen Table.<br />
+            <span class="font-editorial italic font-normal text-emerald-800"
+              >One Potentially Fatal Duplicate.</span
+            >
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+            In Malaysia, patients frequently visit a government Klinik Kesihatan
+            for chronic meds, a private GP for an acute cough, and a retail
+            pharmacy for backaches. No system talks to each other—until Khabar
+            audits the kitchen table.
+          </p>
+        </div>
+        <!-- 3 Clean Side-by-Side Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <!-- Clinic 1 -->
+          <div
+            class="bg-white shadow-subtle-card hover:shadow-elevated-card border border-slate-200/80 rounded-2xl p-6 transition-all space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <span
+                class="text-xs font-mono font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60"
+              >
+                1. Private GP Taman Harmoni
+              </span>
+              <span class="text-xs font-mono text-slate-400">Mon 9:00 AM</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">
+                Klinik Keluarga Harmoni
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Complaint: Acute lumbar muscle spasm from lifting groceries.
+              </p>
+            </div>
+            <div
+              class="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2"
+            >
+              <div class="flex justify-between items-baseline">
+                <span class="font-semibold text-sm text-slate-900"
+                  >Panadol Extend</span
+                >
+                <span class="text-xs font-mono font-bold text-emerald-700"
+                  >665 mg</span
+                >
+              </div>
+              <p class="text-xs text-slate-500">
+                Prescribed: 2 tablets every 8 hours
+              </p>
+              <div
+                class="pt-2 border-t border-slate-200/60 flex justify-between items-center text-xs"
+              >
+                <span class="text-slate-500">Daily Cumulative:</span>
+                <span class="font-mono font-bold text-slate-800"
+                  >3,990 mg Paracetamol</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Clinic 2 -->
+          <div
+            class="bg-white shadow-subtle-card hover:shadow-elevated-card border border-slate-200/80 rounded-2xl p-6 transition-all space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <span
+                class="text-xs font-mono font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200/60"
+              >
+                2. Klinik Kesihatan (public clinic)
+              </span>
+              <span class="text-xs font-mono text-slate-400">Tue 2:30 PM</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">
+                KK Cheras Batu 9
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Complaint: Knee osteoarthritis flare-up &amp; joint stiffness.
+              </p>
+            </div>
+            <div
+              class="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2"
+            >
+              <div class="flex justify-between items-baseline">
+                <span class="font-semibold text-sm text-slate-900"
+                  >Ubat Sakit Sendi</span
+                >
+                <span class="text-xs font-mono font-bold text-blue-700"
+                  >500 mg</span
+                >
+              </div>
+              <p class="text-xs text-slate-500">
+                Prescribed: 2 tablets 4 times daily as needed
+              </p>
+              <div
+                class="pt-2 border-t border-slate-200/60 flex justify-between items-center text-xs"
+              >
+                <span class="text-slate-500">Potential Add-on:</span>
+                <span class="font-mono font-bold text-amber-700"
+                  >+4,000 mg Paracetamol</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Clinic 3 -->
+          <div
+            class="bg-white shadow-subtle-card hover:shadow-elevated-card border border-slate-200/80 rounded-2xl p-6 transition-all space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <span
+                class="text-xs font-mono font-semibold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200/60"
+              >
+                3. Retail Pharmacy
+              </span>
+              <span class="text-xs font-mono text-slate-400">Wed 8:00 PM</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">
+                Community Pharmacy (demo)
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Complaint: Congested sinuses, sneezing &amp; flu headache.
+              </p>
+            </div>
+            <div
+              class="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2"
+            >
+              <div class="flex justify-between items-baseline">
+                <span class="font-semibold text-sm text-slate-900"
+                  >Cold &amp; Flu Multisymptom</span
+                >
+                <span class="text-xs font-mono font-bold text-purple-700"
+                  >500 mg</span
+                >
+              </div>
+              <p class="text-xs text-slate-500">
+                Instructions: 1 cap every 6 hours (unlabeled Paracetamol)
+              </p>
+              <div
+                class="pt-2 border-t border-slate-200/60 flex justify-between items-center text-xs"
+              >
+                <span class="text-slate-500">Hidden Compound:</span>
+                <span class="font-mono font-bold text-rose-600"
+                  >Contains Paracetamol</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Alert Banner -->
+        <div
+          class="bg-white border border-rose-200/90 rounded-2xl p-6 sm:p-7 shadow-subtle-card relative overflow-hidden"
+        >
+          <div
+            class="absolute -right-8 -bottom-8 w-40 h-40 bg-rose-50 rounded-full blur-2xl pointer-events-none"
+          ></div>
+          <div
+            class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10"
+          >
+            <div class="flex items-start gap-4">
+              <div
+                class="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0"
+              >
+                <span class="material-symbols-outlined text-[24px]"
+                  >crisis_alert</span
+                >
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-mono text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    Critical Duplicate Intercepted
+                  </span>
+                  <span class="text-xs font-mono text-rose-700 font-medium"
+                    >Acute Hepatotoxicity Risk Threshold</span
+                  >
+                </div>
+                <h4 class="text-base sm:text-lg font-bold text-slate-900">
+                  Combined daily Paracetamol exceeds 4,200mg (toxic liver
+                  threshold).
+                </h4>
+                <p
+                  class="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed"
+                >
+                  Encik Roslan snapped a quick WhatsApp picture of his kitchen
+                  table blister packs. Khabar’s Computer Vision recognized the
+                  active acetaminophen molecules across 3 different clinic bags
+                  within 3.8 seconds and halted the 2:00 PM dose.
+                </p>
+              </div>
+            </div>
+            <div
+              class="bg-emerald-50/80 border border-emerald-200/70 rounded-xl p-4 w-full md:w-auto shrink-0 space-y-0.5"
+            >
+              <p
+                class="text-xs font-mono font-bold text-emerald-800 flex items-center gap-1.5"
+              >
+                <span
+                  class="material-symbols-outlined text-[16px] text-emerald-600"
+                  >check_circle</span
+                >
+                Automated Khabar Action
+              </p>
+              <p class="text-xs font-semibold text-slate-900">
+                Warning delivered at 1:42 PM
+              </p>
+              <p class="text-[11px] text-slate-600 mb-2">
+                Prevented acute accidental liver failure admission.
+              </p>
+              <a
+                href="polypharmacy_guard.html"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-mono text-[11px] font-semibold transition-all shadow-sm"
+              >
+                <span class="material-symbols-outlined text-[15px]"
+                  >medication_liquid</span
+                >
+                Open Radar Console ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================================================================= -->
+      <!-- INTERACTIVE CLINICAL TRIAGE SIMULATOR -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6" id="interactive-simulator">
+        <div
+          class="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-10 shadow-elevated-card space-y-8"
+        >
+          <!-- Section Header -->
+          <div class="max-w-2xl space-y-2.5">
+            <span
+              class="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono font-semibold tracking-wider uppercase"
+            >
+              Real-Time Clinical Simulation
+            </span>
+            <h2
+              class="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight"
+            >
+              Test Khabar's Live Triage Engine
+            </h2>
+            <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+              Select an authentic patient WhatsApp scenario below to observe how
+              Khabar differentiates self-limiting post-discharge discomfort from
+              high-acuity surgical or medical emergencies.
+            </p>
+          </div>
+          <!-- Interactive Scenario Selector Tabs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Tab 1: Angina -->
+            <button
+              class="triage-selector-btn text-left p-4 rounded-2xl border-2 border-rose-500 bg-rose-50/40 transition-all group"
+              id="btn-triage-angina"
+              onclick="switchTriageScenario('angina')"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-[11px] font-mono font-bold text-rose-700 uppercase tracking-wider"
+                  >Scenario B (Red Flag)</span
+                >
+                <span
+                  class="w-2 h-2 rounded-full bg-rose-500 animate-ping"
+                ></span>
+              </div>
+              <p
+                class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors"
+              >
+                "Dada rasa ketat macam kena himpit batu..."
+              </p>
+              <span class="text-[11px] text-slate-500 block mt-2"
+                >Acute Cardiac Angina</span
+              >
+            </button>
+            <!-- Tab 2: Hypoglycemia -->
+            <button
+              class="triage-selector-btn text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-amber-400 transition-all group"
+              id="btn-triage-hypo"
+              onclick="switchTriageScenario('hypo')"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-[11px] font-mono font-bold text-amber-700 uppercase tracking-wider"
+                  >Scenario A</span
+                >
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              </div>
+              <p
+                class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors"
+              >
+                "Pening berpeluh lepas cucuk insulin tadi..."
+              </p>
+              <span class="text-[11px] text-slate-500 block mt-2"
+                >Suspected Hypoglycemia</span
+              >
+            </button>
+            <!-- Tab 3: SSI -->
+            <button
+              class="triage-selector-btn text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-amber-400 transition-all group"
+              id="btn-triage-infection"
+              onclick="switchTriageScenario('infection')"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-[11px] font-mono font-bold text-amber-700 uppercase tracking-wider"
+                  >Scenario C</span
+                >
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              </div>
+              <p
+                class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors"
+              >
+                "Luka jahitan keluar nanah kuning berbau..."
+              </p>
+              <span class="text-[11px] text-slate-500 block mt-2"
+                >Surgical Site Infection</span
+              >
+            </button>
+            <!-- Tab 4: Adherence -->
+            <button
+              class="triage-selector-btn text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-400 transition-all group"
+              id="btn-triage-adherence"
+              onclick="switchTriageScenario('adherence')"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-[11px] font-mono font-bold text-emerald-700 uppercase tracking-wider"
+                  >Scenario D</span
+                >
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              </div>
+              <p
+                class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors"
+              >
+                "Ubat darah tinggi habis, boleh stop kejap?"
+              </p>
+              <span class="text-[11px] text-slate-500 block mt-2"
+                >Hypertension Rebound Risk</span
+              >
+            </button>
+          </div>
+          <!-- Reactive Output Card -->
+          <div
+            class="bg-slate-50 border border-slate-200/90 rounded-2xl p-6 sm:p-8 space-y-6"
+          >
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <!-- Col 1: Decision & Risk (4 cols) -->
+              <div class="lg:col-span-4 space-y-4">
+                <span
+                  class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold block"
+                  >1. Clinical Triage Decision</span
+                >
+                <div
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 font-bold text-sm"
+                  id="sim-tier-badge"
+                >
+                  <span class="material-symbols-outlined text-[19px]"
+                    >emergency</span
+                  >
+                  <span id="sim-tier-title"
+                    >🔴 CRITICAL EMERGENCY (Tier 1)</span
+                  >
+                </div>
+                <div
+                  class="bg-white rounded-xl p-4 border border-slate-200 space-y-1.5 shadow-2xs"
+                >
+                  <p class="text-xs font-mono text-slate-500 font-semibold">
+                    Risk &amp; Pathological Analysis:
+                  </p>
+                  <p
+                    class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal"
+                    id="sim-risk-text"
+                  >
+                    High suspicion of acute myocardial infarction / acute
+                    coronary syndrome in a Day 5 post-stent cardiac patient.
+                    Immediate mortality risk if unaddressed.
+                  </p>
+                </div>
+              </div>
+              <!-- Col 2: Pipeline (5 cols) -->
+              <div
+                class="lg:col-span-5 space-y-4 border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8"
+              >
+                <span
+                  class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold block"
+                  >2. Automated Escalation Pipeline</span
+                >
+                <div class="space-y-2.5" id="sim-actions-container">
+                  <div
+                    class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs"
+                  >
+                    <span
+                      class="w-6 h-6 rounded-full bg-rose-600 text-white font-mono text-xs flex items-center justify-center shrink-0 font-bold"
+                      >1</span
+                    >
+                    <div>
+                      <p
+                        class="text-xs font-bold text-slate-900"
+                        id="sim-action-1"
+                      >
+                        Auto-dial 999 Emergency Dispatch Link Generated
+                      </p>
+                      <p class="text-[11px] text-slate-500 mt-0.5">
+                        Delivered directly to patient WhatsApp with 1-tap direct
+                        call-out.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs"
+                  >
+                    <span
+                      class="w-6 h-6 rounded-full bg-emerald-700 text-white font-mono text-xs flex items-center justify-center shrink-0 font-bold"
+                      >2</span
+                    >
+                    <div>
+                      <p
+                        class="text-xs font-bold text-slate-900"
+                        id="sim-action-2"
+                      >
+                        Urgent MO Alert via Priority SMS &amp; Push
+                      </p>
+                      <p class="text-[11px] text-slate-500 mt-0.5">
+                        Duty physician Dr. Tan notified immediately with vitals
+                        snippet.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs"
+                  >
+                    <span
+                      class="w-6 h-6 rounded-full bg-slate-700 text-white font-mono text-xs flex items-center justify-center shrink-0 font-bold"
+                      >3</span
+                    >
+                    <div>
+                      <p
+                        class="text-xs font-bold text-slate-900"
+                        id="sim-action-3"
+                      >
+                        Next-of-Kin WhatsApp Alert Dispatched
+                      </p>
+                      <p class="text-[11px] text-slate-500 mt-0.5">
+                        Daughter (Waris) pinged to assist patient to nearest
+                        hospital ED.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Col 3: EMR Log Snippet (3 cols) -->
+              <div class="lg:col-span-3 space-y-3">
+                <span
+                  class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold block"
+                  >3. Clinic EMR Audit Log</span
+                >
+                <div
+                  class="p-4 rounded-xl bg-white border border-slate-200 font-mono text-[11px] text-slate-700 space-y-2 shadow-2xs"
+                >
+                  <div
+                    class="flex items-center justify-between text-[10px] text-emerald-800 pb-2 border-b border-slate-100 font-semibold"
+                  >
+                    <span>AUDIT_LOG #99281</span>
+                    <span
+                      class="px-1.5 py-0.2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800"
+                      >SYNCED</span
+                    >
+                  </div>
+                  <p class="text-slate-800 font-mono text-xs" id="sim-emr-log">
+                    [RED-ALERT] Retrosternal crushing pressure reported.
+                    Auto-escalation triggered: 999 link sent. MO Dr. Tan
+                    notified. Son notified.
+                  </p>
+                  <div
+                    class="pt-2 border-t border-slate-100 text-[10px] text-slate-400"
+                  >
+                    Latency: 1.2s • Hash: 0x9a8f4c
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================================================================= -->
+      <!-- 30-DAY CLINICAL RECOVERY TIMELINE -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6" id="recovery-arc">
+        <!-- Heading & Language Switcher -->
+        <div
+          class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8"
+        >
+          <div>
+            <span
+              class="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono font-semibold tracking-wider uppercase"
+            >
+              Continuous Protocol Intelligence
+            </span>
+            <h2
+              class="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight mt-3"
+            >
+              The 30-Day Clinical Recovery Arc
+            </h2>
+            <p class="text-slate-600 text-sm sm:text-base mt-1.5 max-w-xl">
+              Custom-calibrated protocols for surgical discharge, chronic
+              disease titration, and post-maternal recovery.
+            </p>
+          </div>
+          <!-- Language Selector -->
+          <div
+            class="flex items-center gap-1.5 p-1 bg-white rounded-full border border-slate-200 shadow-2xs"
+          >
+            <button
+              class="px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-emerald-700 text-white shadow-xs"
+              id="arc-lang-bm"
+              onclick="setArcLanguage('bm')"
+            >
+              Bahasa Melayu
+            </button>
+            <button
+              class="px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold text-slate-600 hover:text-slate-900"
+              id="arc-lang-en"
+              onclick="setArcLanguage('en')"
+            >
+              English
+            </button>
+            <button
+              class="px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold text-slate-600 hover:text-slate-900"
+              id="arc-lang-zh"
+              onclick="setArcLanguage('zh')"
+            >
+              简体中文
+            </button>
+            <button
+              class="px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold text-slate-600 hover:text-slate-900"
+              id="arc-lang-ta"
+              onclick="setArcLanguage('ta')"
+            >
+              தமிழ்
+            </button>
+          </div>
+          <a
+            href="recovery_arc.html"
+            class="px-4 py-2 rounded-full text-xs font-mono font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-all flex items-center gap-1.5 shadow-sm hover:scale-105 shrink-0"
+          >
+            <span class="material-symbols-outlined text-[16px]"
+              >monitoring</span
+            >
+            Open Clinical Arc Console ↗
+          </a>
+        </div>
+        <!-- Horizontal Step Progress Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+          <button
+            class="arc-step-btn p-4 rounded-2xl bg-white border-2 border-emerald-600 shadow-xs text-left transition-all"
+            id="arc-step-1"
+            onclick="selectArcTimeline(1)"
+          >
+            <span class="text-xs font-mono text-emerald-700 font-bold block"
+              >DAY 01</span
+            >
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mt-1">
+              Discharge &amp; Dosage
+            </p>
+            <span class="text-[11px] text-slate-500 block mt-0.5"
+              >First dose check</span
+            >
+          </button>
+          <button
+            class="arc-step-btn p-4 rounded-2xl bg-white border border-slate-200 text-left hover:border-slate-300 transition-all"
+            id="arc-step-3"
+            onclick="selectArcTimeline(3)"
+          >
+            <span class="text-xs font-mono text-slate-500 font-semibold block"
+              >DAY 03</span
+            >
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mt-1">
+              Wound &amp; Pain Screen
+            </p>
+            <span class="text-[11px] text-slate-500 block mt-0.5"
+              >Swelling red flags</span
+            >
+          </button>
+          <button
+            class="arc-step-btn p-4 rounded-2xl bg-white border border-slate-200 text-left hover:border-slate-300 transition-all"
+            id="arc-step-7"
+            onclick="selectArcTimeline(7)"
+          >
+            <span class="text-xs font-mono text-slate-500 font-semibold block"
+              >DAY 07</span
+            >
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mt-1">
+              Drug Adherence
+            </p>
+            <span class="text-[11px] text-slate-500 block mt-0.5"
+              >Tolerance &amp; GI side effects</span
+            >
+          </button>
+          <button
+            class="arc-step-btn p-4 rounded-2xl bg-white border border-slate-200 text-left hover:border-slate-300 transition-all"
+            id="arc-step-14"
+            onclick="selectArcTimeline(14)"
+          >
+            <span class="text-xs font-mono text-slate-500 font-semibold block"
+              >DAY 14</span
+            >
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mt-1">
+              Symptom Audit
+            </p>
+            <span class="text-[11px] text-slate-500 block mt-0.5"
+              >Mobility &amp; infection check</span
+            >
+          </button>
+          <button
+            class="arc-step-btn p-4 rounded-2xl bg-white border border-slate-200 text-left hover:border-slate-300 transition-all"
+            id="arc-step-30"
+            onclick="selectArcTimeline(30)"
+          >
+            <span class="text-xs font-mono text-slate-500 font-semibold block"
+              >DAY 30</span
+            >
+            <p class="text-xs sm:text-sm font-bold text-slate-900 mt-1">
+              Clinic Review &amp; Lab
+            </p>
+            <span class="text-[11px] text-slate-500 block mt-0.5"
+              >HbA1c &amp; repeat refill</span
+            >
+          </button>
+        </div>
+        <!-- Active Timeline Content Display -->
+        <div
+          class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-subtle-card"
+        >
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <!-- Details (7 cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-semibold"
+              >
+                <span class="material-symbols-outlined text-[15px]"
+                  >clinical_notes</span
+                >
+                <span id="arc-protocol-code"
+                  >PROTOCOL-D1: Acute Medication Reconciliation</span
+                >
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900" id="arc-title">
+                Day 1: Confirming the First Dose at Home
+              </h3>
+              <p
+                class="text-sm text-slate-600 leading-relaxed"
+                id="arc-description"
+              >
+                Patients leave polyclinics overwhelmed with multiple blister
+                packs. Within the first 12 hours, Khabar verifies that the
+                morning antibiotic and evening anticoagulant doses were taken
+                safely without nausea or confusion.
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div
+                  class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80"
+                >
+                  <span
+                    class="text-xs font-mono font-bold text-emerald-800 block"
+                    >Triage Redline:</span
+                  >
+                  <p class="text-xs text-slate-600 mt-1" id="arc-redline">
+                    Acute rash, sudden swelling, or intractable vomiting
+                    triggers immediate clinic doctor callback.
+                  </p>
+                </div>
+                <div
+                  class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80"
+                >
+                  <span class="text-xs font-mono font-bold text-slate-800 block"
+                    >Family Caregiver CC:</span
+                  >
+                  <p class="text-xs text-slate-600 mt-1" id="arc-caregiver">
+                    Automated notification synchronized with designated adult
+                    child on WhatsApp.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- WhatsApp Conversation Preview for this Phase (5 cols) -->
+            <div
+              class="lg:col-span-5 bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-3 shadow-2xs"
+            >
+              <div
+                class="flex items-center justify-between pb-3 border-b border-slate-200"
+              >
+                <div class="flex items-center gap-2.5">
+                  <div
+                    class="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center"
+                  >
+                    KH
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-900">
+                      Khabar AI Clinical Assistant
+                    </p>
+                    <p
+                      class="text-[10px] text-emerald-700 flex items-center gap-1 font-medium"
+                    >
+                      <span
+                        class="w-1.5 h-1.5 rounded-full bg-emerald-600"
+                      ></span>
+                      Verified Healthcare Account
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="text-[10px] font-mono text-slate-400"
+                  id="arc-chat-time"
+                  >8:30 AM</span
+                >
+              </div>
+              <div
+                class="bg-white rounded-2xl rounded-tl-none p-4 border border-slate-200 text-xs text-slate-800 leading-relaxed space-y-2 shadow-2xs"
+              >
+                <p id="arc-chat-message">
+                  Salam Encik Azman. Ini pembantu klinikal AI dari Klinik Utama.
+                  Nak pastikan ubat antibiotik (Augmentin 625mg) dah makan
+                  dengan makanan malam tadi? Sila tekan pilihan di bawah:
+                </p>
+                <div class="flex justify-end text-[10px] text-slate-400">
+                  <span
+                    class="material-symbols-outlined text-[13px] text-emerald-600"
+                    >done_all</span
+                  >
+                </div>
+              </div>
+              <div class="space-y-2 pt-1" id="arc-chat-options">
+                <button
+                  class="w-full text-left p-2.5 rounded-xl bg-white hover:bg-emerald-50 hover:border-emerald-300 transition-all text-xs font-medium border border-slate-200 flex items-center justify-between text-slate-800 shadow-2xs"
+                >
+                  <span>1. Dah makan lepas makan malam</span>
+                  <span
+                    class="material-symbols-outlined text-[16px] text-emerald-600"
+                    >check_circle</span
+                  >
+                </button>
+                <button
+                  class="w-full text-left p-2.5 rounded-xl bg-white hover:bg-amber-50 hover:border-amber-300 transition-all text-xs font-medium border border-slate-200 flex items-center justify-between text-slate-800 shadow-2xs"
+                >
+                  <span>2. Terlupa makan / Rasa loya sikit</span>
+                  <span
+                    class="material-symbols-outlined text-[16px] text-amber-600"
+                    >help</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================================================================= -->
+      <!-- CLINIC COMMAND CENTER (DOCTOR DASHBOARD VIEW) -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6" id="command-center">
+        <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+          <span
+            class="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono font-semibold tracking-wider uppercase"
+          >
+            Clinical Governance &amp; Triage Desk
+          </span>
+          <h2
+            class="text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight"
+          >
+            The Clinic Command Center
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+            Empowering Malaysian GPs and nurse triage teams to audit hundreds of
+            recovering home patients in under 8 minutes every morning.
+          </p>
+        </div>
+        <!-- Dashboard Container Frame -->
+        <div
+          class="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-elevated-card"
+        >
+          <!-- Top Control Bar -->
+          <div
+            class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold font-mono text-sm shadow-xs"
+              >
+                KU
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-slate-900">
+                    Klinik Utama Taman Harmoni
+                  </h3>
+                  <span
+                    class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-semibold"
+                    >Demo</span
+                  >
+                </div>
+                <p class="text-xs text-slate-500">
+                  342 Patients Under Continuous 30-Day Follow-Up
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div
+                class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-mono shadow-2xs"
+              >
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-slate-600">Morning Triage Window:</span>
+                <span class="text-slate-900 font-bold">08:00 - 09:30 AM</span>
+              </div>
+              <button
+                class="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-2xs transition-all"
+                onclick="
+                  alert(
+                    'Exporting aftercare audit (demo) Log...',
+                  )
+                "
+              >
+                <span
+                  class="material-symbols-outlined text-[16px] text-emerald-700"
+                  >download</span
+                >
+                <span>Export Audit</span>
+              </button>
+            </div>
+          </div>
+          <!-- Priority Triage Patient Rows -->
+          <div class="p-6 sm:p-8 space-y-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <h4
+                class="text-xs font-mono uppercase tracking-wider font-bold text-slate-500 flex items-center gap-2"
+              >
+                <span
+                  class="material-symbols-outlined text-[17px] text-rose-600"
+                  >notification_important</span
+                >
+                Priority Action Queue (Today's Redlines)
+              </h4>
+              <span class="text-xs font-mono text-slate-400"
+                >Ranked by Clinical Risk Score</span
+              >
+            </div>
+            <!-- Row 1: Red Flag -->
+            <div
+              class="p-4 sm:p-5 rounded-2xl bg-rose-50/60 border border-rose-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+            >
+              <div class="flex items-start gap-3.5">
+                <div
+                  class="w-10 h-10 rounded-full bg-rose-600 text-white font-bold font-mono text-xs flex items-center justify-center shrink-0"
+                >
+                  TL
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h5 class="text-sm font-bold text-slate-900">
+                      Mr Lim (71)
+                    </h5>
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-mono text-[10px] font-bold"
+                      >RED FLAG • TIER 1</span
+                    >
+                    <span class="text-xs text-slate-500"
+                      >Day 4 CABG Post-Operative Telemetry</span
+                    >
+                  </div>
+                  <p class="text-xs text-slate-700 mt-1">
+                    Telemetry Alert: Resting Heart Rate 112 bpm + Palpitations
+                    logged 8 mins ago. BP: 148/94.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <button
+                  class="flex-1 md:flex-none px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                  onclick="
+                    alert('Initiating Doctor Tele-Callback to Mr Lim...')
+                  "
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >call</span
+                  >
+                  <span>Call Patient</span>
+                </button>
+                <button
+                  class="px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700"
+                  onclick="alert('Viewing 3-Lead ECG Telemetry Stream...')"
+                >
+                  View ECG
+                </button>
+              </div>
+            </div>
+            <!-- Row 2: Yellow Flag -->
+            <div
+              class="p-4 sm:p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+            >
+              <div class="flex items-start gap-3.5">
+                <div
+                  class="w-10 h-10 rounded-full bg-amber-600 text-white font-bold font-mono text-xs flex items-center justify-center shrink-0"
+                >
+                  SH
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h5 class="text-sm font-bold text-slate-900">
+                      Puan Siti Hajar (29)
+                    </h5>
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono text-[10px] font-bold"
+                      >YELLOW FLAG • TIER 2</span
+                    >
+                    <span class="text-xs text-slate-500"
+                      >Day 2 C-Section Wound Follow-Up</span
+                    >
+                  </div>
+                  <p class="text-xs text-slate-700 mt-1">
+                    Mild pyrexia: 37.9°C logged with localized lower abdominal
+                    tenderness. Wound photograph uploaded.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <button
+                  class="flex-1 md:flex-none px-4 py-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all"
+                  onclick="
+                    alert(
+                      'Opening high-resolution wound photograph for clinical review...',
+                    )
+                  "
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >photo_camera</span
+                  >
+                  <span>Wound Photo (1)</span>
+                </button>
+                <button
+                  class="px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700"
+                  onclick="alert('Connecting to patient WhatsApp stream...')"
+                >
+                  Chat Stream
+                </button>
+              </div>
+            </div>
+            <!-- Row 3: Green Review / Titration -->
+            <div
+              class="p-4 sm:p-5 rounded-2xl bg-emerald-50/40 border border-emerald-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+            >
+              <div class="flex items-start gap-3.5">
+                <div
+                  class="w-10 h-10 rounded-full bg-emerald-700 text-white font-bold font-mono text-xs flex items-center justify-center shrink-0"
+                >
+                  MS
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h5 class="text-sm font-bold text-slate-900">
+                      Mr. Muthusamy (58)
+                    </h5>
+                    <span
+                      class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold"
+                      >MED TITRATION</span
+                    >
+                    <span class="text-xs text-slate-500"
+                      >Day 10 ACE-Inhibitor (Perindopril)</span
+                    >
+                  </div>
+                  <p class="text-xs text-slate-700 mt-1">
+                    Dry nocturnal cough reported. Blood pressure is normal
+                    (126/80). AI proposes substitution to Losartan ARB.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <button
+                  class="flex-1 md:flex-none px-4 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                  onclick="
+                    alert(
+                      'Doctor E-Signature: Prescribing Losartan 50mg switch...',
+                    )
+                  "
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >prescriptions</span
+                  >
+                  <span>Approve Switch</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Trust Badges Footer -->
+          <div
+            class="bg-slate-50/70 px-6 py-5 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <div class="flex items-start gap-3">
+              <span
+                class="material-symbols-outlined text-[22px] text-emerald-700 shrink-0"
+                >lock</span
+              >
+              <div>
+                <h6
+                  class="text-xs font-mono font-bold text-slate-900 uppercase"
+                >
+                  Zero PHI Exposed to Foundation Models
+                </h6>
+                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  Patient MyKad IC numbers, addresses, and private contact data
+                  are scrubbed on-premise inside Malaysian sovereign cloud
+                  boundaries before reasoning pipelines execute.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span
+                class="material-symbols-outlined text-[22px] text-emerald-700 shrink-0"
+                >cable</span
+              >
+              <div>
+                <h6
+                  class="text-xs font-mono font-bold text-slate-900 uppercase"
+                >
+                  Direct Malaysian EMR Interoperability
+                </h6>
+                <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  Bi-directional automated synchronization with Plato, Klinify,
+                  telehealth apps and clinic management systems
+                  (CCMS).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ======================================================================= -->
+      <!-- FINAL CTA SECTION -->
+      <!-- ======================================================================= -->
+      <section class="max-w-6xl mx-auto px-6">
+        <div
+          class="relative bg-emerald-950 rounded-3xl p-8 sm:p-14 text-white overflow-hidden shadow-elevated-card"
+        >
+          <!-- Soft interior radiance -->
+          <div
+            class="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"
+          ></div>
+          <div
+            class="absolute -left-24 -top-24 w-96 h-96 rounded-full bg-teal-500/15 blur-3xl pointer-events-none"
+          ></div>
+          <div class="relative z-10 max-w-3xl space-y-6">
+            <span
+              class="px-3.5 py-1.5 rounded-full bg-emerald-900/80 border border-emerald-700/60 text-emerald-300 text-xs font-mono font-semibold tracking-wider uppercase"
+            >
+              Onboard Your Clinic in 48 Hours
+            </span>
+            <h2
+              class="text-3xl sm:text-5xl font-semibold tracking-tight leading-tight"
+            >
+              Give your patients hospital-grade follow-up without adding a
+              single minute to consultations.
+            </h2>
+            <p class="text-emerald-200/80 text-base sm:text-lg leading-relaxed">
+              Protect your patients against dangerous silent complications. Join
+              over 140 leading polyclinics, GP groups, and surgical centers
+              across Malaysia.
+            </p>
+            <!-- Clean Input Form -->
+            <form
+              class="flex flex-col sm:flex-row gap-3 pt-2 max-w-xl"
+              onsubmit="
+                event.preventDefault();
+                alert(
+                  'Terima kasih! Pasukan klinikal Khabar akan menghubungi anda dalam tempoh 24 jam.',
+                );
+              "
+            >
+              <input
+                class="px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-emerald-300/60 text-xs sm:text-sm flex-1 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
+                placeholder="Dr. Name / Clinic Name / Email..."
+                required=""
+                type="text"
+              />
+              <button
+                class="px-7 py-3.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95 shrink-0"
+                type="submit"
+              >
+                Request Clinic Demo
+              </button>
+            </form>
+            <p class="text-xs font-mono text-emerald-400/80">
+              Built around clinical guidelines • Concept demo
+              • On-site Staff Onboarding
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- ========================================================================= -->
+    <!-- MODAL: DEMO REQUEST POPUP -->
+    <!-- ========================================================================= -->
+    <div
+      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      id="demo-request-modal"
+    >
+      <div
+        class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 shadow-elevated-card relative space-y-5"
+      >
+        <div
+          class="flex items-center justify-between pb-3 border-b border-slate-100"
+        >
+          <div>
+            <h4 class="text-lg font-bold text-slate-900">
+              Connect Your Clinic to Khabar
+            </h4>
+            <p class="text-xs text-slate-500">
+              48-Hour Rapid Integration &amp; Training
+            </p>
+          </div>
+          <button
+            class="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+            onclick="
+              document
+                .getElementById('demo-request-modal')
+                .classList.add('hidden')
+            "
+          >
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form
+          class="space-y-4 text-xs"
+          onsubmit="
+            event.preventDefault();
+            document
+              .getElementById('demo-request-modal')
+              .classList.add('hidden');
+            alert(
+              'Terima kasih Dr.! Pegawai perubatan Khabar akan mengatur demo sistem dalam masa 24 jam.',
+            );
+          "
+        >
+          <div>
+            <label class="block font-mono text-slate-700 font-semibold mb-1"
+              >Doctor / Medical Director Name</label
+            >
+            <input
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+              placeholder="e.g. Dr. Tan Wei Lun"
+              required=""
+              type="text"
+            />
+          </div>
+          <div>
+            <label class="block font-mono text-slate-700 font-semibold mb-1"
+              >Clinic Name &amp; Location</label
+            >
+            <input
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+              placeholder="e.g. Poliklinik MedicCare Taman Harmoni"
+              required=""
+              type="text"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-mono text-slate-700 font-semibold mb-1"
+                >Clinic EMR System</label
+              >
+              <select
+                class="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+              >
+                <option>Klinify</option>
+                <option>Plato Medical</option>
+                <option>telehealth apps</option>
+                <option>Custom EMR / Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-mono text-slate-700 font-semibold mb-1"
+                >Monthly Patients</label
+              >
+              <select
+                class="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+              >
+                <option>100 - 500 patients</option>
+                <option>500 - 1,500 patients</option>
+                <option>1,500+ patients</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block font-mono text-slate-700 font-semibold mb-1"
+              >Mobile phone (WhatsApp)</label
+            >
+            <input
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+              placeholder="+6012-345 6789"
+              required=""
+              type="tel"
+            />
+          </div>
+          <button
+            class="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold tracking-wider uppercase text-xs transition-all shadow-emerald-glow"
+            type="submit"
+          >
+            Schedule Live 15-Min Clinical Walkthrough
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- ========================================================================= -->
+    <!-- MINIMALIST CLEAN FOOTER -->
+    <!-- ========================================================================= -->
+    <footer
+      class="border-t border-slate-200 bg-white text-slate-500 text-xs py-12 relative z-10"
+    >
+      <div
+        class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6"
+      >
+        <div class="space-y-1.5 text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-2">
+            <span
+              class="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px]"
+              >K</span
+            >
+            <span class="text-slate-900 font-bold text-base">Khabar</span>
+          </div>
+          <p class="max-w-md leading-relaxed text-slate-500">
+            © 2026 Khabar, a student concept project. Designed with PDPA and telemedicine rules in mind; not certified.
+          </p>
+          <p class="text-rose-600 font-mono text-[11px]">
+            Emergency Protocol: In case of acute breathing distress or crushing
+            chest pain, please dial 999 immediately.
+          </p>
+        </div>
+        <div
+          class="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2 font-medium text-slate-600"
+        >
+          <a class="hover:text-emerald-700 transition-colors" href="#"
+            >Clinical Governance</a
+          >
+          <a class="hover:text-emerald-700 transition-colors" href="#"
+            >PDPA Shield</a
+          >
+          <a class="hover:text-emerald-700 transition-colors" href="#"
+            >Telemedicine guidelines (reference)</a
+          >
+          <a class="hover:text-emerald-700 transition-colors" href="#"
+            >EMR API Docs</a
+          >
+          <a class="hover:text-emerald-700 transition-colors" href="#"
+            >Clinical board (demo)</a
+          >
+        </div>
+      </div>
+    </footer>
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT: STATE & INTERACTION LOGIC -->
+    <!-- ========================================================================= -->
+    <script>
+      // 1. Audio Visualizer Simulation
+      let isPlayingAudio = false;
+      let audioInterval = null;
+      let activeDialect = "kelantan";
+
+      const dialectData = {
+        kelantan: { name: "Kelantanese BM", duration: "0:24" },
+        hokkien: { name: "Penang Hokkien", duration: "0:18" },
+        cantonese: { name: "Cantonese", duration: "0:22" },
+        tamil: { name: "Malaysian Tamil", duration: "0:26" },
+      };
+
+      function playDialectAudio(key) {
+        activeDialect = key;
+        document.querySelectorAll(".dialect-pill").forEach((btn) => {
+          btn.classList.remove("border-emerald-600", "bg-emerald-50");
+          btn.classList.add("border-slate-200/60", "bg-slate-50");
+        });
+        const currentBtn = document.getElementById(`dialect-btn-${key}`);
+        if (currentBtn) {
+          currentBtn.classList.remove("border-slate-200/60", "bg-slate-50");
+          currentBtn.classList.add("border-emerald-600", "bg-emerald-50");
+        }
+
+        document.getElementById("audio-status-pill").innerText =
+          `Playing: ${dialectData[key].name}`;
+        document.getElementById("audio-timer").innerText =
+          `0:04 / ${dialectData[key].duration}`;
+        startVisualizer();
+      }
+
+      function toggleAudioPlayback() {
+        if (isPlayingAudio) {
+          stopVisualizer();
+        } else {
+          startVisualizer();
+        }
+      }
+
+      function startVisualizer() {
+        isPlayingAudio = true;
+        document.getElementById("play-pause-icon").innerText = "pause";
+        const bars = document.querySelectorAll(".soundwave-bar");
+        clearInterval(audioInterval);
+        audioInterval = setInterval(() => {
+          bars.forEach((bar) => {
+            const rand = Math.floor(Math.random() * 80) + 15;
+            bar.style.height = `${rand}%`;
+          });
+        }, 120);
+      }
+
+      function stopVisualizer() {
+        isPlayingAudio = false;
+        document.getElementById("play-pause-icon").innerText = "play_arrow";
+        clearInterval(audioInterval);
+        const bars = document.querySelectorAll(".soundwave-bar");
+        bars.forEach((bar, idx) => {
+          bar.style.height = `${(idx % 5) * 15 + 20}%`;
+        });
+        document.getElementById("audio-status-pill").innerText =
+          "Voice Simulator Ready";
+      }
+
+      // 2. Real-Time Clinical Triage Simulator Logic
+      const triageScenarios = {
+        angina: {
+          badgeClass:
+            "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 font-bold text-sm",
+          tierTitle: "🔴 CRITICAL EMERGENCY (Tier 1)",
+          risk: "High suspicion of acute myocardial infarction / acute coronary syndrome in a Day 5 post-stent cardiac patient. Immediate mortality risk if unaddressed.",
+          act1Title: "Auto-dial 999 Emergency Dispatch Link Generated",
+          act1Desc:
+            "Delivered directly to patient WhatsApp with 1-tap direct call-out.",
+          act2Title: "Urgent MO Alert via Priority SMS & Push",
+          act2Desc:
+            "Duty physician Dr. Tan alerted immediately with cardiac telemetry snippet.",
+          act3Title: "Next-of-Kin WhatsApp Alert Dispatched",
+          act3Desc:
+            "Daughter (Waris) pinged to assist patient to nearest hospital ED.",
+          emr: "[CRITICAL RED] Pt reported retrosternal tightness. Auto-escalation triggered: 999 link sent. MO Dr. Tan notified. Son notified.",
+        },
+        hypo: {
+          badgeClass:
+            "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-bold text-sm",
+          tierTitle: "🟡 URGENT GP PROTOCOL (Tier 2)",
+          risk: "Acute Hypoglycemic Crash post-insulin injection. Patient reports dizziness & cold sweating. Blood glucose estimate <3.4 mmol/L.",
+          act1Title: "Advise 15g Rule via WhatsApp Immediately",
+          act1Desc:
+            "Instruct patient to drink half a glass of sweet cordial juice or 3 glucose sweets.",
+          act2Title: "Schedule 15-Minute Re-Check Automated Prompt",
+          act2Desc:
+            "Khabar will ping patient again at 8:35 AM for blood glucose fingerprick reading.",
+          act3Title: "Queue Clinic Pharmacist for Dosage Titration",
+          act3Desc:
+            "Nighttime insulin units flagged for morning doctor review.",
+          emr: "[YELLOW ALERT] Hypoglycemia reported post-dose. 15g carbohydrate guidance issued. 15m re-check scheduled.",
+        },
+        infection: {
+          badgeClass:
+            "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-bold text-sm",
+          tierTitle: "🟡 SURGICAL SITE AUDIT (Tier 2)",
+          risk: "Purulent malodorous discharge indicates probable Surgical Site Infection (SSI) requiring urgent dressing and wound swab.",
+          act1Title: "Halt Unprescribed Ointment Application",
+          act1Desc:
+            "Patient warned against applying non-sterile balms or traditional oils.",
+          act2Title: "High-Resolution Image Request Sent",
+          act2Desc:
+            "Patient prompted to upload clean wound photo via secure WhatsApp camera link.",
+          act3Title: "Priority 11:00 AM Clinic Slot Auto-Reserved",
+          act3Desc:
+            "Wound debridement slot queued directly into doctor's appointment schedule.",
+          emr: "[YELLOW ALERT] Foul wound drainage reported Day 4 post-op. Wound photo requested. Clinic slot booked for 11:00 AM.",
+        },
+        adherence: {
+          badgeClass:
+            "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm",
+          tierTitle: "🟢 NORMAL RECOVERY / EDUCATION (Tier 3)",
+          risk: "Abrupt antihypertensive cessation risks rebound hypertension crisis, though patient is currently asymptomatic.",
+          act1Title: "Clinical Reassurance & Non-Interruption Education",
+          act1Desc:
+            "Explains risks of sudden cessation in conversational language.",
+          act2Title: "1-Tap Pharmacy Prescription Refill Offered",
+          act2Desc:
+            "Connects patient to clinic partner rider for same-day home medication delivery.",
+          act3Title: "Adherence Log Synced to Clinic EMR",
+          act3Desc:
+            "Notes sent to doctor to issue a longer 90-day repeat prescription at next visit.",
+          emr: "[GREEN ADHERENCE] Patient queried pausing Amlodipine due to supply run-out. Guidance sent. Courier refill dispatched.",
+        },
+      };
+
+      function switchTriageScenario(type) {
+        const data = triageScenarios[type];
+
+        document.querySelectorAll(".triage-selector-btn").forEach((btn) => {
+          btn.className =
+            "triage-selector-btn text-left p-4 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition-all group";
+        });
+
+        const selectedBtn = document.getElementById(`btn-triage-${type}`);
+        if (selectedBtn) {
+          if (type === "angina")
+            selectedBtn.className =
+              "triage-selector-btn text-left p-4 rounded-2xl border-2 border-rose-500 bg-rose-50/40 transition-all group";
+          else if (type === "adherence")
+            selectedBtn.className =
+              "triage-selector-btn text-left p-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50/40 transition-all group";
+          else
+            selectedBtn.className =
+              "triage-selector-btn text-left p-4 rounded-2xl border-2 border-amber-500 bg-amber-50/40 transition-all group";
+        }
+
+        const badge = document.getElementById("sim-tier-badge");
+        badge.className = data.badgeClass;
+        document.getElementById("sim-tier-title").innerText = data.tierTitle;
+        document.getElementById("sim-risk-text").innerText = data.risk;
+        document.getElementById("sim-action-1").innerText = data.act1Title;
+        document.getElementById("sim-action-2").innerText = data.act2Title;
+        document.getElementById("sim-action-3").innerText = data.act3Title;
+        document.getElementById("sim-emr-log").innerText = data.emr;
+      }
+
+      // 3. 30-Day Recovery Timeline Logic
+      let currentArcDay = 1;
+      let currentArcLang = "bm";
+
+      const arcData = {
+        1: {
+          code: "PROTOCOL-D1: Acute Medication Reconciliation",
+          title: "Day 1: Confirming First Dose at Home",
+          desc: "Patients leave polyclinics overwhelmed with multiple blister packs. Within the first 12 hours, Khabar verifies that the morning antibiotic and evening anticoagulant doses were taken safely without nausea.",
+          redline:
+            "Acute rash, sudden swelling, or intractable vomiting triggers immediate clinic callback.",
+          caregiver:
+            "Automated notification synchronized with designated adult child on WhatsApp.",
+          time: "8:30 AM",
+          bm: "Salam Encik Azman. Ini pembantu klinikal AI dari Klinik Utama. Nak pastikan ubat antibiotik (Augmentin 625mg) dah makan dengan makanan malam tadi? Sila tekan pilihan di bawah:",
+          en: "Hello Mr. Azman. This is your clinic's AI care assistant. Did you take your prescribed Augmentin 625mg after dinner last night? Please tap an option below:",
+          zh: "陈先生您好，这里是主诊诊所的智能随访助手。请问您昨晚饭后按医嘱服用了 Augmentin 625mg 吗？请选择：",
+          ta: "வணக்கம் திரு. அஸ்மான். உங்கள் கிளினிக் உதவியாளர். நேற்றிரவு உணவுக்குப் பின் மாத்திரையை உட்கொண்டீர்களா?",
+        },
+        3: {
+          code: "PROTOCOL-D3: Surgical Wound & Infection Screen",
+          title: "Day 3: Differentiating Healing Pain from Infection",
+          desc: "Post-op swelling peaks around 72 hours. Khabar prompts patients to check for abnormal localized heat, foul odor, or fever, preventing emergency debridement hospital stays.",
+          redline:
+            "Pyrexia (>38.0°C) or spreading erythema escalates directly to duty surgeon.",
+          caregiver:
+            "Daughter receives wound dressing pictorial checklist in Bahasa Melayu.",
+          time: "10:15 AM",
+          bm: "Salam Puan Halimah. Macam mana keadaan luka jahitan pembedahan hari ini? Ada rasa panas berdenyut atau keluar cecair kuning?",
+          en: "Hello Ms. Halimah. How is your surgical incision feeling today? Any throbbing heat, abnormal swelling, or yellow discharge?",
+          zh: "哈利玛女士您好，请问伤口缝合处今天感觉如何？是否有异常发热、红肿或黄色分泌物？",
+          ta: "வணக்கம் திருமதி. ஹலிமா. அறுவை சிகிச்சை செய்த இடத்தில் அதிக வலி அல்லது வீக்கம் உள்ளதா?",
+        },
+        7: {
+          code: "PROTOCOL-D7: Chronic Tolerance & Side-Effect Titration",
+          title: "Day 7: Mitigating Drug Non-Adherence Early",
+          desc: "Over 40% of patients abandon antihypertensives or Metformin in week 1 due to gastrointestinal upset. Khabar troubleshoots dosage timing to keep adherence high.",
+          redline:
+            "Intractable diarrhea or severe dizzy spells trigger GP prescription modification.",
+          caregiver:
+            "Weekly adherence scorecard logged for household caregiver.",
+          time: "2:00 PM",
+          bm: "Salam Encik Rosli. Dah genap seminggu makan ubat darah tinggi. Ada rasa pening kepala atau batuk malam tak setakat ini?",
+          en: "Hello Mr. Rosli. You've completed 7 days of blood pressure medication. Have you noticed any dizziness or nighttime dry cough?",
+          zh: "罗斯里先生您好，降压药已服用一周。请问目前有无头晕或夜间干咳症状？",
+          ta: "வணக்கம் திரு. ரோஸ்லி. இரத்த அழுத்த மருந்தை தொடர்ந்து 7 நாட்களாக எடுத்து வருகிறீர்களா? தலைசுற்றல் உள்ளதா?",
+        },
+        14: {
+          code: "PROTOCOL-D14: Functional Recovery & Mobility Audit",
+          title: "Day 14: Mobility Check & Suture Clearance",
+          desc: "Auditing independent walking capability, pain scale progression (VAS), and confirming readiness for clinical stitch removal.",
+          redline:
+            "Sudden calf pain or shortness of breath triggers instant DVT alert.",
+          caregiver:
+            "Transportation reminder sent to family member for suture removal visit.",
+          time: "11:00 AM",
+          bm: "Salam Puan Siti. Dah boleh berjalan sendiri tanpa bertongkat ke bilik air? Skala sakit lutut sekarang berapa dari 1 hingga 10?",
+          en: "Hello Ms. Siti. Are you able to walk independently now? What is your knee pain score from 1 to 10 today?",
+          zh: "茜蒂女士您好，目前可以自行走动了吗？膝盖疼痛程度（1至10分）是多少？",
+          ta: "வணக்கம் திருமதி. சித்தி. நீங்கள் இப்போது தானாக நடக்க முடிகிறதா? வலி அளவு என்ன?",
+        },
+        30: {
+          code: "PROTOCOL-D30: Chronic HbA1c Lab Booking & Repeat Refill",
+          title: "Day 30: 30-Day Closure & Lab Repeat Booking",
+          desc: "Closing the 30-day episode with scheduled fasting blood tests (HbA1c, Renal Function) and automated repeat prescription courier delivery.",
+          redline:
+            "Overdue chronic blood panels flagged directly in clinic triage dashboard.",
+          caregiver:
+            "Full 30-day clinical recovery summary PDF sent via WhatsApp.",
+          time: "9:00 AM",
+          bm: "Salam Encik Azman. Genap 30 hari rawatan! Tarikh ujian darah HbA1c anda ialah Khamis ini jam 8:30 pagi di Klinik Utama.",
+          en: "Hello Mr. Azman. 30 days completed! Your fasting HbA1c blood review is scheduled this Thursday at 8:30 AM at Utama Clinic.",
+          zh: "陈先生您好，30天康复期已满！您的空腹血糖与糖化血红蛋白复查定于本周四上午8:30在主诊所进行。",
+          ta: "வணக்கம் திரு. அஸ்மான். உங்கள் 30 நாள் கண்காணிப்பு முடிந்தது. இரத்த பரிசோதனைக்கு வியாழன் காலை 8:30 மணிக்கு வரவும்.",
+        },
+      };
+
+      function selectArcTimeline(day) {
+        currentArcDay = day;
+        document.querySelectorAll(".arc-step-btn").forEach((btn) => {
+          btn.className =
+            "arc-step-btn p-4 rounded-2xl bg-white border border-slate-200 text-left hover:border-slate-300 transition-all";
+          const span = btn.querySelector("span");
+          if (span)
+            span.className =
+              "text-xs font-mono text-slate-500 font-semibold block";
+        });
+
+        const selected = document.getElementById(`arc-step-${day}`);
+        if (selected) {
+          selected.className =
+            "arc-step-btn p-4 rounded-2xl bg-white border-2 border-emerald-600 shadow-xs text-left transition-all";
+          const span = selected.querySelector("span");
+          if (span)
+            span.className =
+              "text-xs font-mono text-emerald-700 font-bold block";
+        }
+
+        updateArcContent();
+      }
+
+      function setArcLanguage(lang) {
+        currentArcLang = lang;
+        ["bm", "en", "zh", "ta"].forEach((l) => {
+          const btn = document.getElementById(`arc-lang-${l}`);
+          if (l === lang) {
+            btn.className =
+              "px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-emerald-700 text-white shadow-xs";
+          } else {
+            btn.className =
+              "px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold text-slate-600 hover:text-slate-900";
+          }
+        });
+        updateArcContent();
+      }
+
+      function updateArcContent() {
+        const data = arcData[currentArcDay];
+        document.getElementById("arc-protocol-code").innerText = data.code;
+        document.getElementById("arc-title").innerText = data.title;
+        document.getElementById("arc-description").innerText = data.desc;
+        document.getElementById("arc-redline").innerText = data.redline;
+        document.getElementById("arc-caregiver").innerText = data.caregiver;
+        document.getElementById("arc-chat-time").innerText = data.time;
+        document.getElementById("arc-chat-message").innerText =
+          data[currentArcLang];
+      }
+
+      // Initial Startup
+      window.addEventListener("DOMContentLoaded", () => {
+        switchTriageScenario("angina");
+        selectArcTimeline(1);
+      });
+    </script>
+  </body>
+</html>

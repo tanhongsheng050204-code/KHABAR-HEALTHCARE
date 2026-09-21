@@ -151,7 +151,9 @@ mindmap
 
 ## 3. Design & Prototype
 
-**UI Prototype:** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app). This is the interactive landing page: try the language switch, the medicine scan, the check-in reply triage and the clinic safety gate. Source: [prototype/khabar-landing.html](prototype/khabar-landing.html).
+**UI Prototype:** the main screens live in [docs/](docs/FRONTEND.md) (landing page, doctor sign-in, triage desk, chat console, medicine clash radar, 30-day recovery view, audit log). Open `docs/index.html` to click through them. All data in them is fictional.
+
+The earlier interactive landing page is live at [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) (source: [prototype/khabar-landing.html](prototype/khabar-landing.html)).
 
 Planned key screens for the app itself. Screenshots will replace these descriptions once built (target 28 Sep 2026).
 
