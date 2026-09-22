@@ -16,6 +16,9 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Keep the Next.js application's source modules; the rules above target Python build output.
+!AI IN HEALTHCARE/lib/
+!AI IN HEALTHCARE/lib/**
 parts/
 sdist/
 var/
