@@ -23,3 +23,5 @@ khabar:
     app-secret: test-app-secret
   checkins:
     scheduler-enabled: false
+  onboarding:
+    bootstrap-token: test-bootstrap-token

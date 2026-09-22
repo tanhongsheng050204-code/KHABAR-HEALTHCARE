@@ -82,6 +82,13 @@ public class Patient {
                 : Arrays.stream(allergies.split(",")).map(String::trim).filter(a -> !a.isEmpty()).toList();
     }
 
+    public void linkAccount(AppUser account) {
+        if (this.account != null) {
+            throw new IllegalStateException("This patient record is already linked to a sign-in.");
+        }
+        this.account = account;
+    }
+
     void setPhoneIndex(String phoneIndex) {
         this.phoneIndex = phoneIndex;
     }

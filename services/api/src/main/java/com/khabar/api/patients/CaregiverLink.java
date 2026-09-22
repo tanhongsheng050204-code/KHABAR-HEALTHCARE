@@ -58,6 +58,18 @@ public class CaregiverLink {
         return id;
     }
 
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public AppUser getCaregiver() {
+        return caregiver;
+    }
+
+    public Instant getConsentedAt() {
+        return consentedAt;
+    }
+
     public CaregiverScope getScope() {
         return scope;
     }

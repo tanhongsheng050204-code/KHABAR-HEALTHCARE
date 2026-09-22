@@ -17,6 +17,11 @@ public class CurrentUser {
         this.users = users;
     }
 
+    /** The signed-in person's Supabase user id, whether or not they are registered yet. */
+    public UUID id(Jwt jwt) {
+        return UUID.fromString(jwt.getSubject());
+    }
+
     public AppUser from(Jwt jwt) {
         UUID id = UUID.fromString(jwt.getSubject());
         return users.findById(id).orElseThrow(() ->

@@ -52,3 +52,6 @@ khabar:
   checkins:
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
     poll-ms: ${CHECKINS_POLL_MS:60000}
+  # Lets the very first doctor create a clinic (POST /api/onboarding/clinic). Leave empty to switch that off.
+  onboarding:
+    bootstrap-token: ${KHABAR_BOOTSTRAP_TOKEN:}
