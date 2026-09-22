@@ -3,7 +3,8 @@ package com.khabar.api.messaging;
 /** Sends a message to a patient's phone. WhatsApp in production; an outbox table locally. */
 public interface Messenger {
 
-    enum Kind { CHECK_IN, SUMMARY }
+    /** SAFETY is the fixed emergency advice after a red flag; ANSWER is a doctor-approved answer; NOTICE is an acknowledgement. */
+    enum Kind { CHECK_IN, SUMMARY, ANSWER, SAFETY, NOTICE }
 
     record Result(boolean delivered, String providerId, String error) {
         public static Result ok(String providerId) {

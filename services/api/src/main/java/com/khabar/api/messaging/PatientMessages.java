@@ -1,6 +1,7 @@
 package com.khabar.api.messaging;
 
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.followup.TriageLevel;
 import com.khabar.api.patients.Patient;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,27 @@ public class PatientMessages {
             "zh", "身体怎么样？开斋前有没有头晕、冒汗或发抖？回复这条信息告诉诊所。",
             "ta", "எப்படி இருக்கிறீர்கள்? நோன்பு திறக்கும் முன் தலைச்சுற்றல், வியர்வை அல்லது நடுக்கம் உள்ளதா? இந்த செய்திக்கு பதில் அனுப்பி கிளினிக்கிற்கு தெரியப்படுத்துங்கள்.");
 
+    /** Sent at once after a red flag. Fixed wording; the clinic still calls. 999 is Malaysia's emergency number. */
+    private static final Map<String, String> URGENT = Map.of(
+            "ms", "Klinik sudah dimaklumkan dan akan menghubungi anda. Kalau sakit dada, sesak nafas atau pengsan, hubungi 999 atau pergi ke Jabatan Kecemasan yang terdekat sekarang.",
+            "en", "The clinic has been told and will contact you. If you have chest pain, trouble breathing or have fainted, call 999 or go to the nearest emergency department now.",
+            "zh", "诊所已收到通知，会联系您。如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
+            "ta", "கிளினிக்கிற்குத் தெரிவிக்கப்பட்டது, அவர்கள் உங்களைத் தொடர்புகொள்வார்கள். நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
+
+    /** A reply that a person will read. */
+    private static final Map<String, String> WILL_READ = Map.of(
+            "ms", "Terima kasih. Klinik akan semak mesej anda secepat mungkin.",
+            "en", "Thank you. The clinic will look at your message as soon as possible.",
+            "zh", "谢谢。诊所会尽快查看您的信息。",
+            "ta", "நன்றி. கிளினிக் உங்கள் செய்தியை விரைவில் பார்க்கும்.");
+
+    /** A reassuring reply that needs no one. */
+    private static final Map<String, String> THANKS = Map.of(
+            "ms", "Terima kasih kerana memberitahu. Jaga diri!",
+            "en", "Thanks for letting us know. Take care!",
+            "zh", "谢谢您告诉我们。请保重！",
+            "ta", "தெரிவித்ததற்கு நன்றி. உடல்நலத்தைக் கவனித்துக் கொள்ளுங்கள்!");
+
     private final Messenger messenger;
     private final OutboundMessageRepository outbox;
     private final AdjustableClock clock;
@@ -34,6 +56,15 @@ public class PatientMessages {
 
     public static String checkInText(String language, boolean fasting) {
         Map<String, String> texts = fasting ? CHECK_IN_FASTING : CHECK_IN;
+        return texts.getOrDefault(language, texts.get("en"));
+    }
+
+    public static String urgentText(String language) {
+        return URGENT.getOrDefault(language, URGENT.get("en"));
+    }
+
+    public static String acknowledgementText(String language, TriageLevel level) {
+        Map<String, String> texts = level == TriageLevel.OK ? THANKS : WILL_READ;
         return texts.getOrDefault(language, texts.get("en"));
     }
 

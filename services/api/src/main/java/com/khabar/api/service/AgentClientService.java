@@ -113,4 +113,14 @@ public class AgentClientService {
                 .retrieve()
                 .body(AgentDtos.PreVisitReport.class);
     }
+
+    /** The id of the approved answer the reply asks for, or null. */
+    public String matchAnswer(String text, List<AgentDtos.AnswerOption> options) {
+        AgentDtos.AnswerMatch match = restClient.post()
+                .uri("/agents/followup/answer")
+                .body(Map.of("text", text, "options", options))
+                .retrieve()
+                .body(AgentDtos.AnswerMatch.class);
+        return match == null ? null : match.answerId();
+    }
 }

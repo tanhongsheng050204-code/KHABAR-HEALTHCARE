@@ -1,21 +1,28 @@
 package com.khabar.api.followup;
 
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.messaging.Messenger;
+import com.khabar.api.messaging.PatientMessages;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.Redactor;
 import com.khabar.api.service.AgentClientService;
+import com.khabar.api.service.AgentDtos.AnswerOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A patient's reply, from the app or WhatsApp: triaged (identity removed first), stored encrypted,
  * and counted as the answer to their latest check-in. A reply is never lost: if triage fails, it
- * goes to a person.
+ * goes to a person. The patient always hears back, but only in words a doctor approved: a red flag
+ * gets the fixed emergency advice, a question the clinic has an approved answer for gets that answer,
+ * and anything else is acknowledged and left for a person.
  */
 @Service
 public class FollowUpService {
@@ -24,32 +31,76 @@ public class FollowUpService {
 
     private final PatientReplyRepository replies;
     private final CheckInRepository checkIns;
+    private final ApprovedAnswerRepository answers;
     private final AgentClientService agents;
+    private final PatientMessages messages;
     private final AdjustableClock clock;
 
-    public FollowUpService(PatientReplyRepository replies, CheckInRepository checkIns, AgentClientService agents, AdjustableClock clock) {
+    public FollowUpService(PatientReplyRepository replies, CheckInRepository checkIns, ApprovedAnswerRepository answers,
+                           AgentClientService agents, PatientMessages messages, AdjustableClock clock) {
         this.replies = replies;
         this.checkIns = checkIns;
+        this.answers = answers;
         this.agents = agents;
+        this.messages = messages;
         this.clock = clock;
     }
 
+    /** What happened to a reply: its triage level, and the approved answer the patient was sent, if any. */
+    public record Outcome(TriageLevel level, String answer) {
+    }
+
     @Transactional
-    public TriageLevel receiveReply(Patient patient, String text) {
+    public Outcome receiveReply(Patient patient, String text) {
+        String redacted = Redactor.redact(text, patient);
         TriageLevel level;
         String matched = null;
         try {
-            Map<String, Object> result = agents.triageReply(Redactor.redact(text, patient));
+            Map<String, Object> result = agents.triageReply(redacted);
             level = TriageLevel.fromAgent(result == null ? null : result.get("level"));
             matched = result == null || result.get("matched") == null ? null : result.get("matched").toString();
         } catch (RuntimeException e) {
             log.warn("Triage unavailable, sending reply to a person: {}", e.getMessage());
             level = TriageLevel.REVIEW;
         }
-        replies.save(new PatientReply(patient, text, clock.instant(), level, matched));
+        PatientReply reply = replies.save(new PatientReply(patient, text, clock.instant(), level, matched));
         checkIns.findByPatientIdAndStatus(patient.getId(), CheckIn.Status.SENT).stream()
                 .max(Comparator.comparing(CheckIn::getDueDate))
                 .ifPresent(CheckIn::markAnswered);
-        return level;
+
+        String language = patient.getPreferredLanguage();
+        if (level == TriageLevel.RED) {
+            messages.send(patient, PatientMessages.urgentText(language), Messenger.Kind.SAFETY);
+            return new Outcome(level, null);
+        }
+        if (level == TriageLevel.OK || level == TriageLevel.REVIEW) {
+            Optional<ApprovedAnswer> answer = approvedAnswerFor(patient, redacted);
+            if (answer.isPresent()) {
+                String words = answer.get().textFor(language);
+                messages.send(patient, words, Messenger.Kind.ANSWER);
+                reply.answeredWith(answer.get().getId(), clock.instant());
+                return new Outcome(level, words);
+            }
+        }
+        messages.send(patient, PatientMessages.acknowledgementText(language, level), Messenger.Kind.NOTICE);
+        return new Outcome(level, null);
+    }
+
+    private Optional<ApprovedAnswer> approvedAnswerFor(Patient patient, String redacted) {
+        List<ApprovedAnswer> offered = answers.findByClinicIdAndRetiredAtIsNullOrderByApprovedAt(patient.getClinic().getId()).stream()
+                .filter(a -> a.textFor(patient.getPreferredLanguage()) != null)
+                .toList();
+        if (offered.isEmpty()) {
+            return Optional.empty();
+        }
+        try {
+            String id = agents.matchAnswer(redacted, offered.stream()
+                    .map(a -> new AnswerOption(a.getId().toString(), a.getTitle(), List.copyOf(a.getTriggers())))
+                    .toList());
+            return offered.stream().filter(a -> a.getId().toString().equals(id)).findFirst();
+        } catch (RuntimeException e) {
+            log.warn("Answer matching unavailable, leaving the reply for a person: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 }

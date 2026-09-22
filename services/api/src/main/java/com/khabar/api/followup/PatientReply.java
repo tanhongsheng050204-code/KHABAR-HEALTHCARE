@@ -44,6 +44,9 @@ public class PatientReply {
 
     private UUID handledBy;
 
+    /** The approved answer sent automatically, if any. Such a reply needs no call. */
+    private UUID answeredWith;
+
     protected PatientReply() {
     }
 
@@ -58,6 +61,11 @@ public class PatientReply {
 
     public void markHandled(UUID clinicianId, Instant when) {
         this.handledBy = clinicianId;
+        this.handledAt = when;
+    }
+
+    public void answeredWith(UUID approvedAnswerId, Instant when) {
+        this.answeredWith = approvedAnswerId;
         this.handledAt = when;
     }
 

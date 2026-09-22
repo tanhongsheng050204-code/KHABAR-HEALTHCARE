@@ -32,7 +32,7 @@ public class FollowUpController {
     public record ReplyRequest(String text) {
     }
 
-    public record ReplyResponse(TriageLevel level) {
+    public record ReplyResponse(TriageLevel level, String answer) {
     }
 
     @PostMapping("/replies")
@@ -46,6 +46,7 @@ public class FollowUpController {
         }
         Patient patient = patients.findByAccountId(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No patient record is linked to this account."));
-        return new ReplyResponse(followUp.receiveReply(patient, request.text()));
+        FollowUpService.Outcome outcome = followUp.receiveReply(patient, request.text());
+        return new ReplyResponse(outcome.level(), outcome.answer());
     }
 }

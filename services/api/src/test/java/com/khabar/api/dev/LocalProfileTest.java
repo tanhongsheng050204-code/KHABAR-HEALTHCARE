@@ -75,6 +75,15 @@ class LocalProfileTest {
     }
 
     @Test
+    void theDemoClinicHasApprovedAnswersInEveryLanguage() throws Exception {
+        mvc.perform(get("/api/clinic/answers").header("Authorization", tokenFor("doctor")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].texts.ta").exists())
+                .andExpect(jsonPath("$[1].texts.zh").exists());
+    }
+
+    @Test
     void demoDoctorHasACallListWithAnUrgentPatientFirst() throws Exception {
         mvc.perform(get("/api/clinic/call-list").header("Authorization", tokenFor("doctor")))
                 .andExpect(status().isOk())

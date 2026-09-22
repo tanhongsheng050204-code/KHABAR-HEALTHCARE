@@ -89,4 +89,11 @@ public final class AgentDtos {
             @JsonAlias("ask_about") List<String> askAbout,
             @JsonAlias("red_flags") List<IntakeFlag> redFlags) {
     }
+
+    /** A doctor-approved answer as offered to the matcher: an id and when to use it, never the answer text. */
+    public record AnswerOption(String id, String title, List<String> triggers) {
+    }
+
+    public record AnswerMatch(@JsonAlias("answer_id") String answerId, String source) {
+    }
 }

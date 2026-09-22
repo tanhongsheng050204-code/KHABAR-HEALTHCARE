@@ -5,6 +5,8 @@ import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
 import com.khabar.api.identity.ClinicRepository;
 import com.khabar.api.identity.Role;
+import com.khabar.api.followup.ApprovedAnswer;
+import com.khabar.api.followup.ApprovedAnswerRepository;
 import com.khabar.api.followup.PatientReply;
 import com.khabar.api.followup.PatientReplyRepository;
 import com.khabar.api.followup.TriageLevel;
@@ -53,10 +55,12 @@ public class DemoData implements ApplicationRunner {
     private final MedicationItemRepository medications;
     private final IntakeSessionRepository intakes;
     private final IntakeRecords intakeRecords;
+    private final ApprovedAnswerRepository answers;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
-                    MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords) {
+                    MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
+                    ApprovedAnswerRepository answers) {
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -65,6 +69,7 @@ public class DemoData implements ApplicationRunner {
         this.medications = medications;
         this.intakes = intakes;
         this.intakeRecords = intakeRecords;
+        this.answers = answers;
     }
 
     @Override
@@ -74,7 +79,7 @@ public class DemoData implements ApplicationRunner {
             return;
         }
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya (demo)"));
-        users.save(new AppUser(DOCTOR_ID, Role.DOCTOR, "Dr Priya", clinic));
+        AppUser doctor = users.save(new AppUser(DOCTOR_ID, Role.DOCTOR, "Dr Priya", clinic));
         AppUser aminahAccount = users.save(new AppUser(AMINAH_ACCOUNT_ID, Role.PATIENT, "Aminah", null));
         AppUser nurul = users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 
@@ -93,6 +98,34 @@ public class DemoData implements ApplicationRunner {
         replies.save(new PatientReply(muthu, "நலம், மருந்து சாப்பிட்டேன்", now.minus(Duration.ofHours(5)), TriageLevel.OK, "நலம்"));
 
         aminahsIntake(aminah, aminahAccount, now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2)));
+        approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
+    }
+
+    /** Answers "Dr Priya" has approved for common follow-up questions. Demo wording; a real clinic writes its own. */
+    private void approvedAnswers(Clinic clinic, AppUser doctor, Instant when) {
+        answers.save(new ApprovedAnswer(clinic, "Missed a dose",
+                List.of("lupa makan ubat", "terlupa makan ubat", "tertinggal ubat", "forgot my medicine", "forgot to take", "missed a dose",
+                        "忘记吃药", "忘了吃药", "漏吃", "மறந்துவிட்டேன்"),
+                Map.of("ms", "Kalau terlupa satu dos, ambil sebaik sahaja teringat. Kalau sudah hampir waktu dos seterusnya, langkau dos yang tertinggal. Jangan ambil dua dos sekali.",
+                        "en", "If you miss a dose, take it as soon as you remember. If it is almost time for the next dose, skip the missed one. Never take two doses at once.",
+                        "zh", "如果漏吃一次，想起来就马上吃。如果快到下一次吃药的时间，就跳过漏掉的那一次。不要一次吃两份。",
+                        "ta", "ஒரு வேளை மருந்தை மறந்துவிட்டால், நினைவு வந்தவுடன் எடுத்துக்கொள்ளுங்கள். அடுத்த வேளை நேரம் நெருங்கிவிட்டால், மறந்ததை விட்டுவிடுங்கள். இரண்டு வேளை மருந்தை ஒன்றாக எடுக்க வேண்டாம்."),
+                doctor, when));
+        answers.save(new ApprovedAnswer(clinic, "Medicine running out",
+                List.of("ubat habis", "ubat dah habis", "ubat nak habis", "ran out", "running out", "refill", "药吃完", "药快吃完", "拿药", "மருந்து தீர்ந்து"),
+                Map.of("ms", "Sila datang ke klinik untuk ambil ubat sebelum ubat habis. Bawa kad temujanji atau paket ubat lama anda.",
+                        "en", "Please come to the clinic to collect more before you run out. Bring your appointment card or your old medicine packet.",
+                        "zh", "请在药吃完之前回诊所拿药，并带上预约卡或旧的药袋。",
+                        "ta", "மருந்து தீர்வதற்கு முன் கிளினிக்கிற்கு வந்து மருந்து பெற்றுக்கொள்ளுங்கள். உங்கள் சந்திப்பு அட்டை அல்லது பழைய மருந்துப் பையைக் கொண்டு வாருங்கள்."),
+                doctor, when.plusSeconds(1)));
+        answers.save(new ApprovedAnswer(clinic, "Before or after food",
+                List.of("sebelum atau selepas makan", "sebelum makan ke", "lepas makan ke", "before or after food", "with food", "饭前还是饭后",
+                        "சாப்பாட்டுக்கு முன்பா"),
+                Map.of("ms", "Ikut arahan dalam ringkasan lawatan anda: ia menyebut sama ada sebelum atau selepas makan untuk setiap ubat. Kalau tak pasti, tanya ahli farmasi di klinik.",
+                        "en", "Follow your visit summary: it says before or after food for each medicine. If you're not sure, ask the pharmacist at the clinic.",
+                        "zh", "请按照就诊总结上的说明：每种药都写明饭前或饭后吃。如果不确定，请问诊所的药剂师。",
+                        "ta", "உங்கள் சந்திப்புச் சுருக்கத்தைப் பின்பற்றுங்கள்: ஒவ்வொரு மருந்தும் சாப்பாட்டுக்கு முன்பா பின்பா என்று அதில் உள்ளது. சந்தேகம் இருந்தால், கிளினிக் மருந்தாளரிடம் கேளுங்கள்."),
+                doctor, when.plusSeconds(2)));
     }
 
     /**

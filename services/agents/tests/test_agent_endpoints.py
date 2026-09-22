@@ -77,3 +77,14 @@ def test_previsit_report_endpoint_lays_out_the_intake_for_the_doctor():
     body = response.json()
     assert body["medicines"] == [{"as_written": "Brand A 500mg", "generic": "metformin"}]
     assert body["herbs"] == ["bitter gourd"]
+
+
+def test_answer_endpoint_rejects_calls_without_the_service_key():
+    assert client.post("/agents/followup/answer", json={"text": "x"}).status_code == 401
+
+
+def test_answer_endpoint_returns_the_id_of_an_approved_answer():
+    options = [{"id": "a1", "title": "Missed a dose", "triggers": ["lupa makan ubat"]}]
+    response = client.post("/agents/followup/answer", json={"text": "Saya lupa makan ubat", "options": options}, headers=KEY)
+    assert response.status_code == 200
+    assert response.json() == {"answer_id": "a1", "source": "triggers"}
