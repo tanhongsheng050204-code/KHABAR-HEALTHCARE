@@ -44,6 +44,13 @@ def test_same_medicine_under_two_brand_names_is_a_critical_duplicate():
     assert "metformin" in findings[0].detail.lower()
 
 
+def test_a_duplicate_names_every_place_the_patient_already_gets_the_medicine():
+    current = [CurrentMed(name="Metformin 500mg", source="Klinik Kesihatan"), CurrentMed(name="Brand A 500mg", source="GP clinic")]
+    findings = evaluate(draft(current_meds=current, prescription=[Rx(name="Metformin", dose_mg=500, times_per_day=2)]))
+    assert checks(findings, "CRITICAL") == ["duplicate"]
+    assert "Klinik Kesihatan" in findings[0].detail and "GP clinic" in findings[0].detail
+
+
 def test_herb_that_affects_a_prescribed_drug_is_flagged():
     findings = evaluate(draft(herbs=["Ginkgo capsules"], prescription=[Rx(name="Aspirin", dose_mg=100)]))
     assert checks(findings) == ["herb"]

@@ -92,15 +92,15 @@ def _check_allergies(draft: Draft, prescribed: dict[str, Rx]) -> list[Finding]:
     return found
 
 
-def _check_duplicates(prescribed: dict[str, Rx], current: dict[str, CurrentMed]) -> list[Finding]:
+def _check_duplicates(prescribed: dict[str, Rx], current: dict[str, list[CurrentMed]]) -> list[Finding]:
     return [
         Finding(check="duplicate", severity="CRITICAL",
-                detail=f"{generic.title()} is already taken as '{current[generic].name}' from {current[generic].source}.")
+                detail=f"{generic.title()} is already taken as " + " and ".join(f"'{m.name}' from {m.source}" for m in current[generic]) + ".")
         for generic in prescribed if generic in current
     ]
 
 
-def _check_interactions(prescribed: dict[str, Rx], current: dict[str, CurrentMed]) -> list[Finding]:
+def _check_interactions(prescribed: dict[str, Rx], current: dict[str, list[CurrentMed]]) -> list[Finding]:
     all_drugs = set(prescribed) | set(current)
     found = []
     for rule in _data()["interactions"]:
@@ -182,7 +182,10 @@ def evaluate(draft: Draft) -> list[Finding]:
             findings.append(Finding(check="unrecognised", severity="WARN", detail=f"'{rx.name}' is not in the drug list; check it by hand."))
         else:
             prescribed[generic] = rx
-    current = {g: m for m in draft.current_meds if (g := generic_of(m.name))}
+    current: dict[str, list[CurrentMed]] = {}
+    for med in draft.current_meds:
+        if (generic := generic_of(med.name)):
+            current.setdefault(generic, []).append(med)
 
     findings += _check_grounding(draft, prescribed)
     findings += _check_allergies(draft, prescribed)
