@@ -38,7 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Fake people for the `local` profile. Every name, IC and phone number here is made up. */
+/**
+ * Fake people for the `local` profile. Every name, IC and phone number here is made up, and the phone
+ * numbers use 03-0000 xxxx, which no real line has, so a WhatsApp account configured by mistake can't
+ * message a stranger. Four hand-written patients carry the demo story; 26 more come from the generator.
+ */
 @Component
 @Profile("local")
 public class DemoData implements ApplicationRunner {
@@ -84,10 +88,10 @@ public class DemoData implements ApplicationRunner {
         AppUser nurul = users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 
         LocalDate today = LocalDate.now();
-        Patient aminah = inFollowUp(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms"), today.minusDays(3));
-        Patient rosnah = inFollowUp(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "013-111 2222", "ms"), today.minusDays(6));
-        Patient tan = inFollowUp(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "016-222 3333", "zh"), today.minusDays(9));
-        Patient muthu = inFollowUp(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "019-444 5555", "ta"), today.minusDays(6));
+        Patient aminah = inFollowUp(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "03-0000 0001", "ms"), today.minusDays(3));
+        Patient rosnah = inFollowUp(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "03-0000 0002", "ms"), today.minusDays(6));
+        Patient tan = inFollowUp(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "03-0000 0003", "zh"), today.minusDays(9));
+        Patient muthu = inFollowUp(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "03-0000 0004", "ta"), today.minusDays(6));
         caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
 
         // Replies as if they had come back from the follow-up check-ins (levels as the triage would set them).
@@ -99,6 +103,21 @@ public class DemoData implements ApplicationRunner {
 
         aminahsIntake(aminah, aminahAccount, now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2)));
         approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
+        generatedPatients(clinic, doctor, now.minus(Duration.ofDays(60)));
+    }
+
+    /** 26 more made-up patients so the clinic looks like a clinic: not in follow-up, each with what they take. */
+    private void generatedPatients(Clinic clinic, AppUser doctor, Instant when) {
+        for (FakePatientGenerator.FakePatient fake : new FakePatientGenerator(2026).generate(26)) {
+            Patient patient = new Patient(clinic, null, fake.fullName(), fake.icNumber(), fake.phone(), fake.language());
+            patient.recordAllergies(fake.allergies());
+            patient.setPregnant(fake.pregnant());
+            patients.save(patient);
+            fake.medicines().forEach(m -> medications.save(new MedicationItem(patient, m.name(), MedicationItem.Kind.MEDICINE, m.source(),
+                    Role.DOCTOR, doctor.getId(), when)));
+            fake.herbs().forEach(h -> medications.save(new MedicationItem(patient, h.name(), MedicationItem.Kind.HERB, h.source(),
+                    Role.DOCTOR, doctor.getId(), when)));
+        }
     }
 
     /** Answers "Dr Priya" has approved for common follow-up questions. Demo wording; a real clinic writes its own. */

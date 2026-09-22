@@ -84,6 +84,13 @@ class LocalProfileTest {
     }
 
     @Test
+    void theDemoClinicHasThirtyFakePatients() throws Exception {
+        mvc.perform(get("/api/clinic/patients").header("Authorization", tokenFor("doctor")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(30));
+    }
+
+    @Test
     void demoDoctorHasACallListWithAnUrgentPatientFirst() throws Exception {
         mvc.perform(get("/api/clinic/call-list").header("Authorization", tokenFor("doctor")))
                 .andExpect(status().isOk())

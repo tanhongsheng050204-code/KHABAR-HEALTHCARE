@@ -56,12 +56,12 @@ Without `GEMINI_API_KEY` the intake agent runs a scripted four-question intervie
 The local profile sets the verify token to `local-verify-token` and the app secret to `local-app-secret`. Meta signs each delivery with the app secret; you can do the same:
 
 ```bash
-BODY='{"entry":[{"changes":[{"value":{"messages":[{"from":"60123456789","type":"text","text":{"body":"pening sikit"}}]}}]}]}'
+BODY='{"entry":[{"changes":[{"value":{"messages":[{"from":"60300000001","type":"text","text":{"body":"pening sikit"}}]}}]}]}'
 SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac local-app-secret | sed 's/^.* //')"
 curl -s -X POST localhost:8080/api/webhooks/whatsapp -H "X-Hub-Signature-256: $SIG" -H "Content-Type: application/json" -d "$BODY"
 ```
 
-`60123456789` is Aminah's demo number, so the reply lands on the doctor's call list.
+`60300000001` is Aminah's demo number (03-0000 0001; every demo number uses 03-0000, which no real line has), so the reply lands on the doctor's call list.
 
 ## Tests
 
