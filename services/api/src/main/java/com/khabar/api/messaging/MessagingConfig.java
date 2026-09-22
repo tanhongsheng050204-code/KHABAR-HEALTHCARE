@@ -19,11 +19,12 @@ public class MessagingConfig {
                                @Value("${khabar.whatsapp.access-token:}") String accessToken,
                                @Value("${khabar.whatsapp.api-version:v21.0}") String apiVersion,
                                @Value("${khabar.whatsapp.api-base-url:https://graph.facebook.com}") String baseUrl,
-                               @Value("${khabar.whatsapp.checkin-template:}") String checkInTemplate) {
+                               @Value("${khabar.whatsapp.checkin-template:}") String checkInTemplate,
+                               @Value("${khabar.whatsapp.summary-template:}") String summaryTemplate) {
         if (phoneNumberId.isBlank() || accessToken.isBlank()) {
             log.info("WhatsApp not configured: messages go to the outbox table only.");
             return new OutboxMessenger();
         }
-        return new WhatsAppCloudMessenger(baseUrl, apiVersion, phoneNumberId, accessToken, checkInTemplate);
+        return new WhatsAppCloudMessenger(baseUrl, apiVersion, phoneNumberId, accessToken, checkInTemplate, summaryTemplate);
     }
 }
