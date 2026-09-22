@@ -250,16 +250,19 @@ We're one builder, so the scope is tiered. **Tier 1 alone is a complete, demonst
 
 If time runs short, features are dropped in reverse order of the tiers. The full day-by-day schedule, checkpoints and demo script are in [plan.md](plan.md).
 
-**Built so far** (97 automated tests passing: 54 in the agents service, 43 in the API):
+**Built so far** (201 automated tests passing: 103 in the agents service, 98 in the API):
 
 | Part | Done | Still to do |
 |---|---|---|
-| Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access; the sign-in screen signs in to the local API | Real Supabase sign-in on the screen; sign-up flow |
-| Privacy | IC and phone stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
-| Intake | Intake chat through the API to the agent (Gemini, or a scripted interview when no key is set) | Pre-visit report for the doctor |
-| Safety checks | Allergy, drug interaction, duplicate medicine, herb clash, dose limit, pregnancy, missing report fields, unrecognised drug | AI-assisted hallucination check; the three-place block on finalising; replacing seed drug data with DDInter |
-| Follow-up | Reply triage in BM, English, Chinese and Tamil (red / watch / ok / needs a person); replies stored encrypted; the clinic's call list with "mark as called", shown live on the triage desk | Check-in schedule; receiving and sending on WhatsApp |
-| Running it | Both services and the screens run locally with no accounts (`scripts/run-local.ps1`, `local` mode with demo people) | Cloud hosting for the two backend services |
+| Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access at once; the sign-in screen signs in to the local API | Real Supabase sign-in on the screen |
+| Onboarding | The clinic registers a patient and hands over a one-time code that links the patient's sign-in to their record; patients invite and remove caregivers; doctors invite colleagues; a bootstrap token creates the first clinic. Codes are stored hashed and expire after 7 days | Sign-up screens |
+| Privacy | IC, phone, notes, replies, summaries, intake chats and medication lists stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
+| Before the visit | Intake chat (Gemini, or a scripted interview with no key); the pre-visit report for the doctor (answers by topic, medicines with the generic behind each brand, herbs, remedies to ask about, allergies, warning symptoms); a "what I take" list that the patient, caregiver or clinic keeps | Photo check of medicine packets; self-booking |
+| The visit | Doctor's shorthand notes (`T. Metformin 500mg 1/1 BD PC`, `TCA 2/52`) turned into a structured draft; overrides need a written reason and are audited; finalising is blocked by the API and by a database rule while a critical finding is open | Speaking instead of typing; the visit screen wired to the API (the third place the block lives) |
+| Safety checks | Allergy (including allergies told at intake), drug interaction, duplicate medicine across clinics and brands, herb clash, dose limit, pregnancy, grounding (a drug the notes never mention), missing report fields, unrecognised drug | Catching invented symptoms, not just invented drugs; replacing the seed drug data with DDInter |
+| Summary | Plain-language summary in BM, English, Chinese and Tamil, with sahur and berbuka timings when fasting; sent to the patient when the visit is finalised | Voice-note version |
+| Follow-up | Check-ins on days 1, 3, 7, 14 and 30 (a fasting version during Ramadan); sent on WhatsApp or kept in an outbox; replies received on the WhatsApp webhook (signature checked) or in the app; triage in four languages by word lists plus an optional model check, where the more urgent level wins; the clinic's call list, which also lists patients who have not replied in 48 hours | Doctor-approved answer library; a live test with an approved WhatsApp template |
+| Running it | Both services and the screens run locally with no accounts (`scripts/run-local.ps1`, `local` mode with demo people and a clock you can fast-forward) | Neo4j patient graph; cloud hosting for the two backend services |
 
 ## Repository layout
 | Folder | What's in it |
