@@ -61,3 +61,19 @@ def test_summary_endpoint_builds_the_patients_summary_and_whatsapp_text():
 
 def test_summary_endpoint_rejects_calls_without_the_service_key():
     assert client.post("/agents/summary/build", json={"prescription": [], "language": "ms"}).status_code == 401
+
+
+def test_previsit_report_endpoint_rejects_calls_without_the_service_key():
+    assert client.post("/agents/intake/report", json={"messages": []}).status_code == 401
+
+
+def test_previsit_report_endpoint_lays_out_the_intake_for_the_doctor():
+    messages = [
+        {"role": "assistant", "content": "What do you take at the moment?"},
+        {"role": "user", "content": "Brand A 500mg and bitter gourd juice"},
+    ]
+    response = client.post("/agents/intake/report", json={"messages": messages}, headers=KEY)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["medicines"] == [{"as_written": "Brand A 500mg", "generic": "metformin"}]
+    assert body["herbs"] == ["bitter gourd"]

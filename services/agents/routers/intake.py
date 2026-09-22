@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from core.security import verify_internal_service_key
 from agents.intake_agent import intake_graph, IntakeState
+from agents.previsit import PreVisitReport, build_previsit_report
 
 router = APIRouter(
     prefix="/agents/intake",
@@ -39,3 +40,13 @@ async def process_intake_chat(request: IntakeChatRequest):
 
     result = intake_graph.invoke(initial_state)
     return IntakeChatResponse(next_question=result["next_question"], is_complete=result["is_complete"])
+
+
+class PreVisitRequest(BaseModel):
+    messages: List[ChatMessage] = Field(default_factory=list)
+
+
+@router.post("/report", response_model=PreVisitReport)
+def previsit_report(request: PreVisitRequest):
+    """Lay out a finished intake chat for the doctor: answers by topic, medicines, herbs, allergies and warning signs."""
+    return build_previsit_report([m.model_dump() for m in request.messages])
