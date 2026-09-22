@@ -213,7 +213,7 @@ An earlier interactive landing page (language switch, medicine scan, reply triag
 | Messaging | **WhatsApp Cloud API** (Telegram fallback) | Where Malaysian patients already are | The test number reaches only 5 phones. Messages the clinic starts need templates approved by Meta. |
 | Drug data | **DDInter 2.0** + our own brand-name and herb tables | Free, peer-reviewed interaction data | Non-commercial licence (CC BY-NC 4.0). Brand names have to be mapped by hand. |
 | IoT (stretch) | **Favoriot** | Malaysian IoT platform with a REST API | Free tier unconfirmed |
-| Hosting | Vercel for the web ([live now](https://khabar-landing-six.vercel.app)) + a container host in the Singapore region for the two backend services | Free while building, low latency from Malaysia | Vercel can't run the Java API. Free container tiers go to sleep, so we move to paid (~US$5–15/month) before demos |
+| Hosting | One Vercel project for the app ([live](https://khabar-landing-six.vercel.app)) and another in Singapore for the two backend services, the API as a container and the agents as a Python service ([browse the API](https://khabar-api.vercel.app/docs)), with a Supabase Postgres database | Free tier, one place to deploy, low latency from Malaysia | The backend sleeps after five idle minutes, so the first request takes about 15 seconds; a paid plan or a small always-on container removes that before demos |
 
 ### System architecture diagram
 ```mermaid
@@ -250,19 +250,19 @@ We're one builder, so the scope is tiered. **Tier 1 alone is a complete, demonst
 
 If time runs short, features are dropped in reverse order of the tiers. The full day-by-day schedule, checkpoints and demo script are in [plan.md](plan.md).
 
-**Built so far** (201 automated tests passing: 103 in the agents service, 98 in the API):
+**Built so far** (313 automated tests passing: 152 in the agents service, 161 in the API):
 
 | Part | Done | Still to do |
 |---|---|---|
 | Sign-in and access | Supabase token checks; doctor, patient and caregiver access rules; revoked caregiver consent blocks access at once; the sign-in screen signs in to the local API | Real Supabase sign-in on the screen |
 | Onboarding | The clinic registers a patient and hands over a one-time code that links the patient's sign-in to their record; patients invite and remove caregivers; doctors invite colleagues; a bootstrap token creates the first clinic. Codes are stored hashed and expire after 7 days | Sign-up screens |
-| Privacy | IC, phone, notes, replies, summaries, intake chats and medication lists stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
-| Before the visit | Intake chat (Gemini, or a scripted interview with no key); the pre-visit report for the doctor (answers by topic, medicines with the generic behind each brand, herbs, remedies to ask about, allergies, warning symptoms); a "what I take" list that the patient, caregiver or clinic keeps | Photo check of medicine packets; self-booking |
-| The visit | Doctor's shorthand notes (`T. Metformin 500mg 1/1 BD PC`, `TCA 2/52`) turned into a structured draft; overrides need a written reason and are audited; finalising is blocked by the API and by a database rule while a critical finding is open | Speaking instead of typing; the visit screen wired to the API (the third place the block lives) |
-| Safety checks | Allergy (including allergies told at intake), drug interaction, duplicate medicine across clinics and brands, herb clash, dose limit, pregnancy, grounding (a drug the notes never mention), missing report fields, unrecognised drug | Catching invented symptoms, not just invented drugs; replacing the seed drug data with DDInter |
-| Summary | Plain-language summary in BM, English, Chinese and Tamil, with sahur and berbuka timings when fasting; sent to the patient when the visit is finalised | Voice-note version |
-| Follow-up | Check-ins on days 1, 3, 7, 14 and 30 (a fasting version during Ramadan); sent on WhatsApp or kept in an outbox; replies received on the WhatsApp webhook (signature checked) or in the app; triage in four languages by word lists plus an optional model check, where the more urgent level wins; the clinic's call list, which also lists patients who have not replied in 48 hours | Doctor-approved answer library; a live test with an approved WhatsApp template |
-| Running it | Both services and the screens run locally with no accounts (`scripts/run-local.ps1`, `local` mode with demo people and a clock you can fast-forward) | Neo4j patient graph; cloud hosting for the two backend services |
+| Privacy | IC, phone, notes, replies, summaries, intake chats, medication lists and booking reasons stored encrypted; the patient's name, IC and phone removed before anything reaches the AI; "who viewed my record" log | Name removal for other people mentioned in a message |
+| Before the visit | Self-booking from a rolling calendar (the database refuses double bookings); intake chat that confirms what the clinic already knows; the pre-visit page (intake, last visit, the medicine list checked for duplicates across clinics, clashes, herbs and allergies, replies since); a "what I take" list kept by the patient, caregiver or clinic | Photo check of medicine packets (left out on purpose: labels carry names) |
+| The visit | The visit screen (`docs/visit.html`) on real data: shorthand notes or speech to text (Groq Whisper) turned into a structured draft; overrides need a written reason and are audited; finalising is blocked in three places: the screen, the API and a database rule | Learning each doctor's writing style |
+| Safety checks | Allergy (including allergies told at intake), drug interaction, duplicate medicine across clinics and brands, herb clash, dose limit, pregnancy, invented drugs, invented symptoms, missing report fields, unrecognised drug. The planted-error set of ten known mistakes is a test and all ten are caught | Replacing the seed drug data with DDInter |
+| Summary | Plain-language summary in BM, English, Chinese and Tamil, with sahur and berbuka timings when fasting; sent through an approved WhatsApp template when the visit is finalised | Voice-note version |
+| Follow-up | Check-ins on days 1, 3, 7, 14 and 30 (a fasting version during Ramadan); replies by WhatsApp (signature checked) or the app; triage in four languages by word lists plus an optional model check; patients hear back only in approved words (fixed 999 advice for red flags, the doctor's approved answers, or an acknowledgement); missed doses noticed; home blood pressure and blood sugar from the app or a Favoriot-linked device; the call list ranks red flags, readings, missed doses and silence | A live test with approved WhatsApp templates and a real Favoriot device |
+| Running it | Both services and the screens run locally with no accounts (`scripts/run-local.ps1`, `local` mode with 30 demo patients and a clock you can fast-forward). Everything is also live: the app on Vercel, the API and agents in a Vercel project in Singapore with a Supabase database, and every endpoint browsable at [/docs](https://khabar-api.vercel.app/docs) | Neo4j patient graph |
 
 ## Repository layout
 | Folder | What's in it |

@@ -22,6 +22,12 @@ public class ApiRootController {
         this.appUrl = appUrl.trim();
     }
 
+    /** A short address for the browsable reference. */
+    @GetMapping("/docs")
+    public ResponseEntity<Void> docs() {
+        return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/swagger-ui/index.html").build();
+    }
+
     @GetMapping("/")
     public ResponseEntity<Map<String, String>> root() {
         if (!appUrl.isEmpty()) {
@@ -30,6 +36,7 @@ public class ApiRootController {
         return ResponseEntity.ok(Map.of(
                 "service", "Khabar clinical API",
                 "health", "/api/health",
+                "docs", "/docs",
                 "note", "This is the API behind the Khabar app. Open the app's own address to use it."));
     }
 }
