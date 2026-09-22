@@ -88,3 +88,11 @@ def test_answer_endpoint_returns_the_id_of_an_approved_answer():
     response = client.post("/agents/followup/answer", json={"text": "Saya lupa makan ubat", "options": options}, headers=KEY)
     assert response.status_code == 200
     assert response.json() == {"answer_id": "a1", "source": "triggers"}
+
+
+def test_reconcile_endpoint_checks_the_patients_own_list():
+    body = {"current_meds": [{"name": "Metformin 500mg", "source": "Klinik Kesihatan"}, {"name": "Brand A 500mg", "source": "GP clinic"}],
+            "herbs": ["peria"]}
+    response = client.post("/agents/evaluator/reconcile", json=body, headers=KEY)
+    assert response.status_code == 200
+    assert [f["check"] for f in response.json()["findings"]] == ["duplicate", "herb"]

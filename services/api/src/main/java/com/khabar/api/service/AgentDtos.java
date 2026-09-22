@@ -96,4 +96,11 @@ public final class AgentDtos {
 
     public record AnswerMatch(@JsonAlias("answer_id") String answerId, String source) {
     }
+
+    /** The patient's own medicine list, checked before the visit. */
+    public record ReconcileRequest(PatientFacts patient, @JsonProperty("current_meds") List<CurrentMed> currentMeds, List<String> herbs) {
+    }
+
+    public record ReconcileResult(List<FindingDto> findings) {
+    }
 }

@@ -58,7 +58,7 @@ public class MedicationController {
     }
 
     public record ItemView(UUID id, String name, MedicationItem.Kind kind, String source, Role addedBy, Instant addedAt) {
-        static ItemView of(MedicationItem item) {
+        public static ItemView of(MedicationItem item) {
             return new ItemView(item.getId(), item.getName(), item.getKind(), item.getSource(), item.getAddedByRole(), item.getAddedAt());
         }
     }

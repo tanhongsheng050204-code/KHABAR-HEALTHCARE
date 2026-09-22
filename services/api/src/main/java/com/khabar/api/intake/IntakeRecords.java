@@ -67,6 +67,12 @@ public class IntakeRecords {
         }
     }
 
+    /** The latest finished intake as the doctor reads it. */
+    public Optional<IntakeController.IntakeView> latestView(UUID patientId) {
+        return latestCompleted(patientId)
+                .map(s -> new IntakeController.IntakeView(s.getId(), s.getCompletedAt(), report(s), transcript(s)));
+    }
+
     /** Allergies the patient mentioned in their latest intake, for the safety check. */
     public List<String> reportedAllergies(UUID patientId) {
         return latestCompleted(patientId)

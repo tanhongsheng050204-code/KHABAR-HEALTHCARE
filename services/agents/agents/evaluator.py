@@ -196,3 +196,44 @@ def evaluate(draft: Draft) -> list[Finding]:
     findings += _check_pregnancy(draft, prescribed)
     findings += _check_completeness(draft)
     return sorted(findings, key=lambda f: f.severity != "CRITICAL")
+
+
+def reconcile(current_meds: list[CurrentMed], herbs: list[str], patient: Optional[PatientFacts] = None) -> list[Finding]:
+    """
+    Checks what the patient already takes from every clinic, pharmacy and relative, before anything is
+    prescribed: the same drug twice under different names, clashes between them, herbs that affect
+    them, and allergies. This is the reconciled medicine list the doctor sees before the visit.
+    """
+    patient = patient or PatientFacts()
+    findings: list[Finding] = []
+    groups: dict[str, list[CurrentMed]] = {}
+    for med in current_meds:
+        generic = generic_of(med.name)
+        if generic is None:
+            findings.append(Finding(check="unrecognised", severity="WARN",
+                                    detail=f"'{med.name}' from {med.source} is not in the drug list; check it by hand."))
+        else:
+            groups.setdefault(generic, []).append(med)
+
+    for generic, meds in groups.items():
+        if len(meds) > 1:
+            findings.append(Finding(check="duplicate", severity="CRITICAL",
+                                    detail=f"{generic.title()} is taken {len(meds)} times: "
+                                           + " and ".join(f"'{m.name}' from {m.source}" for m in meds) + "."))
+
+    allergies = {a.strip().lower() for a in patient.allergies}
+    for generic in groups:
+        hits = allergies & ({generic} | set(_classes(generic)))
+        if hits:
+            findings.append(Finding(check="allergy", severity="CRITICAL",
+                                    detail=f"{generic.title()} is being taken, but the patient is allergic to {', '.join(sorted(hits))}."))
+
+    for rule in _data()["interactions"]:
+        a, b = rule["drugs"]
+        if a in groups and b in groups:
+            severity = "CRITICAL" if rule["severity"] == "major" else "WARN"
+            findings.append(Finding(check="interaction", severity=severity, detail=f"{a.title()} + {b.title()}: {rule['effect']}"))
+
+    taken = {generic: Rx(name=generic) for generic in groups}
+    findings += _check_herbs(Draft(patient=patient, herbs=herbs), taken)
+    return sorted(findings, key=lambda f: f.severity != "CRITICAL")

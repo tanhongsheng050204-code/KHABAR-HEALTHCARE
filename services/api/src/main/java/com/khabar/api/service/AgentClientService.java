@@ -123,4 +123,14 @@ public class AgentClientService {
                 .body(AgentDtos.AnswerMatch.class);
         return match == null ? null : match.answerId();
     }
+
+    /** Duplicates, clashes, herbs and allergies within what the patient already takes. */
+    public List<AgentDtos.FindingDto> reconcile(AgentDtos.PatientFacts patient, List<AgentDtos.CurrentMed> currentMeds, List<String> herbs) {
+        AgentDtos.ReconcileResult result = restClient.post()
+                .uri("/agents/evaluator/reconcile")
+                .body(new AgentDtos.ReconcileRequest(patient, currentMeds, herbs))
+                .retrieve()
+                .body(AgentDtos.ReconcileResult.class);
+        return result == null || result.findings() == null ? List.of() : result.findings();
+    }
 }

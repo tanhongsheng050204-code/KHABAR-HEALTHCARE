@@ -10,4 +10,6 @@ public interface PatientReplyRepository extends JpaRepository<PatientReply, UUID
     List<PatientReply> findByPatientClinicIdAndHandledAtIsNull(UUID clinicId);
 
     List<PatientReply> findByPatientIdAndHandledAtIsNull(UUID patientId);
+
+    List<PatientReply> findTop5ByPatientIdOrderByReceivedAtDesc(UUID patientId);
 }

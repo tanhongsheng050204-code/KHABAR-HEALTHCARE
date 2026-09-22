@@ -104,12 +104,12 @@ public class IntakeController {
         if (!policy.isPatientOrTheirClinic(user, patient)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        IntakeSession session = records.latestCompleted(patient.getId())
+        IntakeView view = records.latestView(patient.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No finished intake yet."));
         if (user.getRole() != Role.PATIENT) {
             auditLog.record(user, patient.getId(), AuditAction.VIEWED_INTAKE);
         }
-        return new IntakeView(session.getId(), session.getCompletedAt(), records.report(session), records.transcript(session));
+        return view;
     }
 
     private void save(Patient patient, AppUser user, List<Map<String, String>> history, String nextQuestion, boolean complete) {

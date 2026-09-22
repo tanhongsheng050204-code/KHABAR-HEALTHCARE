@@ -8,8 +8,7 @@ import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
 import com.khabar.api.intake.IntakeRecords;
-import com.khabar.api.medications.MedicationItem;
-import com.khabar.api.medications.MedicationItemRepository;
+import com.khabar.api.medications.MedicationList;
 import com.khabar.api.messaging.Messenger;
 import com.khabar.api.messaging.PatientMessages;
 import com.khabar.api.patients.Patient;
@@ -61,13 +60,13 @@ public class EncounterController {
     private final AuditLog auditLog;
     private final AdjustableClock clock;
     private final PatientMessages messages;
-    private final MedicationItemRepository medications;
+    private final MedicationList medications;
     private final IntakeRecords intakes;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
                                AuditLog auditLog, AdjustableClock clock, PatientMessages messages,
-                               MedicationItemRepository medications, IntakeRecords intakes) {
+                               MedicationList medications, IntakeRecords intakes) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -195,15 +194,8 @@ public class EncounterController {
         report.put("diagnosis", nullToEmpty(encounter.getDiagnosis()));
         report.put("plan", nullToEmpty(encounter.getPlan()));
         report.put("follow_up", nullToEmpty(encounter.getFollowUp()));
-        List<MedicationItem> taken = medications.findByPatientIdAndStoppedAtIsNullOrderByAddedAt(patient.getId());
-        List<AgentDtos.CurrentMed> currentMeds = taken.stream()
-                .filter(item -> item.getKind() == MedicationItem.Kind.MEDICINE)
-                .map(item -> new AgentDtos.CurrentMed(item.getName(), item.getSource() == null ? "the patient's own list" : item.getSource()))
-                .toList();
-        List<String> herbs = taken.stream()
-                .filter(item -> item.getKind() == MedicationItem.Kind.HERB)
-                .map(MedicationItem::getName)
-                .toList();
+        List<AgentDtos.CurrentMed> currentMeds = medications.currentMeds(patient.getId());
+        List<String> herbs = medications.herbs(patient.getId());
         List<String> allergies = new ArrayList<>(patient.allergyList());
         for (String told : intakes.reportedAllergies(patient.getId())) {
             if (allergies.stream().noneMatch(known -> known.equalsIgnoreCase(told))) {
