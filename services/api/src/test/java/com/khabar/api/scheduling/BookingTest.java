@@ -121,7 +121,8 @@ class BookingTest {
     @Test
     void onlyRealOpenSlotsCanBeBooked() throws Exception {
         Instant first = slots(aminahAccount).get(0);
-        book(aminahAccount, first.plus(Duration.ofMinutes(7))).andExpect(status().isBadRequest());
+        book(aminahAccount, first.plus(Duration.ofMinutes(7))).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("That is not an open slot. Pick one from the clinic's calendar."));
         book(aminahAccount, clock.instant().minus(Duration.ofDays(1))).andExpect(status().isBadRequest());
     }
 
