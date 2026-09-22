@@ -105,4 +105,12 @@ public class AgentClientService {
                 .retrieve()
                 .body(Map.class);
     }
+
+    public AgentDtos.PreVisitReport previsitReport(List<Map<String, String>> messages) {
+        return restClient.post()
+                .uri("/agents/intake/report")
+                .body(Map.of("messages", messages))
+                .retrieve()
+                .body(AgentDtos.PreVisitReport.class);
+    }
 }

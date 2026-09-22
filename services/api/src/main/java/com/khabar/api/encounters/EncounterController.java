@@ -7,6 +7,9 @@ import com.khabar.api.followup.CheckInPlanner;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
+import com.khabar.api.intake.IntakeRecords;
+import com.khabar.api.medications.MedicationItem;
+import com.khabar.api.medications.MedicationItemRepository;
 import com.khabar.api.messaging.Messenger;
 import com.khabar.api.messaging.PatientMessages;
 import com.khabar.api.patients.Patient;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +61,13 @@ public class EncounterController {
     private final AuditLog auditLog;
     private final AdjustableClock clock;
     private final PatientMessages messages;
+    private final MedicationItemRepository medications;
+    private final IntakeRecords intakes;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
-                               AuditLog auditLog, AdjustableClock clock, PatientMessages messages) {
+                               AuditLog auditLog, AdjustableClock clock, PatientMessages messages,
+                               MedicationItemRepository medications, IntakeRecords intakes) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -70,6 +77,8 @@ public class EncounterController {
         this.auditLog = auditLog;
         this.clock = clock;
         this.messages = messages;
+        this.medications = medications;
+        this.intakes = intakes;
     }
 
     public record NotesRequest(String notes, Boolean fasting) {
@@ -186,8 +195,23 @@ public class EncounterController {
         report.put("diagnosis", nullToEmpty(encounter.getDiagnosis()));
         report.put("plan", nullToEmpty(encounter.getPlan()));
         report.put("follow_up", nullToEmpty(encounter.getFollowUp()));
-        return new AgentDtos.SafetyDraft(new AgentDtos.PatientFacts(patient.allergyList(), patient.isPregnant()), rx,
-                List.of(), List.of(), report, Redactor.redact(nullToEmpty(encounter.getNotes()), patient));
+        List<MedicationItem> taken = medications.findByPatientIdAndStoppedAtIsNullOrderByAddedAt(patient.getId());
+        List<AgentDtos.CurrentMed> currentMeds = taken.stream()
+                .filter(item -> item.getKind() == MedicationItem.Kind.MEDICINE)
+                .map(item -> new AgentDtos.CurrentMed(item.getName(), item.getSource() == null ? "the patient's own list" : item.getSource()))
+                .toList();
+        List<String> herbs = taken.stream()
+                .filter(item -> item.getKind() == MedicationItem.Kind.HERB)
+                .map(MedicationItem::getName)
+                .toList();
+        List<String> allergies = new ArrayList<>(patient.allergyList());
+        for (String told : intakes.reportedAllergies(patient.getId())) {
+            if (allergies.stream().noneMatch(known -> known.equalsIgnoreCase(told))) {
+                allergies.add(told);
+            }
+        }
+        return new AgentDtos.SafetyDraft(new AgentDtos.PatientFacts(allergies, patient.isPregnant()), rx,
+                currentMeds, herbs, report, Redactor.redact(nullToEmpty(encounter.getNotes()), patient));
     }
 
     private EncounterView guarded(Runnable change, Encounter encounter) {

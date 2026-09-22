@@ -26,6 +26,11 @@ public class PatientAccessPolicy {
 
     /** The access log is for the patient and their clinic; caregivers do not see it. */
     public boolean canReadAccessLog(AppUser user, Patient patient) {
+        return isPatientOrTheirClinic(user, patient);
+    }
+
+    /** Clinical detail (the access log, intake answers) is for the patient and their clinic, not caregivers. */
+    public boolean isPatientOrTheirClinic(AppUser user, Patient patient) {
         return switch (user.getRole()) {
             case DOCTOR -> worksAtPatientsClinic(user, patient);
             case PATIENT -> isThePatient(user, patient);

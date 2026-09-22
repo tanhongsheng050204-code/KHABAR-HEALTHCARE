@@ -1,5 +1,6 @@
 package com.khabar.api.service;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -67,5 +68,25 @@ public final class AgentDtos {
             @JsonProperty("next_visit") String nextVisit,
             @JsonProperty("needs_doctor") List<String> needsDoctor,
             String text) {
+    }
+
+    public record IntakeAnswer(String topic, String question, String answer) {
+    }
+
+    public record MedicineMention(@JsonAlias("as_written") String asWritten, String generic) {
+    }
+
+    public record IntakeFlag(String level, String matched) {
+    }
+
+    /** What the patient told the intake chat, laid out for the doctor. Read from the agents in snake_case, served in camelCase. */
+    public record PreVisitReport(
+            String reason,
+            List<IntakeAnswer> answers,
+            List<MedicineMention> medicines,
+            List<String> herbs,
+            List<String> allergies,
+            @JsonAlias("ask_about") List<String> askAbout,
+            @JsonAlias("red_flags") List<IntakeFlag> redFlags) {
     }
 }

@@ -35,6 +35,16 @@ class AgentClientServiceTest {
             exchange.getResponseBody().write(reply);
             exchange.close();
         });
+        server.createContext("/agents/intake/report", exchange -> {
+            byte[] reply = ("""
+                    {"reason": "Pening", "answers": [], "medicines": [{"as_written": "Brand A 500mg", "generic": "metformin"}],
+                     "herbs": ["peria"], "allergies": [], "ask_about": ["jamu"], "red_flags": [{"level": "watch", "matched": "pening"}]}
+                    """).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, reply.length);
+            exchange.getResponseBody().write(reply);
+            exchange.close();
+        });
         server.start();
     }
 
@@ -53,5 +63,16 @@ class AgentClientServiceTest {
         assertThat(serviceKey.get()).isEqualTo("secret-key");
         assertThat(body.get()).contains("\"graph_id\":\"graph-1\"").contains("pening");
         assertThat(reply).containsEntry("next_question", "Sejak bila?");
+    }
+
+    @Test
+    void readsThePreVisitReportFromTheAgentsSnakeCase() {
+        AgentClientService client = new AgentClientService("http://127.0.0.1:" + server.getAddress().getPort(), "secret-key");
+
+        AgentDtos.PreVisitReport report = client.previsitReport(List.of(Map.of("role", "user", "content", "pening")));
+
+        assertThat(report.medicines().get(0).asWritten()).isEqualTo("Brand A 500mg");
+        assertThat(report.askAbout()).containsExactly("jamu");
+        assertThat(report.redFlags().get(0).matched()).isEqualTo("pening");
     }
 }
