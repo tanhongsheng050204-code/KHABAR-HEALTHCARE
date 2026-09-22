@@ -29,8 +29,8 @@ jobs:
       - name: Pull production configuration
         run: vercel pull --yes --environment=production
 
-      - name: Build production application
-        run: vercel build --prod
-
-      - name: Deploy production application
-        run: vercel deploy --prebuilt --prod
+      # Remote builds respect the project's space-containing root directory.
+      # Vercel's prebuilt uploader currently turns that directory into an
+      # invalid serverless-function name.
+      - name: Build and deploy production application
+        run: vercel deploy --prod --yes
