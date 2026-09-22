@@ -44,6 +44,8 @@ khabar:
     agents-url: ${AGENTS_SERVICE_URL:http://localhost:8000}
   web:
     allowed-origins: ${WEB_ALLOWED_ORIGINS:http://localhost:3000}
+    # Where to send people who open the API's own address in a browser (optional)
+    app-url: ${WEB_APP_URL:}
   time-zone: ${KHABAR_TIME_ZONE:Asia/Kuala_Lumpur}
   # WhatsApp Cloud API. Leave the phone number id or token empty to keep messages in the outbox table.
   whatsapp:
