@@ -1,7 +1,7 @@
 """
 Evaluator: the safety checks run on every draft report before a doctor can
 finalise it. Every check here uses data and rules, never the LLM's opinion.
-(The hallucination check, which does need an LLM, is added separately.)
+(The grounding check below catches drugs the doctor never wrote, the most dangerous kind of AI slip.)
 """
 import json
 import re
@@ -40,6 +40,8 @@ class Draft(BaseModel):
     current_meds: list[CurrentMed] = Field(default_factory=list)
     herbs: list[str] = Field(default_factory=list)
     report: dict[str, str] = Field(default_factory=dict)
+    # The doctor's own notes or transcript. When given, every prescribed drug must be traceable to it.
+    source_text: Optional[str] = None
 
 
 class Finding(BaseModel):
@@ -144,6 +146,25 @@ def _check_pregnancy(draft: Draft, prescribed: dict[str, Rx]) -> list[Finding]:
     ]
 
 
+def _mentioned(generic: str, text: str) -> bool:
+    """True when the notes name this generic, or a brand that maps to it."""
+    lowered = text.lower()
+    if re.search(rf"\b{re.escape(generic)}\b", lowered):
+        return True
+    return any(target == generic and brand in lowered for brand, target in _data()["brands"].items())
+
+
+def _check_grounding(draft: Draft, prescribed: dict[str, Rx]) -> list[Finding]:
+    """Catches drugs that appear in the report but not in what the doctor wrote or said."""
+    if not draft.source_text:
+        return []
+    return [
+        Finding(check="grounding", severity="CRITICAL",
+                detail=f"{generic.title()} is in the report but not in the doctor's notes. Check it was not added by mistake.")
+        for generic in prescribed if not _mentioned(generic, draft.source_text)
+    ]
+
+
 def _check_completeness(draft: Draft) -> list[Finding]:
     missing = [f for f in REQUIRED_REPORT_FIELDS if not draft.report.get(f, "").strip()]
     if not missing:
@@ -163,6 +184,7 @@ def evaluate(draft: Draft) -> list[Finding]:
             prescribed[generic] = rx
     current = {g: m for m in draft.current_meds if (g := generic_of(m.name))}
 
+    findings += _check_grounding(draft, prescribed)
     findings += _check_allergies(draft, prescribed)
     findings += _check_duplicates(prescribed, current)
     findings += _check_interactions(prescribed, current)

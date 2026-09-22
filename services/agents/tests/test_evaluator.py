@@ -77,3 +77,22 @@ def test_critical_findings_come_first():
         prescription=[Rx(name="Aspirin", dose_mg=100)],
     ))
     assert [f.severity for f in findings] == ["CRITICAL", "WARN"]
+
+
+def test_drug_in_the_report_but_not_in_the_doctors_notes_is_critical():
+    findings = evaluate(draft(
+        source_text="T. Metformin 500mg 1/1 BD PC",
+        prescription=[Rx(name="Metformin", dose_mg=500, times_per_day=2), Rx(name="Amlodipine", dose_mg=5)],
+    ))
+    assert checks(findings, "CRITICAL") == ["grounding"]
+    assert "amlodipine" in findings[0].detail.lower()
+
+
+def test_grounding_is_skipped_when_no_notes_are_given():
+    findings = evaluate(draft(prescription=[Rx(name="Amlodipine", dose_mg=5)]))
+    assert "grounding" not in checks(findings)
+
+
+def test_a_brand_written_in_the_notes_grounds_its_generic():
+    findings = evaluate(draft(source_text="Brand A 500 mg BD", prescription=[Rx(name="Metformin", dose_mg=500, times_per_day=2)]))
+    assert "grounding" not in checks(findings)

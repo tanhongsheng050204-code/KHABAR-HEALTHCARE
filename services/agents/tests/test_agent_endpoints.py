@@ -31,3 +31,20 @@ def test_triage_endpoint_classifies_a_reply():
     response = client.post("/agents/followup/triage", json={"text": "Pening dan berpeluh"}, headers=KEY)
     assert response.status_code == 200
     assert response.json() == {"level": "watch", "matched": "pening"}
+
+
+def test_report_draft_endpoint_rejects_calls_without_the_service_key():
+    assert client.post("/agents/report/draft", json={"notes": "x"}).status_code == 401
+
+
+def test_report_draft_endpoint_structures_the_notes():
+    notes = "Dx: HTN\nT. Amlodipine 5mg 1/1 OD\nTCA 1/52"
+    response = client.post("/agents/report/draft", json={"notes": notes}, headers=KEY)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["diagnosis"] == "HTN"
+    assert body["follow_up_weeks"] == 1
+    assert body["prescription"][0] == {
+        "raw": "T. Amlodipine 5mg 1/1 OD", "name": "Amlodipine", "strength_mg": 5.0, "units_per_dose": 1.0,
+        "times_per_day": 1, "times_of_day": ["morning"], "timing": None, "as_needed": False, "dose_mg": 5.0,
+    }

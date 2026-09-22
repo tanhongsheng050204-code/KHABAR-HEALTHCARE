@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
-from routers import evaluator, followup, health, intake
+from routers import evaluator, followup, health, intake, report
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +23,7 @@ app.include_router(health.router)
 app.include_router(intake.router)
 app.include_router(evaluator.router)
 app.include_router(followup.router)
+app.include_router(report.router)
 
 if __name__ == "__main__":
     import uvicorn
