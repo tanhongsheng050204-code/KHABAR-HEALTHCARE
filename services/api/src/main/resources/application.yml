@@ -38,3 +38,17 @@ khabar:
     agents-url: ${AGENTS_SERVICE_URL:http://localhost:8000}
   web:
     allowed-origins: ${WEB_ALLOWED_ORIGINS:http://localhost:3000}
+  time-zone: ${KHABAR_TIME_ZONE:Asia/Kuala_Lumpur}
+  # WhatsApp Cloud API. Leave the phone number id or token empty to keep messages in the outbox table.
+  whatsapp:
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_TOKEN:}
+    api-version: ${WHATSAPP_API_VERSION:v21.0}
+    # Approved template for check-ins (they start the conversation, so WhatsApp requires a template)
+    checkin-template: ${WHATSAPP_CHECKIN_TEMPLATE:}
+    # Webhook: the token you type into Meta's dashboard, and the app secret that signs deliveries
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    app-secret: ${WHATSAPP_APP_SECRET:}
+  checkins:
+    scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
+    poll-ms: ${CHECKINS_POLL_MS:60000}

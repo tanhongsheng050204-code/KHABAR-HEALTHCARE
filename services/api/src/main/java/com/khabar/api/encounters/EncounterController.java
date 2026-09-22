@@ -7,6 +7,8 @@ import com.khabar.api.followup.CheckInPlanner;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
+import com.khabar.api.messaging.Messenger;
+import com.khabar.api.messaging.PatientMessages;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.patients.Redactor;
@@ -54,10 +56,11 @@ public class EncounterController {
     private final CheckInPlanner checkIns;
     private final AuditLog auditLog;
     private final AdjustableClock clock;
+    private final PatientMessages messages;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
-                               AuditLog auditLog, AdjustableClock clock) {
+                               AuditLog auditLog, AdjustableClock clock, PatientMessages messages) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -66,6 +69,7 @@ public class EncounterController {
         this.checkIns = checkIns;
         this.auditLog = auditLog;
         this.clock = clock;
+        this.messages = messages;
     }
 
     public record NotesRequest(String notes, Boolean fasting) {
@@ -166,6 +170,7 @@ public class EncounterController {
             if (result != null && result.text() != null) {
                 String needsDoctor = result.needsDoctor() == null ? null : String.join(", ", result.needsDoctor());
                 summaries.save(new VisitSummary(patient, encounter.getId(), result.language(), result.text(), needsDoctor, clock.instant()));
+                messages.send(patient, result.text(), Messenger.Kind.SUMMARY);
             }
         } catch (RuntimeException e) {
             log.warn("Summary not built for encounter {}: {}", encounter.getId(), e.getMessage());

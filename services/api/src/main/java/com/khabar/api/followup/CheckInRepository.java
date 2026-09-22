@@ -13,4 +13,6 @@ public interface CheckInRepository extends JpaRepository<CheckIn, UUID> {
     List<CheckIn> findByStatusAndDueDateLessThanEqual(CheckIn.Status status, LocalDate date);
 
     List<CheckIn> findByPatientIdAndStatus(UUID patientId, CheckIn.Status status);
+
+    List<CheckIn> findByPatientClinicIdAndStatusAndSentAtBefore(UUID clinicId, CheckIn.Status status, java.time.Instant cutoff);
 }

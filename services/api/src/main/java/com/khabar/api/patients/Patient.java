@@ -6,6 +6,8 @@ import com.khabar.api.identity.Clinic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Index;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +23,8 @@ import java.util.UUID;
  * Neo4j know the patient only by graphId, which carries no personal information.
  */
 @Entity
-@Table(name = "patient")
+@Table(name = "patient", indexes = @Index(columnList = "phone_index"))
+@EntityListeners(PhoneIndexListener.class)
 public class Patient {
 
     @Id
@@ -44,6 +47,10 @@ public class Patient {
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "phone_enc", length = 512)
     private String phone;
+
+    /** Keyed hash of the normalised phone, so incoming WhatsApp messages can find the patient. */
+    @Column(name = "phone_index", length = 64)
+    private String phoneIndex;
 
     /** ms, en, zh or ta */
     @Column(nullable = false)
@@ -73,6 +80,10 @@ public class Patient {
     public List<String> allergyList() {
         return allergies == null || allergies.isBlank() ? List.of()
                 : Arrays.stream(allergies.split(",")).map(String::trim).filter(a -> !a.isEmpty()).toList();
+    }
+
+    void setPhoneIndex(String phoneIndex) {
+        this.phoneIndex = phoneIndex;
     }
 
     public void setPregnant(boolean pregnant) {

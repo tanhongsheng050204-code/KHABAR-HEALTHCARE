@@ -83,9 +83,12 @@
       el("span", "px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm",
         (item.followUpDay ? "Day " + item.followUpDay : "Follow-up") + " · " + (LANGUAGES[item.preferredLanguage] || item.preferredLanguage)),
     );
-    const quote = el("p", "font-body-md text-body-md text-on-surface", "“" + item.urgentReply + "”");
-    const meta = el("p", "font-label-sm text-label-sm text-on-surface-variant",
-      "Latest reply " + ago(item.latestAt) + (item.unhandledReplies > 1 ? " · " + item.unhandledReplies + " replies waiting" : ""));
+    const silent = item.reason === "NO_REPLY";
+    const quote = el("p", "font-body-md text-body-md text-on-surface",
+      silent ? "No reply to the last check-in" : "“" + item.urgentReply + "”");
+    const meta = el("p", "font-label-sm text-label-sm text-on-surface-variant", silent
+      ? "Check-in sent " + ago(item.latestAt)
+      : "Latest reply " + ago(item.latestAt) + (item.unhandledReplies > 1 ? " · " + item.unhandledReplies + " replies waiting" : ""));
     info.append(top, quote, meta);
 
     const button = el("button", "px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm hover:opacity-90 transition-opacity", "Mark as called");

@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "check_in")
 public class CheckIn {
 
-    public enum Status { PENDING, SENT, FAILED }
+    public enum Status { PENDING, SENT, ANSWERED, FAILED }
 
     @Id
     private UUID id;
@@ -61,6 +61,10 @@ public class CheckIn {
     public void markSent(Instant when) {
         this.status = Status.SENT;
         this.sentAt = when;
+    }
+
+    public void markAnswered() {
+        this.status = Status.ANSWERED;
     }
 
     public void markFailed() {
