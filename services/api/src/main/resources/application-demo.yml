@@ -1,0 +1,36 @@
+# The public demo on Vercel. Run with SPRING_PROFILES_ACTIVE=local,demo: it keeps the `local`
+# profile's fictional clinic and "Doctor view / Patient view" demo sign-in, but everything this file
+# sets wins over `local`: a real Postgres database, and secrets and allowed origins from the
+# environment instead of the development values in the repository.
+# FICTIONAL DATA ONLY. Anyone with the link can sign in as a demo person.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # The free database allows few connections, and each sleeping instance holds its own pool
+      maximum-pool-size: 3
+  jpa:
+    hibernate:
+      # Keep the data between restarts; the demo seed runs only when the demo doctor is missing
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+khabar:
+  security:
+    internal-service-key: ${INTERNAL_SERVICE_KEY}
+    supabase-jwt-secret: ${SUPABASE_JWT_SECRET}
+    field-encryption-key: ${FIELD_ENCRYPTION_KEY}
+  services:
+    agents-url: ${AGENTS_SERVICE_URL}
+  web:
+    allowed-origins: ${WEB_ALLOWED_ORIGINS}
+  favoriot:
+    device-secret: ${FAVORIOT_DEVICE_SECRET:}
+  whatsapp:
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    app-secret: ${WHATSAPP_APP_SECRET:}

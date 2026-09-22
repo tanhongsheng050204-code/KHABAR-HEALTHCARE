@@ -1,0 +1,15 @@
+# The clinical API as a Vercel container service (see services/vercel.json).
+# Vercel builds this image, sends traffic to port 80, and scales it to zero after 5 idle minutes.
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn -q -B dependency:go-offline
+COPY src ./src
+RUN mvn -q -B clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/khabar-api-0.0.1-SNAPSHOT.jar app.jar
+COPY vercel-start.sh .
+ENV PORT=80
+ENTRYPOINT ["sh", "vercel-start.sh"]

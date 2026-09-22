@@ -1,0 +1,13 @@
+# Only the source goes up; Vercel builds the rest.
+agents/.venv
+agents/.pytest_cache
+agents/tests
+agents/.env
+**/__pycache__
+api/target
+api/.mvn
+api/mvnw
+api/mvnw.cmd
+api/Dockerfile
+agents/Dockerfile
+README.md
