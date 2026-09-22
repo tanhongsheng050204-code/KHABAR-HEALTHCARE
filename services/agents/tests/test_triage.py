@@ -37,3 +37,17 @@ def test_short_words_only_match_whole_words():
 
 def test_result_names_the_word_that_matched():
     assert classify_reply("Pening dan berpeluh").matched == "pening"
+
+
+@pytest.mark.parametrize("reply", ["Semalam lupa makan ubat", "I forgot to take it last night", "昨天忘记吃药了", "நேற்று மருந்து சாப்பிட மறந்துவிட்டேன்"])
+def test_a_missed_dose_is_noticed_in_every_language(reply):
+    assert classify_reply(reply).missed_dose is True
+
+
+def test_taking_the_medicine_is_not_a_missed_dose():
+    assert classify_reply("Dah makan ubat, sihat").missed_dose is False
+
+
+def test_a_missed_dose_does_not_change_the_level():
+    assert classify_reply("Semalam lupa makan ubat").level == "review"
+    assert classify_reply("Lupa makan ubat, sekarang pening").level == "watch"

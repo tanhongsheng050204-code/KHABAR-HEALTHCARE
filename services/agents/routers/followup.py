@@ -22,12 +22,14 @@ class TriageResponse(BaseModel):
     matched: Optional[str] = None
     source: str = "keywords"
     reason: Optional[str] = None
+    missed_dose: bool = False
 
 
 @router.post("/triage", response_model=TriageResponse)
 def triage_reply(request: TriageRequest):
     result = triage(request.text, model=_model)
-    return TriageResponse(level=result.level, matched=result.matched, source=result.source, reason=result.reason)
+    return TriageResponse(level=result.level, matched=result.matched, source=result.source, reason=result.reason,
+                          missed_dose=result.missed_dose)
 
 
 class AnswerRequest(BaseModel):

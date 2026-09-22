@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class CallListController {
 
     private static final java.time.Duration NO_REPLY_AFTER = java.time.Duration.ofHours(48);
+    private static final List<String> REASON_ORDER = List.of("REPLY", "MISSED_DOSE", "NO_REPLY");
 
     private final CurrentUser currentUser;
     private final PatientRepository patients;
@@ -51,7 +52,10 @@ public class CallListController {
         this.checkIns = checkIns;
     }
 
-    /** reason is REPLY (a reply needs a call) or NO_REPLY (a check-in has gone unanswered for 48 hours). */
+    /**
+     * reason is REPLY (a reply needs a call), MISSED_DOSE (the patient's only news is a missed dose) or
+     * NO_REPLY (a check-in has gone unanswered for 48 hours). Within a level, they rank in that order.
+     */
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
                                String urgentReply, String latestReply, Instant latestAt, Integer followUpDay,
                                int unhandledReplies, String reason) {
@@ -71,7 +75,7 @@ public class CallListController {
         LocalDate today = LocalDate.now(clock);
 
         Map<Patient, List<PatientReply>> byPatient = replies.findByPatientClinicIdAndHandledAtIsNull(clinicId).stream()
-                .filter(r -> r.getLevel().needsACall())
+                .filter(PatientReply::needsACall)
                 .collect(Collectors.groupingBy(PatientReply::getPatient));
 
         List<CallListItem> fromReplies = byPatient.entrySet().stream()
@@ -88,7 +92,9 @@ public class CallListController {
                 .toList();
 
         List<CallListItem> items = java.util.stream.Stream.concat(fromReplies.stream(), silent.stream())
-                .sorted(Comparator.comparing(CallListItem::level).thenComparing(CallListItem::latestAt, Comparator.reverseOrder()))
+                .sorted(Comparator.comparing(CallListItem::level)
+                        .thenComparing(i -> REASON_ORDER.indexOf(i.reason()))
+                        .thenComparing(CallListItem::latestAt, Comparator.reverseOrder()))
                 .toList();
 
         Counts counts = new Counts(
@@ -130,7 +136,11 @@ public class CallListController {
         PatientReply urgent = open.stream()
                 .min(Comparator.comparing(PatientReply::getLevel).thenComparing(PatientReply::getReceivedAt, Comparator.reverseOrder()))
                 .orElseThrow();
-        return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), urgent.getLevel(),
-                urgent.getText(), latest.getText(), latest.getReceivedAt(), patient.followUpDay(today), open.size(), "REPLY");
+        // A missed dose in an otherwise cheerful reply still needs a person, so it is never listed as OK.
+        TriageLevel level = urgent.getLevel() == TriageLevel.OK ? TriageLevel.REVIEW : urgent.getLevel();
+        boolean onlyMissedDoses = open.stream().allMatch(r -> r.isMissedDose() && r.getLevel().compareTo(TriageLevel.REVIEW) >= 0);
+        return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), level,
+                urgent.getText(), latest.getText(), latest.getReceivedAt(), patient.followUpDay(today), open.size(),
+                onlyMissedDoses ? "MISSED_DOSE" : "REPLY");
     }
 }

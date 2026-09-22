@@ -32,6 +32,7 @@ class TriageResult:
     matched: Optional[str] = None
     source: str = "keywords"  # keywords | model
     reason: Optional[str] = None
+    missed_dose: bool = False  # the patient says they skipped or forgot a dose
 
 
 class TriageVerdict(BaseModel):
@@ -56,6 +57,12 @@ def _rules() -> list[tuple[str, list[str]]]:
     return [(level, [w.lower() for words in data[level].values() for w in words]) for level in LEVELS]
 
 
+@lru_cache(maxsize=1)
+def _missed_dose_words() -> list[str]:
+    data = json.loads(WORDS_FILE.read_text(encoding="utf-8"))
+    return [w.lower() for words in data["missed_dose"].values() for w in words]
+
+
 def _contains(text: str, word: str) -> bool:
     if _LATIN.match(word):
         return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", text) is not None
@@ -64,11 +71,12 @@ def _contains(text: str, word: str) -> bool:
 
 def classify_reply(text: str) -> TriageResult:
     lowered = text.lower()
+    missed = any(_contains(lowered, w) for w in _missed_dose_words())
     for level, words in _rules():
         for word in words:
             if _contains(lowered, word):
-                return TriageResult(level=level, matched=word)
-    return TriageResult(level="review")
+                return TriageResult(level=level, matched=word, missed_dose=missed)
+    return TriageResult(level="review", missed_dose=missed)
 
 
 def triage(text: str, model: Optional[Any] = None) -> TriageResult:

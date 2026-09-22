@@ -55,15 +55,22 @@ public class FollowUpService {
         String redacted = Redactor.redact(text, patient);
         TriageLevel level;
         String matched = null;
+        boolean missedDose = false;
         try {
             Map<String, Object> result = agents.triageReply(redacted);
             level = TriageLevel.fromAgent(result == null ? null : result.get("level"));
             matched = result == null || result.get("matched") == null ? null : result.get("matched").toString();
+            missedDose = result != null && Boolean.TRUE.equals(result.get("missed_dose"));
         } catch (RuntimeException e) {
             log.warn("Triage unavailable, sending reply to a person: {}", e.getMessage());
             level = TriageLevel.REVIEW;
         }
-        PatientReply reply = replies.save(new PatientReply(patient, text, clock.instant(), level, matched));
+        PatientReply fresh = new PatientReply(patient, text, clock.instant(), level, matched);
+        if (missedDose) {
+            fresh.markMissedDose();
+        }
+        // save() merges (the id is set in the constructor), so keep the managed copy it returns
+        PatientReply reply = replies.save(fresh);
         checkIns.findByPatientIdAndStatus(patient.getId(), CheckIn.Status.SENT).stream()
                 .max(Comparator.comparing(CheckIn::getDueDate))
                 .ifPresent(CheckIn::markAnswered);

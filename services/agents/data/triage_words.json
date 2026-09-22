@@ -1,5 +1,5 @@
 {
-  "_note": "Seed word lists for follow-up triage. A doctor must review these before any real use. Checked in order: red, then watch, then ok. Anything unmatched goes to a person.",
+  "_note": "Seed word lists for follow-up triage. A doctor must review these before any real use. Checked in order: red, then watch, then ok. Anything unmatched goes to a person. missed_dose does not change the level; it puts the patient on the call list for adherence.",
   "red": {
     "ms": ["sakit dada", "sesak nafas", "susah bernafas", "pengsan", "pitam", "tak sedar", "muntah darah", "lumpuh", "bibir herot"],
     "en": ["chest pain", "can't breathe", "cannot breathe", "short of breath", "fainted", "passed out", "unconscious", "vomiting blood", "slurred speech"],
@@ -11,6 +11,12 @@
     "en": ["dizzy", "sweating", "sweaty", "shaky", "nausea", "vomit", "weak", "diarrhoea", "diarrhea", "swelling", "rash", "fever"],
     "zh": ["头晕", "冒汗", "发抖", "恶心", "呕吐", "无力", "腹泻", "肿", "皮疹", "发烧"],
     "ta": ["மயக்கம்", "தலைச்சுற்றல்", "வியர்வை", "நடுக்கம்", "வாந்தி", "காய்ச்சல்"]
+  },
+  "missed_dose": {
+    "ms": ["lupa makan ubat", "terlupa makan ubat", "lupa ambil ubat", "tak makan ubat", "tidak makan ubat", "tak ambil ubat", "tertinggal ubat"],
+    "en": ["forgot my medicine", "forgot my pills", "forgot to take", "missed a dose", "missed my dose", "missed my medicine", "didn't take my medicine", "did not take my medicine"],
+    "zh": ["忘记吃药", "忘了吃药", "漏吃", "没吃药", "没有吃药"],
+    "ta": ["மருந்து சாப்பிட மறந்துவிட்டேன்", "மருந்து சாப்பிடவில்லை"]
   },
   "ok": {
     "ms": ["sihat", "baik", "dah makan ubat", "okay", "ok"],

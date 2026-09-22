@@ -44,8 +44,12 @@ public class PatientReply {
 
     private UUID handledBy;
 
-    /** The approved answer sent automatically, if any. Such a reply needs no call. */
+    /** The approved answer sent automatically, if any. Such a reply needs no call, unless it reports a missed dose. */
     private UUID answeredWith;
+
+    /** The patient said they forgot or skipped a dose. Stays on the call list until the clinic follows up. */
+    @Column(nullable = false)
+    private boolean missedDose;
 
     protected PatientReply() {
     }
@@ -66,7 +70,22 @@ public class PatientReply {
 
     public void answeredWith(UUID approvedAnswerId, Instant when) {
         this.answeredWith = approvedAnswerId;
-        this.handledAt = when;
+        if (!missedDose) {
+            this.handledAt = when;
+        }
+    }
+
+    public void markMissedDose() {
+        this.missedDose = true;
+    }
+
+    public boolean isMissedDose() {
+        return missedDose;
+    }
+
+    /** Needs someone at the clinic: anything but a plain "I'm fine", and any missed dose. */
+    public boolean needsACall() {
+        return level.needsACall() || missedDose;
     }
 
     public UUID getId() {
