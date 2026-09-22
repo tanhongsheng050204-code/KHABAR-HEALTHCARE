@@ -116,12 +116,18 @@ class OnboardingTest {
         UUID nurul = UUID.randomUUID();
         accept(caregiverCode, nurul, "Nurul").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("CAREGIVER"));
 
+        mvc.perform(get("/api/me").header("Authorization", bearer(nurul)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientIds[0]").value(patientId));
         mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", bearer(nurul))).andExpect(status().isOk());
 
         JsonNode caregivers = body(mvc.perform(get("/api/patients/me/caregivers").header("Authorization", bearer(aminah))));
         String linkId = caregivers.get(0).get("linkId").asText();
         mvc.perform(delete("/api/patients/me/caregivers/{linkId}", linkId).header("Authorization", bearer(aminah))).andExpect(status().isOk());
 
+        mvc.perform(get("/api/me").header("Authorization", bearer(nurul)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientIds").isEmpty());
         mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", bearer(nurul))).andExpect(status().isForbidden());
     }
 

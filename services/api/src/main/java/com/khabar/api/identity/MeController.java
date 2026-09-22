@@ -1,5 +1,6 @@
 package com.khabar.api.identity;
 
+import com.khabar.api.patients.CaregiverLinkRepository;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -16,14 +18,17 @@ public class MeController {
 
     private final CurrentUser currentUser;
     private final PatientRepository patients;
+    private final CaregiverLinkRepository caregiverLinks;
 
-    public MeController(CurrentUser currentUser, PatientRepository patients) {
+    public MeController(CurrentUser currentUser, PatientRepository patients, CaregiverLinkRepository caregiverLinks) {
         this.currentUser = currentUser;
         this.patients = patients;
+        this.caregiverLinks = caregiverLinks;
     }
 
-    /** patientId is set only for patients: the record their own account is linked to. */
-    public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId) {
+    /** patientId is the patient's own record. patientIds are active records a caregiver has consent to open. */
+    public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId,
+                             List<UUID> patientIds) {
     }
 
     @GetMapping
@@ -33,7 +38,11 @@ public class MeController {
         UUID patientId = user.getRole() == Role.PATIENT
                 ? patients.findByAccountId(user.getId()).map(Patient::getId).orElse(null)
                 : null;
+        List<UUID> patientIds = user.getRole() == Role.CAREGIVER
+                ? caregiverLinks.findByCaregiverIdAndRevokedAtIsNull(user.getId()).stream()
+                    .map(link -> link.getPatient().getId()).toList()
+                : List.of();
         return new MeResponse(user.getId(), user.getRole(), user.getDisplayName(),
-                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId);
+                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId, patientIds);
     }
 }
