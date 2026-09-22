@@ -60,10 +60,10 @@ public class DemoData implements ApplicationRunner {
         AppUser nurul = users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 
         LocalDate today = LocalDate.now();
-        Patient aminah = inFollowUp(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms"), today.minusDays(2));
-        Patient rosnah = inFollowUp(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "013-111 2222", "ms"), today.minusDays(5));
-        Patient tan = inFollowUp(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "016-222 3333", "zh"), today.minusDays(8));
-        Patient muthu = inFollowUp(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "019-444 5555", "ta"), today.minusDays(5));
+        Patient aminah = inFollowUp(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms"), today.minusDays(3));
+        Patient rosnah = inFollowUp(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "013-111 2222", "ms"), today.minusDays(6));
+        Patient tan = inFollowUp(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "016-222 3333", "zh"), today.minusDays(9));
+        Patient muthu = inFollowUp(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "019-444 5555", "ta"), today.minusDays(6));
         caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
 
         // Replies as if they had come back from the follow-up check-ins (levels as the triage would set them).

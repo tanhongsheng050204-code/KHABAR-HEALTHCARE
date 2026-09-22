@@ -49,6 +49,38 @@ public class AgentClientService {
         }
     }
 
+    /** Structures the doctor's (already de-identified) notes into a draft report. */
+    public AgentDtos.DraftedReport draftReport(String notes) {
+        return restClient.post()
+                .uri("/agents/report/draft")
+                .body(Map.of("notes", notes))
+                .retrieve()
+                .body(AgentDtos.DraftedReport.class);
+    }
+
+    /** Runs the data-based safety checks on a draft report. */
+    public AgentDtos.SafetyCheckResult checkSafety(AgentDtos.SafetyDraft draft) {
+        return restClient.post()
+                .uri("/agents/evaluator/check")
+                .body(draft)
+                .retrieve()
+                .body(AgentDtos.SafetyCheckResult.class);
+    }
+
+    /** Builds the patient's plain-language summary from the prescription. */
+    public AgentDtos.SummaryResult buildSummary(List<AgentDtos.DraftedRx> prescription, String language, Double followUpWeeks, boolean fasting) {
+        java.util.HashMap<String, Object> body = new java.util.HashMap<>();
+        body.put("prescription", prescription);
+        body.put("language", language);
+        body.put("follow_up_weeks", followUpWeeks);
+        body.put("fasting", fasting);
+        return restClient.post()
+                .uri("/agents/summary/build")
+                .body(body)
+                .retrieve()
+                .body(AgentDtos.SummaryResult.class);
+    }
+
     /** Returns {"level": "red|watch|ok|review", "matched": word or null}. Throws if the agents service is unreachable. */
     @SuppressWarnings("unchecked")
     public Map<String, Object> triageReply(String text) {

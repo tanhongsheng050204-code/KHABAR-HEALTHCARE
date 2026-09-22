@@ -11,6 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -53,19 +55,37 @@ public class Patient {
 
     private boolean pregnant;
 
+    /** Known drug allergies (generic names or drug classes), comma-separated, stored encrypted. */
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "allergies_enc", length = 2048)
+    private String allergies;
+
     /** The day the 30-day follow-up started (the visit day). Null when the patient is not in follow-up. */
     private LocalDate followUpStart;
 
     protected Patient() {
     }
 
+    public void recordAllergies(List<String> list) {
+        this.allergies = list == null || list.isEmpty() ? null : String.join(",", list);
+    }
+
+    public List<String> allergyList() {
+        return allergies == null || allergies.isBlank() ? List.of()
+                : Arrays.stream(allergies.split(",")).map(String::trim).filter(a -> !a.isEmpty()).toList();
+    }
+
+    public void setPregnant(boolean pregnant) {
+        this.pregnant = pregnant;
+    }
+
     public void startFollowUp(LocalDate visitDay) {
         this.followUpStart = visitDay;
     }
 
-    /** Day 1 is the day after the visit. Null when not in follow-up. */
+    /** Days since the visit: the visit itself is day 0, the day after is day 1. Null when not in follow-up. */
     public Integer followUpDay(LocalDate today) {
-        return followUpStart == null ? null : (int) ChronoUnit.DAYS.between(followUpStart, today) + 1;
+        return followUpStart == null ? null : (int) ChronoUnit.DAYS.between(followUpStart, today);
     }
 
     public LocalDate getFollowUpStart() {

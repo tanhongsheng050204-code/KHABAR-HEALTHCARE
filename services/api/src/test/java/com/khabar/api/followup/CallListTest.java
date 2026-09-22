@@ -127,7 +127,7 @@ class CallListTest {
                 .andExpect(jsonPath("$.items[0].fullName").value("Rosnah binti Ahmad"))
                 .andExpect(jsonPath("$.items[0].level").value("RED"))
                 .andExpect(jsonPath("$.items[0].latestReply").value("Sakit dada sejak pagi"))
-                .andExpect(jsonPath("$.items[0].followUpDay").value(6))
+                .andExpect(jsonPath("$.items[0].followUpDay").value(5))
                 .andExpect(jsonPath("$.items[1].fullName").value("Aminah binti Yusof"))
                 .andExpect(jsonPath("$.counts.red").value(1))
                 .andExpect(jsonPath("$.counts.watch").value(1))
