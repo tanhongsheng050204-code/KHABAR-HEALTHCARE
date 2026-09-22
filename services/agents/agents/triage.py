@@ -1,25 +1,53 @@
 """
-Keyword triage for follow-up replies. This is the deterministic half of the
-triage; an LLM check runs alongside it, and the clinic is alerted if either
-one flags. It deliberately ignores negation ("tak pening" still alerts),
-because a false alarm costs a phone call and a missed one costs much more.
+Triage for follow-up replies, in two halves. The word lists are deterministic;
+an optional model reads the reply as well, and the more urgent of the two wins,
+so the model can raise a reply but never lower one. The word lists deliberately
+ignore negation ("tak pening" still alerts), because a false alarm costs a
+phone call and a missed one costs much more.
 """
 import json
+import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Any, Literal, Optional
+
+from pydantic import BaseModel, Field
+
+from core.config import settings
+from core.deid import scrub
 
 WORDS_FILE = Path(__file__).resolve().parents[1] / "data" / "triage_words.json"
 LEVELS = ("red", "watch", "ok")
+URGENCY = {"ok": 0, "review": 1, "watch": 2, "red": 3}
 _LATIN = re.compile(r"^[a-z' -]+$")
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class TriageResult:
     level: str  # red | watch | ok | review
     matched: Optional[str] = None
+    source: str = "keywords"  # keywords | model
+    reason: Optional[str] = None
+
+
+class TriageVerdict(BaseModel):
+    """What the triage model must return."""
+    level: Literal["red", "watch", "review", "ok"] = Field(description="red, watch, review or ok")
+    reason: str = Field(default="", description="One short sentence on why")
+
+
+MODEL_PROMPT = """You triage a patient's reply to a follow-up check-in from a Malaysian clinic.
+The reply may be in Malay, English, Chinese, Tamil or a mix. Choose one level:
+- red: may need urgent care today (chest pain or tightness, breathing trouble, fainting,
+  stroke signs, bleeding, confusion, signs of very low or very high blood sugar).
+- watch: a new or worsening symptom or a medicine side effect the doctor should know about.
+- ok: the patient says they are well and taking their medicine.
+- review: you cannot tell.
+When unsure between two levels, choose the more urgent one. Never give medical advice."""
 
 
 @lru_cache(maxsize=1)
@@ -41,3 +69,30 @@ def classify_reply(text: str) -> TriageResult:
             if _contains(lowered, word):
                 return TriageResult(level=level, matched=word)
     return TriageResult(level="review")
+
+
+def triage(text: str, model: Optional[Any] = None) -> TriageResult:
+    """Word lists first, then the model if one is configured. The more urgent level wins."""
+    keywords = classify_reply(text)
+    if model is None:
+        return keywords
+    from langchain_core.messages import HumanMessage, SystemMessage
+
+    try:
+        verdict = model.invoke([SystemMessage(content=MODEL_PROMPT), HumanMessage(content=scrub(text))])
+    except Exception as e:  # the word lists alone still protect the patient
+        log.warning("Triage model failed, using the word lists only: %s", e)
+        return keywords
+    if URGENCY[verdict.level] > URGENCY[keywords.level]:
+        return replace(keywords, level=verdict.level, source="model", reason=verdict.reason or None)
+    return keywords
+
+
+def default_model():
+    """Gemini with structured output when a key is configured, otherwise None (word lists only)."""
+    if not settings.GEMINI_API_KEY:
+        return None
+    from langchain_google_genai import ChatGoogleGenerativeAI
+
+    model = ChatGoogleGenerativeAI(model=settings.GEMINI_MODEL, google_api_key=settings.GEMINI_API_KEY, temperature=0)
+    return model.with_structured_output(TriageVerdict)

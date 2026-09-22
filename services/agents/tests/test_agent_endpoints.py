@@ -30,7 +30,7 @@ def test_triage_endpoint_rejects_calls_without_the_service_key():
 def test_triage_endpoint_classifies_a_reply():
     response = client.post("/agents/followup/triage", json={"text": "Pening dan berpeluh"}, headers=KEY)
     assert response.status_code == 200
-    assert response.json() == {"level": "watch", "matched": "pening"}
+    assert response.json() == {"level": "watch", "matched": "pening", "source": "keywords", "reason": None}
 
 
 def test_report_draft_endpoint_rejects_calls_without_the_service_key():
