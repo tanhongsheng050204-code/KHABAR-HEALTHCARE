@@ -21,6 +21,9 @@ class AgentClientServiceTest {
     final AtomicReference<String> upgradeHeader = new AtomicReference<>();
     final AtomicReference<String> serviceKey = new AtomicReference<>();
     final AtomicReference<String> body = new AtomicReference<>();
+    final AtomicReference<String> query = new AtomicReference<>();
+    final AtomicReference<String> contentType = new AtomicReference<>();
+    final AtomicReference<byte[]> audio = new AtomicReference<>();
 
     @BeforeEach
     void startFakeAgentsService() throws IOException {
@@ -40,6 +43,16 @@ class AgentClientServiceTest {
                     {"reason": "Pening", "answers": [], "medicines": [{"as_written": "Brand A 500mg", "generic": "metformin"}],
                      "herbs": ["peria"], "allergies": [], "ask_about": ["jamu"], "red_flags": [{"level": "watch", "matched": "pening"}]}
                     """).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, reply.length);
+            exchange.getResponseBody().write(reply);
+            exchange.close();
+        });
+        server.createContext("/agents/transcribe", exchange -> {
+            query.set(exchange.getRequestURI().getQuery());
+            contentType.set(exchange.getRequestHeaders().getFirst("Content-Type"));
+            audio.set(exchange.getRequestBody().readAllBytes());
+            byte[] reply = "{\"text\":\"c/o pening\"}".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, reply.length);
             exchange.getResponseBody().write(reply);
@@ -75,5 +88,17 @@ class AgentClientServiceTest {
         assertThat(report.medicines().get(0).asWritten()).isEqualTo("Brand A 500mg");
         assertThat(report.askAbout()).containsExactly("jamu");
         assertThat(report.redFlags().get(0).matched()).isEqualTo("pening");
+    }
+
+    @Test
+    void sendsTheRecordingAsTheRawBody() {
+        AgentClientService client = new AgentClientService("http://127.0.0.1:" + server.getAddress().getPort(), "secret-key");
+
+        String text = client.transcribe(new byte[]{9, 8, 7}, "visit.webm", "ms");
+
+        assertThat(text).isEqualTo("c/o pening");
+        assertThat(audio.get()).containsExactly(9, 8, 7);
+        assertThat(contentType.get()).isEqualTo("application/octet-stream");
+        assertThat(query.get()).contains("language=ms").contains("filename=visit.webm");
     }
 }

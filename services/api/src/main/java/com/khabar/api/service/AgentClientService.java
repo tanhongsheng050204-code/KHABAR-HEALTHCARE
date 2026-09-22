@@ -136,4 +136,15 @@ public class AgentClientService {
                 .body(AgentDtos.ReconcileResult.class);
         return result == null || result.findings() == null ? List.of() : result.findings();
     }
+
+    /** Speech to text. The raw recording goes as the request body; the text comes back for the doctor to check. */
+    public String transcribe(byte[] audio, String filename, String language) {
+        Map<?, ?> result = restClient.post()
+                .uri(uri -> uri.path("/agents/transcribe").queryParam("language", language).queryParam("filename", filename).build())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(audio)
+                .retrieve()
+                .body(Map.class);
+        return result == null || result.get("text") == null ? "" : result.get("text").toString();
+    }
 }

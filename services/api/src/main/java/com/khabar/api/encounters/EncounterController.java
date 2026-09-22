@@ -22,6 +22,7 @@ import com.khabar.api.service.AgentDtos.SummaryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,10 +31,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -86,6 +90,9 @@ public class EncounterController {
     public record OverrideRequest(String reason) {
     }
 
+    public record Transcript(String text) {
+    }
+
     public record LineView(String raw, String name, Double strengthMg, Double unitsPerDose, Integer timesPerDay, String timing, boolean asNeeded) {
     }
 
@@ -111,6 +118,24 @@ public class EncounterController {
     @Transactional(readOnly = true)
     public EncounterView get(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         return view(load(id, requireDoctor(jwt)));
+    }
+
+    /** Speech to text for the notes. The text comes back for the doctor to check; nothing is saved here. */
+    @PostMapping(path = "/api/encounters/{id}/audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional(readOnly = true)
+    public Transcript transcribe(@PathVariable UUID id, @RequestParam("audio") MultipartFile audio, @AuthenticationPrincipal Jwt jwt)
+            throws IOException {
+        Encounter encounter = load(id, requireDoctor(jwt));
+        if (audio.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The recording is empty.");
+        }
+        String name = audio.getOriginalFilename() == null ? "audio.webm" : audio.getOriginalFilename().replaceAll("[^A-Za-z0-9._-]", "_");
+        try {
+            return new Transcript(agents.transcribe(audio.getBytes(), name, encounter.getPatient().getPreferredLanguage()));
+        } catch (RuntimeException e) {
+            log.warn("Transcription failed for encounter {}: {}", id, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Speech to text is not available right now. Type the notes instead.");
+        }
     }
 
     @PutMapping("/api/encounters/{id}/notes")

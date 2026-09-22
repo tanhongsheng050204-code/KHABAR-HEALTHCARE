@@ -40,7 +40,8 @@
   async function call(path, options = {}) {
     const root = base();
     if (!root) throw new ApiError(0, "No API configured (demo mode)");
-    const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+    // A FormData body (a voice recording) sets its own multipart Content-Type.
+    const headers = options.body instanceof FormData ? { ...(options.headers || {}) } : { "Content-Type": "application/json", ...(options.headers || {}) };
     if (token()) headers.Authorization = "Bearer " + token();
     let res;
     try {

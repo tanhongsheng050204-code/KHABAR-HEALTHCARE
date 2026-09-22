@@ -137,6 +137,7 @@
     $("draft-btn").disabled = busy || final || !patientId;
     $("notes").disabled = final;
     $("fasting").disabled = final;
+    $("speak-btn").disabled = (busy && !recorder) || final || !patientId;
     $("check-btn").disabled = busy || final || !encounter || draftEmpty();
 
     const draft = $("draft");
@@ -256,14 +257,63 @@
     const notes = $("notes").value.trim();
     if (!notes) { say("Write the notes first.", true); return; }
     run("Drafting the report", async () => {
-      if (!encounter) {
-        encounter = await api.call("/api/patients/" + patientId + "/encounters", { method: "POST" });
-      }
+      await ensureEncounter();
       encounter = await api.call("/api/encounters/" + encounter.id + "/notes", {
         method: "PUT", body: JSON.stringify({ notes, fasting: $("fasting").checked }),
       });
     });
   });
+
+  // ---- speaking instead of typing ---------------------------------------------------------
+
+  let recorder = null;
+
+  async function ensureEncounter() {
+    if (!encounter) {
+      encounter = await api.call("/api/patients/" + patientId + "/encounters", { method: "POST" });
+    }
+  }
+
+  async function toggleRecording() {
+    const button = $("speak-btn");
+    if (recorder) {
+      recorder.stop();
+      return;
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      say("The microphone is blocked. Allow it in the browser, or type the notes.", true);
+      return;
+    }
+    const chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.addEventListener("dataavailable", (e) => chunks.push(e.data));
+    recorder.addEventListener("stop", () => {
+      stream.getTracks().forEach((t) => t.stop());
+      recorder = null;
+      button.textContent = "Speak the notes";
+      const audio = new Blob(chunks, { type: chunks[0] ? chunks[0].type : "audio/webm" });
+      run("Turning speech into text", async () => {
+        await ensureEncounter();
+        const form = new FormData();
+        form.append("audio", audio, "notes.webm");
+        const { text } = await api.call("/api/encounters/" + encounter.id + "/audio", { method: "POST", body: form });
+        const notes = $("notes");
+        notes.value = (notes.value.trim() ? notes.value.trim() + "\n" : "") + text;
+        say("Check the text, then draft the report.");
+      });
+    });
+    recorder.start();
+    button.textContent = "Stop and turn into text";
+    say("Listening… speak the notes, then press stop.");
+  }
+
+  if (navigator.mediaDevices && window.MediaRecorder) {
+    $("speak-btn").hidden = false;
+    $("speak-btn").addEventListener("click", toggleRecording);
+  }
 
   $("check-btn").addEventListener("click", () => run("Running the safety check", async () => {
     encounter = await api.call("/api/encounters/" + encounter.id + "/check", { method: "POST" });

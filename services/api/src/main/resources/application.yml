@@ -17,6 +17,12 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+  # Voice recordings for speech-to-text notes (the transcription service accepts up to 25 MB)
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 26MB
+
 management:
   endpoints:
     web:
