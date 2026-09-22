@@ -57,11 +57,12 @@ class AgentClientServiceTest {
     void sendsPlainHttp11WithTheBodyBecauseUvicornRejectsH2cUpgrades() {
         AgentClientService client = new AgentClientService("http://127.0.0.1:" + server.getAddress().getPort(), "secret-key");
 
-        Map<String, Object> reply = client.processIntake("graph-1", "ms", List.of(Map.of("role", "user", "content", "pening")));
+        Map<String, Object> reply = client.processIntake("graph-1", "ms", List.of(Map.of("role", "user", "content", "pening")),
+                Map.of("medicines", List.of("Metformin 500mg")));
 
         assertThat(upgradeHeader.get()).isNull();
         assertThat(serviceKey.get()).isEqualTo("secret-key");
-        assertThat(body.get()).contains("\"graph_id\":\"graph-1\"").contains("pening");
+        assertThat(body.get()).contains("\"graph_id\":\"graph-1\"").contains("pening").contains("\"context\":{\"medicines\":[\"Metformin 500mg\"]}");
         assertThat(reply).containsEntry("next_question", "Sejak bila?");
     }
 

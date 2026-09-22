@@ -6,6 +6,8 @@ import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
+import com.khabar.api.medications.MedicationItem;
+import com.khabar.api.medications.MedicationList;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientAccessPolicy;
 import com.khabar.api.patients.PatientRepository;
@@ -49,9 +51,11 @@ public class IntakeController {
     private final IntakeRecords records;
     private final AuditLog auditLog;
     private final AdjustableClock clock;
+    private final MedicationList medications;
 
     public IntakeController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AgentClientService agents,
-                            IntakeSessionRepository sessions, IntakeRecords records, AuditLog auditLog, AdjustableClock clock) {
+                            IntakeSessionRepository sessions, IntakeRecords records, AuditLog auditLog, AdjustableClock clock,
+                            MedicationList medications) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
@@ -60,6 +64,7 @@ public class IntakeController {
         this.records = records;
         this.auditLog = auditLog;
         this.clock = clock;
+        this.medications = medications;
     }
 
     public record ChatMessage(String role, String content) {
@@ -88,7 +93,7 @@ public class IntakeController {
                 .map(m -> Map.of("role", String.valueOf(m.role()), "content", Redactor.redact(String.valueOf(m.content()), patient)))
                 .toList();
 
-        Map<String, Object> reply = agents.processIntake(patient.getGraphId().toString(), patient.getPreferredLanguage(), history);
+        Map<String, Object> reply = agents.processIntake(patient.getGraphId().toString(), patient.getPreferredLanguage(), history, known(patient));
         String nextQuestion = String.valueOf(reply.get("next_question"));
         boolean complete = Boolean.TRUE.equals(reply.get("is_complete"));
 
@@ -110,6 +115,22 @@ public class IntakeController {
             auditLog.record(user, patient.getId(), AuditAction.VIEWED_INTAKE);
         }
         return view;
+    }
+
+    /** What the clinic already knows, so the chat confirms it instead of starting from nothing. No identifiers. */
+    private Map<String, Object> known(Patient patient) {
+        Map<String, Object> context = new java.util.LinkedHashMap<>();
+        List<String> taken = medications.active(patient.getId()).stream()
+                .map(MedicationItem::getName)
+                .map(name -> Redactor.redact(name, patient))
+                .toList();
+        if (!taken.isEmpty()) {
+            context.put("medicines", taken);
+        }
+        if (!patient.allergyList().isEmpty()) {
+            context.put("allergies", patient.allergyList());
+        }
+        return context;
     }
 
     private void save(Patient patient, AppUser user, List<Map<String, String>> history, String nextQuestion, boolean complete) {

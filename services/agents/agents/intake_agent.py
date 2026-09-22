@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, NotRequired, Optional, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
@@ -12,6 +12,8 @@ class IntakeState(TypedDict):
     graph_id: str
     preferred_language: str
     messages: List[Dict[str, str]]
+    # What the clinic already knows, with no identifiers: medicines, allergies, last_diagnosis
+    context: NotRequired[Dict[str, Any]]
     next_question: str
     is_complete: bool
 
@@ -46,6 +48,18 @@ SCRIPTED_QUESTIONS = {
         "Ada alahan pada mana-mana ubat?",
     ],
 }
+
+# Used instead of the plain question when the clinic already has something on record, so the
+# patient confirms and adds to it rather than starting from nothing.
+KNOWN_MEDICINES = {
+    "en": "Last time we noted you take {items}. Are you still taking these? Anything new, from another clinic, a pharmacy, jamu or traditional medicine?",
+    "ms": "Kali terakhir kami catat Mak Cik / Pak Cik ambil {items}. Masih ambil ubat ini? Ada yang baru, dari klinik lain, farmasi, jamu atau ubat tradisional?",
+}
+KNOWN_ALLERGIES = {
+    "en": "Our records say you are allergic to {items}. Is that right, and are you allergic to any other medicine?",
+    "ms": "Rekod kami menunjukkan alahan pada {items}. Betul? Ada alahan pada ubat lain?",
+}
+
 SCRIPTED_DONE = {
     "en": "Thank you. Your doctor will see this before your consultation.",
     "ms": "Terima kasih. Doktor akan baca maklumat ini sebelum berjumpa.",
@@ -64,11 +78,31 @@ def _scripted_turn(state: IntakeState) -> IntakeTurn:
     questions = SCRIPTED_QUESTIONS[lang]
     if answered >= len(questions):
         return IntakeTurn(next_question=SCRIPTED_DONE[lang], is_complete=True)
+    context = state.get("context") or {}
+    if answered == 2 and context.get("medicines"):
+        return IntakeTurn(next_question=KNOWN_MEDICINES[lang].format(items=", ".join(context["medicines"])), is_complete=False)
+    if answered == 3 and context.get("allergies"):
+        return IntakeTurn(next_question=KNOWN_ALLERGIES[lang].format(items=", ".join(context["allergies"])), is_complete=False)
     return IntakeTurn(next_question=questions[answered], is_complete=False)
 
 
+def _known(context: Dict[str, Any]) -> str:
+    """The clinic's record, for the model: confirm these instead of asking from scratch."""
+    lines = []
+    if context.get("medicines"):
+        lines.append("Medicines on record: " + ", ".join(context["medicines"]))
+    if context.get("allergies"):
+        lines.append("Allergies on record: " + ", ".join(context["allergies"]))
+    if context.get("last_diagnosis"):
+        lines.append("Last visit: " + context["last_diagnosis"])
+    if not lines:
+        return ""
+    return "\nWhat the clinic already knows (ask the patient to confirm or update it, and ask about anything new):\n" + "\n".join(lines)
+
+
 def _to_chat_messages(state: IntakeState) -> list:
-    chat = [SystemMessage(content=f"{SYSTEM_PROMPT}\nPatient's preferred language: {state.get('preferred_language', 'English')}")]
+    system = f"{SYSTEM_PROMPT}\nPatient's preferred language: {state.get('preferred_language', 'English')}" + _known(state.get("context") or {})
+    chat = [SystemMessage(content=system)]
     for m in state.get("messages", []):
         content = scrub(m.get("content", ""))
         if m.get("role") == "user":

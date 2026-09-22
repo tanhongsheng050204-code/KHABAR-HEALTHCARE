@@ -94,7 +94,7 @@ class IntakeSessionTest {
     }
 
     void agentSays(boolean complete) {
-        when(agents.processIntake(anyString(), anyString(), anyList()))
+        when(agents.processIntake(anyString(), anyString(), anyList(), any()))
                 .thenReturn(Map.of("next_question", complete ? "Terima kasih." : "Ada alahan ubat?", "is_complete", complete));
     }
 

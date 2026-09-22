@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 from core.security import verify_internal_service_key
 from agents.intake_agent import intake_graph, IntakeState
 from agents.previsit import PreVisitReport, build_previsit_report
@@ -19,6 +19,7 @@ class IntakeChatRequest(BaseModel):
     graph_id: str = Field(..., description="De-identified patient graph UUID")
     preferred_language: str = Field("English", description="BM, English, Chinese, or Tamil")
     messages: List[ChatMessage] = Field(default_factory=list)
+    context: Dict[str, Any] = Field(default_factory=dict, description="What the clinic already knows: medicines, allergies, last_diagnosis. No identifiers.")
 
 class IntakeChatResponse(BaseModel):
     next_question: str
@@ -34,6 +35,7 @@ async def process_intake_chat(request: IntakeChatRequest):
         "graph_id": request.graph_id,
         "preferred_language": request.preferred_language,
         "messages": [m.model_dump() for m in request.messages],
+        "context": request.context,
         "next_question": "",
         "is_complete": False
     }

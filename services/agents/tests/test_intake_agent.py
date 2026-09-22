@@ -66,3 +66,43 @@ def test_scripted_intake_speaks_bm_when_the_patient_prefers_bm():
     graph = build_intake_graph(llm=None)
     result = run(graph, [], language="BM")
     assert "apa" in result["next_question"].lower()
+
+
+def run_with(graph, messages, context, language="English"):
+    return graph.invoke({
+        "graph_id": "g-123",
+        "preferred_language": language,
+        "messages": messages,
+        "context": context,
+        "next_question": "",
+        "is_complete": False,
+    })
+
+
+KNOWN = {"medicines": ["Metformin 500mg", "Amlodipine 5mg"], "allergies": ["penicillin"], "last_diagnosis": "T2DM"}
+TWO_ANSWERS = [{"role": "user", "content": "Pening"}, {"role": "user", "content": "Kencing manis"}]
+THREE_ANSWERS = TWO_ANSWERS + [{"role": "user", "content": "Sama"}]
+
+
+def test_the_scripted_intake_asks_to_confirm_the_medicines_already_on_record():
+    result = run_with(build_intake_graph(llm=None), TWO_ANSWERS, KNOWN)
+    question = result["next_question"]
+    assert "Metformin 500mg" in question and "Amlodipine 5mg" in question
+    assert "jamu" in question.lower()
+
+
+def test_the_scripted_intake_asks_to_confirm_known_allergies_in_bm():
+    result = run_with(build_intake_graph(llm=None), THREE_ANSWERS, KNOWN, language="BM")
+    assert "penicillin" in result["next_question"] and "alahan" in result["next_question"].lower()
+
+
+def test_with_nothing_on_record_the_questions_are_the_usual_ones():
+    result = run_with(build_intake_graph(llm=None), TWO_ANSWERS, {})
+    assert result["next_question"].startswith("What do you take at the moment?")
+
+
+def test_the_model_is_told_what_the_clinic_already_knows():
+    llm = RecordingLLM()
+    run_with(build_intake_graph(llm=llm), [{"role": "user", "content": "Pening"}], KNOWN)
+    system = llm.sent[0].content
+    assert "Metformin 500mg" in system and "penicillin" in system and "T2DM" in system

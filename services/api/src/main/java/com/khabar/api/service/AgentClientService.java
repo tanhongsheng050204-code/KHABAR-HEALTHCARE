@@ -92,11 +92,14 @@ public class AgentClientService {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> processIntake(String graphId, String preferredLanguage, List<Map<String, String>> messages) {
+    /** context is what the clinic already knows, with no identifiers: medicines, allergies. */
+    public Map<String, Object> processIntake(String graphId, String preferredLanguage, List<Map<String, String>> messages,
+                                             Map<String, Object> context) {
         Map<String, Object> payload = Map.of(
                 "graph_id", graphId,
                 "preferred_language", preferredLanguage,
-                "messages", messages
+                "messages", messages,
+                "context", context == null ? Map.of() : context
         );
 
         return restClient.post()
