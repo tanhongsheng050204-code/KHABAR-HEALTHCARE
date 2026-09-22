@@ -8,6 +8,8 @@ import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
+import com.khabar.api.readings.Reading;
+import com.khabar.api.readings.ReadingRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 public class CallListController {
 
     private static final java.time.Duration NO_REPLY_AFTER = java.time.Duration.ofHours(48);
-    private static final List<String> REASON_ORDER = List.of("REPLY", "MISSED_DOSE", "NO_REPLY");
+    private static final List<String> REASON_ORDER = List.of("REPLY", "READING", "MISSED_DOSE", "NO_REPLY");
 
     private final CurrentUser currentUser;
     private final PatientRepository patients;
@@ -41,19 +43,22 @@ public class CallListController {
     private final AuditLog auditLog;
     private final AdjustableClock clock;
     private final CheckInRepository checkIns;
+    private final ReadingRepository readings;
 
     public CallListController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AuditLog auditLog,
-                              AdjustableClock clock, CheckInRepository checkIns) {
+                              AdjustableClock clock, CheckInRepository checkIns, ReadingRepository readings) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.replies = replies;
         this.auditLog = auditLog;
         this.clock = clock;
         this.checkIns = checkIns;
+        this.readings = readings;
     }
 
     /**
-     * reason is REPLY (a reply needs a call), MISSED_DOSE (the patient's only news is a missed dose) or
+     * reason is REPLY (a reply needs a call), READING (a home reading is out of range), MISSED_DOSE (the patient's
+     * only news is a missed dose) or
      * NO_REPLY (a check-in has gone unanswered for 48 hours). Within a level, they rank in that order.
      */
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
@@ -78,10 +83,20 @@ public class CallListController {
                 .filter(PatientReply::needsACall)
                 .collect(Collectors.groupingBy(PatientReply::getPatient));
 
-        List<CallListItem> fromReplies = byPatient.entrySet().stream()
-                .map(e -> toItem(e.getKey(), e.getValue(), today))
-                .toList();
-        java.util.Set<UUID> listed = fromReplies.stream().map(CallListItem::patientId).collect(Collectors.toSet());
+        Map<UUID, CallListItem> byId = new java.util.LinkedHashMap<>();
+        byPatient.forEach((patient, open) -> byId.put(patient.getId(), toItem(patient, open, today)));
+        // A worrying home reading adds the patient, or replaces their reply item when it is more urgent.
+        readings.findByPatientClinicIdAndHandledAtIsNullAndLevelNot(clinicId, TriageLevel.OK).stream()
+                .collect(Collectors.groupingBy(r -> r.getPatient().getId()))
+                .forEach((id, open) -> {
+                    CallListItem reading = readingItem(open, today);
+                    CallListItem existing = byId.get(id);
+                    if (existing == null || reading.level().compareTo(existing.level()) < 0) {
+                        byId.put(id, reading);
+                    }
+                });
+        List<CallListItem> fromReplies = List.copyOf(byId.values());
+        java.util.Set<UUID> listed = byId.keySet();
         Instant cutoff = clock.instant().minus(NO_REPLY_AFTER);
         List<CallListItem> silent = checkIns.findByPatientClinicIdAndStatusAndSentAtBefore(clinicId, CheckIn.Status.SENT, cutoff).stream()
                 .filter(c -> !listed.contains(c.getPatient().getId()))
@@ -115,9 +130,11 @@ public class CallListController {
         List<PatientReply> open = replies.findByPatientIdAndHandledAtIsNull(patientId);
         Instant now = clock.instant();
         open.forEach(r -> r.markHandled(doctor.getId(), now));
+        List<Reading> openReadings = readings.findByPatientIdAndHandledAtIsNull(patientId);
+        openReadings.forEach(r -> r.markHandled(doctor.getId(), now));
         List<CheckIn> unanswered = checkIns.findByPatientIdAndStatus(patientId, CheckIn.Status.SENT);
         unanswered.forEach(CheckIn::markAnswered);
-        if (!open.isEmpty() || !unanswered.isEmpty()) {
+        if (!open.isEmpty() || !unanswered.isEmpty() || !openReadings.isEmpty()) {
             auditLog.record(doctor, patientId, AuditAction.CALLED_ABOUT_REPLY);
         }
         return Map.of("handledReplies", open.size());
@@ -129,6 +146,16 @@ public class CallListController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The call list is for clinic doctors.");
         }
         return user;
+    }
+
+    private static CallListItem readingItem(List<Reading> open, LocalDate today) {
+        Reading latest = open.stream().max(Comparator.comparing(Reading::getMeasuredAt)).orElseThrow();
+        Reading urgent = open.stream()
+                .min(Comparator.comparing(Reading::getLevel).thenComparing(Reading::getMeasuredAt, Comparator.reverseOrder()))
+                .orElseThrow();
+        Patient patient = urgent.getPatient();
+        return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), urgent.getLevel(),
+                urgent.getDescription(), latest.getDescription(), latest.getMeasuredAt(), patient.followUpDay(today), open.size(), "READING");
     }
 
     private static CallListItem toItem(Patient patient, List<PatientReply> open, LocalDate today) {

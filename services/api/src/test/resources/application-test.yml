@@ -25,3 +25,5 @@ khabar:
     scheduler-enabled: false
   onboarding:
     bootstrap-token: test-bootstrap-token
+  favoriot:
+    device-secret: test-device-secret

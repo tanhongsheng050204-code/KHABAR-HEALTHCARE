@@ -60,6 +60,10 @@ khabar:
   checkins:
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
     poll-ms: ${CHECKINS_POLL_MS:60000}
+  # Home readings forwarded by Favoriot: the value of the X-Khabar-Device-Secret header on your forwarding rule.
+  # Leave empty to switch device readings off.
+  favoriot:
+    device-secret: ${FAVORIOT_DEVICE_SECRET:}
   # Lets the very first doctor create a clinic (POST /api/onboarding/clinic). Leave empty to switch that off.
   onboarding:
     bootstrap-token: ${KHABAR_BOOTSTRAP_TOKEN:}

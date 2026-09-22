@@ -84,11 +84,13 @@
         (item.followUpDay ? "Day " + item.followUpDay : "Follow-up") + " · " + (LANGUAGES[item.preferredLanguage] || item.preferredLanguage)),
     );
     const silent = item.reason === "NO_REPLY";
+    const reading = item.reason === "READING";
     const quote = el("p", "font-body-md text-body-md text-on-surface",
-      silent ? "No reply to the last check-in" : "“" + item.urgentReply + "”");
+      silent ? "No reply to the last check-in" : reading ? item.urgentReply : "“" + item.urgentReply + "”");
     const missed = item.reason === "MISSED_DOSE";
     const meta = el("p", "font-label-sm text-label-sm text-on-surface-variant", silent
       ? "Check-in sent " + ago(item.latestAt)
+      : reading ? "Home reading " + ago(item.latestAt) + (item.unhandledReplies > 1 ? " · " + item.unhandledReplies + " readings to look at" : "")
       : (missed ? "Missed a dose · " : "") + "Latest reply " + ago(item.latestAt)
         + (item.unhandledReplies > 1 ? " · " + item.unhandledReplies + " replies waiting" : ""));
     info.append(top, quote, meta);
