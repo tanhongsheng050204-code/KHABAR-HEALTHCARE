@@ -1,9 +1,12 @@
 #!/bin/sh
 # Starts the API in the Vercel container. Any one of these gives it a Postgres database:
 #   - DATABASE_URL: a postgresql:// connection string, e.g. Supabase's "Session pooler" URI
+#   - DB_POSTGRES_URL_NON_POOLING / POSTGRES_URL_NON_POOLING: what a Supabase database connected from the
+#     Vercel Marketplace provides (the DB_ prefix is how it is connected to khabar-api), also a session pooler URI
 #   - PGHOST, PGUSER, PGPASSWORD, PGDATABASE: what a Neon database added from the Vercel Marketplace provides
 #   - SPRING_DATASOURCE_URL (+ _USERNAME, _PASSWORD): a JDBC URL, used as it is
 set -e
+DATABASE_URL="${DATABASE_URL:-${DB_POSTGRES_URL_NON_POOLING:-$POSTGRES_URL_NON_POOLING}}"
 if [ -z "$SPRING_DATASOURCE_URL" ] && [ -n "$DATABASE_URL" ]; then
   rest="${DATABASE_URL#*://}"      # user:password@host:port/database?options
   creds="${rest%@*}"               # everything before the last @ (the password may contain @)
