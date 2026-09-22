@@ -105,7 +105,11 @@
         button.textContent = "Try again";
       }
     });
-    body.append(info, button);
+    const open = el("a", "px-4 py-2 rounded-full border border-primary text-primary font-label-md text-label-md font-semibold hover:bg-primary-fixed/40", "Open visit");
+    open.href = "visit.html?patient=" + encodeURIComponent(item.patientId);
+    const actions = el("div", "flex flex-wrap gap-2");
+    actions.append(open, button);
+    body.append(info, actions);
     row.append(body);
     return row;
   }

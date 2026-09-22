@@ -49,7 +49,12 @@
       throw new ApiError(0, "The Khabar API is not reachable at " + root);
     }
     if (res.status === 401) { signOut(); throw new ApiError(401, "Your session has ended. Sign in again."); }
-    if (!res.ok) throw new ApiError(res.status, "The API answered " + res.status);
+    if (!res.ok) {
+      // The API sends its own sentence for people as {message}; fall back to the status code.
+      let message = "The API answered " + res.status;
+      try { const body = await res.json(); if (body && body.message) message = body.message; } catch { /* not JSON */ }
+      throw new ApiError(res.status, message);
+    }
     return res.status === 204 ? null : res.json();
   }
 

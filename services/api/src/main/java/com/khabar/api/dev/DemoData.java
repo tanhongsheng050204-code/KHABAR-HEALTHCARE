@@ -177,7 +177,7 @@ public class DemoData implements ApplicationRunner {
 
         medications.save(new MedicationItem(aminah, "Metformin 500mg", MedicationItem.Kind.MEDICINE, "Klinik Kesihatan", Role.PATIENT, aminahAccount.getId(), when));
         medications.save(new MedicationItem(aminah, "Brand A 500mg", MedicationItem.Kind.MEDICINE, "GP clinic", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(1)));
-        medications.save(new MedicationItem(aminah, "Jus peria (bitter gourd)", MedicationItem.Kind.HERB, "Made by her sister", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(2)));
+        medications.save(new MedicationItem(aminah, "Jus peria (bitter gourd)", MedicationItem.Kind.HERB, "Her sister", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(2)));
     }
 
     private Patient inFollowUp(Patient patient, LocalDate visitDay) {

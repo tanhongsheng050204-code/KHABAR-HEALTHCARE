@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Khabar — Visit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#125238",
+              "primary-container": "#2f6b4f",
+              "on-primary": "#ffffff",
+              "primary-fixed": "#b1f0cd",
+              background: "#fff8f5",
+              surface: "#fff8f5",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#fff1ea",
+              "surface-container": "#ffeade",
+              "surface-container-high": "#f9e4d9",
+              "on-surface": "#241913",
+              "on-surface-variant": "#404943",
+              outline: "#707972",
+              "outline-variant": "#c0c9c1",
+              error: "#ba1a1a",
+              "error-container": "#ffdad6",
+              "on-error-container": "#93000a",
+              tertiary: "#6a3e00",
+              "tertiary-fixed": "#ffdcbb",
+            },
+            fontFamily: {
+              display: ["Playfair Display", "Georgia", "serif"],
+              body: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+      :focus-visible { outline: 3px solid #2f6b4f; outline-offset: 2px; border-radius: 6px; }
+      .gate-open { background: #125238; color: #fff; }
+      .gate-shut { background: #3a2e26; color: #ffede4; }
+      @media (prefers-reduced-motion: no-preference) {
+        .gate { transition: background-color 300ms ease; }
+      }
+      textarea { resize: vertical; }
+      /* keep the demo note clear of the finalise bar */
+      #khabar-demo-note { bottom: 124px !important; }
+    </style>
+  </head>
+  <body class="bg-background text-on-surface antialiased">
+<div id="khabar-demo-note" role="note" style="position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(92vw,520px);padding:8px 12px;border-radius:10px;background:rgba(20,28,24,.92);color:#f3efe6;font:500 12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">Concept demo for a student hackathon. All people, clinics, hospitals, figures and approvals shown are fictional. Khabar is not affiliated with or endorsed by the Ministry of Health (KKM), MMC, NPRA, JAKIM or any named organisation, holds no certification, and is not a medical device.<button type="button" aria-label="Hide this note" onclick="document.getElementById('khabar-demo-note').remove()" style="margin-left:10px;background:none;border:0;color:#f3efe6;font:inherit;text-decoration:underline;cursor:pointer">Hide</button></div>
+
+    <header class="border-b border-outline-variant/60 bg-surface-container-lowest">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex flex-wrap items-center gap-4">
+        <a href="clinic_command.html" class="text-sm font-semibold text-primary hover:underline">Back to the triage desk</a>
+        <h1 class="font-display text-2xl font-semibold mr-auto">Visit</h1>
+        <label class="flex items-center gap-2 text-sm">
+          <span class="text-on-surface-variant">Patient</span>
+          <select id="patient" class="rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm max-w-[16rem]" disabled>
+            <option>Loading…</option>
+          </select>
+        </label>
+        <span id="doctor" class="text-sm text-on-surface-variant"></span>
+      </div>
+    </header>
+
+    <p id="status" role="status" aria-live="polite" class="mx-auto max-w-7xl px-4 sm:px-6 pt-3 text-sm min-h-[1.75rem]"></p>
+
+    <section id="offline" hidden class="mx-auto max-w-2xl px-4 sm:px-6 py-16">
+      <h2 class="font-display text-3xl font-semibold mb-4">This screen needs the Khabar API</h2>
+      <p class="text-on-surface-variant leading-7 mb-3">
+        The visit screen writes real reports and runs the real safety checks, so it only works when the API is running on your computer.
+        The public site never contacts your machine.
+      </p>
+      <p class="text-on-surface-variant leading-7">
+        Start everything with <code class="bg-surface-container px-1.5 py-0.5 rounded">scripts/run-local.ps1</code>, then open
+        <code class="bg-surface-container px-1.5 py-0.5 rounded">http://localhost:5500/visit.html</code>.
+      </p>
+    </section>
+
+    <main id="app" class="mx-auto max-w-7xl px-4 sm:px-6 pb-40 grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <!-- Before the visit -->
+      <aside id="previsit" class="flex flex-col gap-6" aria-label="Before the visit">
+        <div>
+          <h2 id="pv-name" class="font-display text-3xl font-semibold leading-tight"></h2>
+          <p id="pv-meta" class="text-sm text-on-surface-variant mt-1"></p>
+          <div id="pv-allergies" class="mt-3 flex flex-wrap gap-2"></div>
+        </div>
+
+        <section>
+          <h3 class="font-display text-lg font-semibold mb-2">Why they are coming in</h3>
+          <div id="pv-intake" class="text-[15px] leading-6"></div>
+        </section>
+
+        <section>
+          <h3 class="font-display text-lg font-semibold mb-2">Last visit</h3>
+          <div id="pv-last" class="text-[15px] leading-6"></div>
+        </section>
+
+        <section>
+          <h3 class="font-display text-lg font-semibold mb-2">What they take elsewhere</h3>
+          <ul id="pv-meds" class="flex flex-col gap-1.5 text-[15px]"></ul>
+          <div id="pv-reconcile" class="mt-3 flex flex-col gap-2"></div>
+        </section>
+
+        <section>
+          <h3 class="font-display text-lg font-semibold mb-2">Since the last visit</h3>
+          <ul id="pv-replies" class="flex flex-col gap-2 text-[15px]"></ul>
+        </section>
+      </aside>
+
+      <!-- This visit -->
+      <section id="visit" class="flex flex-col gap-6" aria-label="This visit">
+        <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant/70 p-5">
+          <div class="flex items-baseline justify-between gap-3 mb-3">
+            <h2 class="font-display text-xl font-semibold">1. Notes</h2>
+            <span class="text-xs text-on-surface-variant">Shorthand is fine: T. Metformin 500mg 1/1 BD PC · TCA 2/52</span>
+          </div>
+          <label for="notes" class="sr-only">Consultation notes</label>
+          <textarea id="notes" rows="7" class="w-full rounded-xl border border-outline-variant bg-white p-3 font-mono text-sm leading-6"
+            placeholder="c/o giddiness 3/7&#10;Dx: T2DM, HTN&#10;T. Metformin 500mg 1/1 BD PC&#10;TCA 2/52"></textarea>
+          <div class="mt-3 flex flex-wrap items-center gap-4">
+            <label class="flex items-center gap-2 text-sm">
+              <input id="fasting" type="checkbox" class="h-4 w-4 accent-primary" />
+              Patient is fasting (Ramadan timings in the summary)
+            </label>
+            <button id="draft-btn" type="button" class="ml-auto rounded-full bg-primary text-on-primary px-5 py-2.5 text-sm font-semibold hover:bg-primary-container disabled:opacity-50">
+              Draft the report
+            </button>
+          </div>
+        </div>
+
+        <div id="draft" hidden class="rounded-2xl bg-surface-container-lowest border border-outline-variant/70 p-5">
+          <h2 class="font-display text-xl font-semibold mb-3">Draft report</h2>
+          <dl class="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-[15px]">
+            <dt class="text-on-surface-variant">Diagnosis</dt><dd id="d-diagnosis"></dd>
+            <dt class="text-on-surface-variant">Plan</dt><dd id="d-plan"></dd>
+            <dt class="text-on-surface-variant">Follow-up</dt><dd id="d-followup"></dd>
+          </dl>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-sm">
+              <caption class="text-left text-on-surface-variant pb-2">Prescription, as read from the notes</caption>
+              <thead>
+                <tr class="text-left text-on-surface-variant border-b border-outline-variant/70">
+                  <th class="py-1.5 pr-3 font-medium">Medicine</th>
+                  <th class="py-1.5 pr-3 font-medium">Strength</th>
+                  <th class="py-1.5 pr-3 font-medium">Per dose</th>
+                  <th class="py-1.5 pr-3 font-medium">Times a day</th>
+                  <th class="py-1.5 font-medium">With food</th>
+                </tr>
+              </thead>
+              <tbody id="d-rx"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-surface-container-lowest border border-outline-variant/70 p-5">
+          <div class="flex flex-wrap items-center gap-3 mb-3">
+            <h2 class="font-display text-xl font-semibold mr-auto">2. Safety check</h2>
+            <button id="check-btn" type="button" disabled class="rounded-full border border-primary text-primary px-5 py-2 text-sm font-semibold hover:bg-primary-fixed/40 disabled:opacity-40 disabled:hover:bg-transparent">
+              Run the safety check
+            </button>
+          </div>
+          <p id="check-hint" class="text-sm text-on-surface-variant">Draft the report first. The check compares it with the allergies, pregnancy, everything the patient takes elsewhere, and the notes themselves.</p>
+          <ul id="findings" class="mt-3 flex flex-col gap-3"></ul>
+        </div>
+
+        <div id="done" hidden class="rounded-2xl border-2 border-primary bg-primary-fixed/30 p-5">
+          <h2 class="font-display text-xl font-semibold mb-2">Finalised</h2>
+          <p class="text-sm text-on-surface-variant mb-3">Follow-up check-ins start tomorrow. This is the summary the patient receives, in their language:</p>
+          <pre id="summary" class="whitespace-pre-wrap font-body text-[15px] leading-7 bg-white rounded-xl p-4 border border-outline-variant/70"></pre>
+        </div>
+      </section>
+    </main>
+
+    <!-- The finalise gate: the third place a critical finding is blocked (after the API and the database) -->
+    <div id="gate" hidden class="gate gate-shut fixed inset-x-0 bottom-0 z-40">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex flex-wrap items-center gap-4">
+        <div class="mr-auto">
+          <p class="font-display text-lg font-semibold">3. Finalise</p>
+          <p id="gate-reason" class="text-sm opacity-90"></p>
+        </div>
+        <button id="finalise-btn" type="button" disabled
+          class="rounded-full bg-white text-primary px-6 py-3 text-sm font-bold disabled:bg-white/20 disabled:text-white/70 disabled:cursor-not-allowed">
+          Finalise and send the summary
+        </button>
+      </div>
+    </div>
+
+    <script src="js/khabar-api.js"></script>
+    <script src="js/visit.js"></script>
+  </body>
+</html>

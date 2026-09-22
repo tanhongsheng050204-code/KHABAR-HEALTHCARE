@@ -9,6 +9,7 @@ The main UI for now is the set of static pages in this folder, designed in Antig
 | `login.html` | Doctor and nurse sign-in (demo) |
 | `clinical_handshake.html` | Secure-session animation after sign-in |
 | `clinic_command.html` | Doctor's triage desk |
+| `visit.html` | The doctor's visit: pre-visit page, notes to report, safety check, finalise (works only with the local API) |
 | `telemetry_chat.html` | Patient reply and chat console |
 | `polypharmacy_guard.html` | Cross-clinic medicine clash radar |
 | `recovery_arc.html` | 30-day recovery view and Ramadan timing |
@@ -20,14 +21,15 @@ The main UI for now is the set of static pages in this folder, designed in Antig
 
 `../prototype/khabar-landing.html` is the earlier landing page and is no longer deployed. `prototype/` is still linked to the same Vercel project, so don't run `vercel deploy --prod` from there, or it will replace these screens.
 
-## Live data: sign-in and triage desk
+## Live data: sign-in, triage desk and visit
 
-Two screens talk to the real backend when it runs on your machine; everywhere else (including the public Vercel site) they stay in demo mode and never contact the visitor's computer.
+Three screens talk to the real backend when it runs on your machine; everywhere else (including the public Vercel site) they stay in demo mode and never contact the visitor's computer.
 
 | Screen | With the backend running |
 |---|---|
 | `login.html` | Any sign-in button signs you in as the demo doctor through the API (`/dev/token`). Supabase sign-in replaces this later. |
-| `clinic_command.html` | A **"Call these patients today"** panel appears above the sample cases, filled from `GET /api/clinic/call-list`: most urgent first, the patient's reply, follow-up day and language. **Mark as called** records the call (it shows in the patient's "who viewed my record" log) and removes them from the list. The acuity counts at the top become real. It refreshes every 15 seconds. |
+| `visit.html` | The whole visit on real data. Pick a patient (Aminah is chosen first). The left side is the pre-visit page: why they are coming in (from the intake chat), the last visit, what they take elsewhere with any duplicates, clashes or herb problems already flagged, and their replies since. On the right, type notes in shorthand, **Draft the report**, then **Run the safety check**. Each critical finding needs a written reason (10+ characters, saved in the audit log). The bar at the bottom stays shut, and says why, until every critical finding has a reason; then **Finalise and send the summary** shows the summary the patient receives. On the public site the page only explains that it needs the local API. |
+| `clinic_command.html` | A **"Call these patients today"** panel appears above the sample cases, filled from `GET /api/clinic/call-list`: most urgent first, the patient's reply, follow-up day and language. **Mark as called** records the call (it shows in the patient's "who viewed my record" log) and removes them from the list. **Open visit** goes to that patient's visit screen. The acuity counts at the top become real. It refreshes every 15 seconds. |
 
 **Run it:** `powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1`, wait about 30 seconds, then open http://localhost:5500/login.html. (Or start the three parts by hand: see `services/README.md`, plus `python -m http.server 5500 --directory docs`.)
 
@@ -37,7 +39,7 @@ P=$(curl -s -X POST "localhost:8080/dev/token?as=patient" | python -c "import sy
 curl -s -X POST localhost:8080/api/followup/replies -H "Authorization: Bearer $P" -H "Content-Type: application/json" -d '{"text":"sakit dada sikit"}'
 ```
 
-The code lives in `js/khabar-api.js` (API address, sign-in, requests) and `js/triage-desk.js` (the live panel). The pages open the API at `http://localhost:8080` only when they are served from `localhost`; add `?api=<address>` to point them elsewhere, or `?api=off` to force demo mode.
+The code lives in `js/khabar-api.js` (API address, sign-in, requests), `js/triage-desk.js` (the live panel) and `js/visit.js` (the visit screen). The pages open the API at `http://localhost:8080` only when they are served from `localhost`; add `?api=<address>` to point them elsewhere, or `?api=off` to force demo mode.
 
 ## Rules for anyone editing these pages (people or AI tools)
 
