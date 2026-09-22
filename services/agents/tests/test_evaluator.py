@@ -103,3 +103,23 @@ def test_grounding_is_skipped_when_no_notes_are_given():
 def test_a_brand_written_in_the_notes_grounds_its_generic():
     findings = evaluate(draft(source_text="Brand A 500 mg BD", prescription=[Rx(name="Metformin", dose_mg=500, times_per_day=2)]))
     assert "grounding" not in checks(findings)
+
+
+def test_a_symptom_in_the_report_that_the_notes_never_mention_is_flagged():
+    report = {"diagnosis": "T2DM with chest pain", "plan": "Continue meds", "follow_up": "TCA 2/52"}
+    findings = evaluate(draft(report=report, source_text="c/o giddiness 3/7\nDx: T2DM\nTCA 2/52"))
+    assert checks(findings) == ["symptom_grounding"]
+    assert findings[0].severity == "WARN"
+    assert "chest pain" in findings[0].detail
+
+
+def test_a_symptom_written_another_way_in_the_notes_is_not_flagged():
+    report = {"diagnosis": "Dizziness, likely postural", "plan": "Hydrate", "follow_up": "PRN"}
+    findings = evaluate(draft(report=report, source_text="c/o giddiness on standing, pening sejak semalam"))
+    assert "symptom_grounding" not in checks(findings)
+
+
+def test_shortness_of_breath_matches_the_usual_abbreviation():
+    report = {"diagnosis": "Shortness of breath, ?asthma", "plan": "Inhaler", "follow_up": "TCA 1/52"}
+    findings = evaluate(draft(report=report, source_text="SOB on exertion x 2/7"))
+    assert "symptom_grounding" not in checks(findings)

@@ -1,0 +1,21 @@
+{
+  "_note": "Symptom words for the grounding check: a symptom in a draft report must appear, in any of its forms, in the doctor's notes or transcript. Each group is one symptom; the first entry is the name used in findings. Seed data; extend as notes show new ways of writing things.",
+  "groups": [
+    ["chest pain", "chest tightness", "angina", "sakit dada", "dada ketat", "胸痛", "胸口痛", "நெஞ்சு வலி"],
+    ["shortness of breath", "sob", "breathless", "dyspnoea", "dyspnea", "sesak nafas", "susah bernafas", "呼吸困难", "மூச்சுத் திணறல்"],
+    ["dizziness", "giddiness", "giddy", "dizzy", "vertigo", "pening", "头晕", "மயக்கம்", "தலைச்சுற்றல்"],
+    ["headache", "sakit kepala", "头痛", "தலைவலி"],
+    ["fever", "febrile", "pyrexia", "demam", "发烧", "காய்ச்சல்"],
+    ["cough", "batuk", "咳嗽", "இருமல்"],
+    ["vomiting", "vomit", "muntah", "呕吐", "வாந்தி"],
+    ["diarrhoea", "diarrhea", "cirit-birit", "腹泻"],
+    ["palpitations", "palpitation", "berdebar", "心悸"],
+    ["fainting", "syncope", "fainted", "pengsan", "pitam", "昏倒", "晕倒"],
+    ["rash", "ruam", "皮疹"],
+    ["swelling", "oedema", "edema", "bengkak", "肿"],
+    ["abdominal pain", "stomach pain", "epigastric pain", "sakit perut", "肚子痛", "腹痛"],
+    ["numbness", "kebas", "麻木"],
+    ["blurred vision", "penglihatan kabur", "视力模糊"],
+    ["weakness", "lemah", "无力"]
+  ]
+}

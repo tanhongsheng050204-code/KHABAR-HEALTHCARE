@@ -13,6 +13,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "drugs.json"
+SYMPTOMS_FILE = Path(__file__).resolve().parents[1] / "data" / "symptoms.json"
 REQUIRED_REPORT_FIELDS = ("diagnosis", "plan", "follow_up")
 
 Severity = Literal["CRITICAL", "WARN"]
@@ -165,6 +166,31 @@ def _check_grounding(draft: Draft, prescribed: dict[str, Rx]) -> list[Finding]:
     ]
 
 
+@lru_cache(maxsize=1)
+def _symptom_groups() -> list[list[str]]:
+    return [[w.lower() for w in group] for group in json.loads(SYMPTOMS_FILE.read_text(encoding="utf-8"))["groups"]]
+
+
+def _says(text: str, word: str) -> bool:
+    if re.fullmatch(r"[a-z' -]+", word):
+        return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", text) is not None
+    return word in text  # Chinese and Tamil have no spaces to rely on
+
+
+def _check_symptom_grounding(draft: Draft) -> list[Finding]:
+    """A symptom in the report that the notes never mention, in any of its forms, may have been invented."""
+    if not draft.source_text:
+        return []
+    report = " ".join(draft.report.values()).lower()
+    notes = draft.source_text.lower()
+    found = []
+    for group in _symptom_groups():
+        if any(_says(report, w) for w in group) and not any(_says(notes, w) for w in group):
+            found.append(Finding(check="symptom_grounding", severity="WARN",
+                                 detail=f"The report mentions {group[0]}, but the notes don't. Check it was not added by mistake."))
+    return found
+
+
 def _check_completeness(draft: Draft) -> list[Finding]:
     missing = [f for f in REQUIRED_REPORT_FIELDS if not draft.report.get(f, "").strip()]
     if not missing:
@@ -188,6 +214,7 @@ def evaluate(draft: Draft) -> list[Finding]:
             current.setdefault(generic, []).append(med)
 
     findings += _check_grounding(draft, prescribed)
+    findings += _check_symptom_grounding(draft)
     findings += _check_allergies(draft, prescribed)
     findings += _check_duplicates(prescribed, current)
     findings += _check_interactions(prescribed, current)

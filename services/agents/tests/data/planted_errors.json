@@ -1,0 +1,83 @@
+{
+  "_note": "The planted-error set from plan.md section 5: draft reports with one known mistake each. Every one must be caught. Run the same set against drafts written by each candidate LLM to choose the model.",
+  "cases": [
+    {
+      "name": "allergy clash",
+      "expect": {"check": "allergy", "severity": "CRITICAL"},
+      "draft": {"patient": {"allergies": ["penicillin"]}, "prescription": [{"name": "Amoxicillin", "dose_mg": 500, "times_per_day": 3}],
+                "report": {"diagnosis": "Tonsillitis", "plan": "Antibiotics", "follow_up": "PRN"},
+                "source_text": "c/o sore throat, fever\nDx: tonsillitis\nT. Amoxicillin 500mg TDS x 5/7"}
+    },
+    {
+      "name": "double dose",
+      "expect": {"check": "dose", "severity": "CRITICAL"},
+      "draft": {"prescription": [{"name": "Metformin", "dose_mg": 1000, "times_per_day": 4}],
+                "report": {"diagnosis": "T2DM", "plan": "Increase metformin", "follow_up": "TCA 4/52"},
+                "source_text": "Dx: T2DM poorly controlled\nT. Metformin 1g QID\nTCA 4/52"}
+    },
+    {
+      "name": "duplicate from another clinic",
+      "expect": {"check": "duplicate", "severity": "CRITICAL"},
+      "draft": {"prescription": [{"name": "Metformin", "dose_mg": 500, "times_per_day": 2}],
+                "current_meds": [{"name": "Brand A 500mg", "source": "GP clinic"}],
+                "report": {"diagnosis": "T2DM", "plan": "Start metformin", "follow_up": "TCA 2/52"},
+                "source_text": "Dx: T2DM\nT. Metformin 500mg BD\nTCA 2/52"}
+    },
+    {
+      "name": "herb clash",
+      "expect": {"check": "herb", "severity": "WARN"},
+      "draft": {"prescription": [{"name": "Aspirin", "dose_mg": 100, "times_per_day": 1}], "herbs": ["Ginkgo capsules"],
+                "report": {"diagnosis": "IHD", "plan": "Antiplatelet", "follow_up": "TCA 4/52"},
+                "source_text": "Dx: IHD\nT. Aspirin 100mg OD\nTCA 4/52"}
+    },
+    {
+      "name": "invented symptom",
+      "expect": {"check": "symptom_grounding", "severity": "WARN"},
+      "draft": {"prescription": [{"name": "Metformin", "dose_mg": 500, "times_per_day": 2}],
+                "report": {"diagnosis": "T2DM with chest pain", "plan": "Continue metformin", "follow_up": "TCA 2/52"},
+                "source_text": "c/o giddiness\nDx: T2DM\nT. Metformin 500mg BD\nTCA 2/52"}
+    },
+    {
+      "name": "invented drug",
+      "expect": {"check": "grounding", "severity": "CRITICAL"},
+      "draft": {"prescription": [{"name": "Metformin", "dose_mg": 500, "times_per_day": 2}, {"name": "Simvastatin", "dose_mg": 20, "times_per_day": 1}],
+                "report": {"diagnosis": "T2DM", "plan": "Continue metformin", "follow_up": "TCA 2/52"},
+                "source_text": "Dx: T2DM\nT. Metformin 500mg BD\nTCA 2/52"}
+    },
+    {
+      "name": "interaction with a medicine from elsewhere",
+      "expect": {"check": "interaction", "severity": "CRITICAL"},
+      "draft": {"prescription": [{"name": "Aspirin", "dose_mg": 100, "times_per_day": 1}],
+                "current_meds": [{"name": "Warfarin 5mg", "source": "Hospital specialist clinic"}],
+                "report": {"diagnosis": "IHD", "plan": "Antiplatelet", "follow_up": "TCA 4/52"},
+                "source_text": "Dx: IHD\nT. Aspirin 100mg OD\nTCA 4/52"}
+    },
+    {
+      "name": "unsafe in pregnancy",
+      "expect": {"check": "pregnancy", "severity": "CRITICAL"},
+      "draft": {"patient": {"pregnant": true}, "prescription": [{"name": "Perindopril", "dose_mg": 4, "times_per_day": 1}],
+                "report": {"diagnosis": "Hypertension", "plan": "Start ACE inhibitor", "follow_up": "TCA 2/52"},
+                "source_text": "Dx: HTN\nT. Perindopril 4mg OD\nTCA 2/52"}
+    },
+    {
+      "name": "missing plan",
+      "expect": {"check": "completeness", "severity": "WARN"},
+      "draft": {"prescription": [{"name": "Paracetamol", "dose_mg": 500, "times_per_day": 3}],
+                "report": {"diagnosis": "Viral fever", "plan": "", "follow_up": "PRN"},
+                "source_text": "c/o fever 2/7\nDx: viral fever\nT. Paracetamol 500mg TDS PRN"}
+    },
+    {
+      "name": "drug not in the list",
+      "expect": {"check": "unrecognised", "severity": "WARN"},
+      "draft": {"prescription": [{"name": "Xyzzamab", "dose_mg": 10, "times_per_day": 1}],
+                "report": {"diagnosis": "Unknown", "plan": "Trial", "follow_up": "TCA 1/52"},
+                "source_text": "Dx: unknown\nT. Xyzzamab 10mg OD\nTCA 1/52"}
+    }
+  ],
+  "clean": {
+    "prescription": [{"name": "Metformin", "dose_mg": 500, "times_per_day": 2}],
+    "current_meds": [{"name": "Amlodipine 5mg", "source": "Klinik Kesihatan"}],
+    "report": {"diagnosis": "T2DM, HTN", "plan": "Continue meds, diet advice", "follow_up": "TCA 2/52"},
+    "source_text": "c/o giddiness\nDx: T2DM, HTN\nT. Metformin 500mg BD\nTCA 2/52"
+  }
+}
