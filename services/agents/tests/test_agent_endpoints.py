@@ -48,3 +48,16 @@ def test_report_draft_endpoint_structures_the_notes():
         "raw": "T. Amlodipine 5mg 1/1 OD", "name": "Amlodipine", "strength_mg": 5.0, "units_per_dose": 1.0,
         "times_per_day": 1, "times_of_day": ["morning"], "timing": None, "as_needed": False, "dose_mg": 5.0,
     }
+
+
+def test_summary_endpoint_builds_the_patients_summary_and_whatsapp_text():
+    rx = client.post("/agents/report/draft", json={"notes": "T. Metformin 500mg 1/1 BD PC"}, headers=KEY).json()["prescription"]
+    response = client.post("/agents/summary/build", json={"prescription": rx, "language": "ms", "follow_up_weeks": 2}, headers=KEY)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["medicines"][0]["how"] == "1 biji, pagi dan malam, selepas makan."
+    assert "Datang semula dalam 2 minggu." in body["text"]
+
+
+def test_summary_endpoint_rejects_calls_without_the_service_key():
+    assert client.post("/agents/summary/build", json={"prescription": [], "language": "ms"}).status_code == 401
