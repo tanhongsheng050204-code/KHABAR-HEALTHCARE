@@ -59,6 +59,22 @@ class LocalProfileTest {
     }
 
     @Test
+    void theDemoDoctorSeesAminahsPreVisitReportAndWhatSheTakesElsewhere() throws Exception {
+        String me = mvc.perform(get("/api/me").header("Authorization", tokenFor("patient")))
+                .andReturn().getResponse().getContentAsString();
+        String patientId = json.readTree(me).get("patientId").asText();
+
+        mvc.perform(get("/api/patients/{id}/intake", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.report.medicines.length()").value(2))
+                .andExpect(jsonPath("$.report.herbs[0]").value("peria"))
+                .andExpect(jsonPath("$.report.redFlags[0].matched").value("pening"));
+        mvc.perform(get("/api/patients/{id}/medications", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    @Test
     void demoDoctorHasACallListWithAnUrgentPatientFirst() throws Exception {
         mvc.perform(get("/api/clinic/call-list").header("Authorization", tokenFor("doctor")))
                 .andExpect(status().isOk())
