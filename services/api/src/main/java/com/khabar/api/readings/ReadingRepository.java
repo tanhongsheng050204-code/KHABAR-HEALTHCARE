@@ -10,6 +10,8 @@ public interface ReadingRepository extends JpaRepository<Reading, UUID> {
 
     List<Reading> findTop30ByPatientIdOrderByMeasuredAtDesc(UUID patientId);
 
+    List<Reading> findByPatientClinicId(UUID clinicId);
+
     List<Reading> findByPatientClinicIdAndHandledAtIsNullAndLevelNot(UUID clinicId, TriageLevel level);
 
     List<Reading> findByPatientIdAndHandledAtIsNull(UUID patientId);

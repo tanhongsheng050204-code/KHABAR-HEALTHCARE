@@ -100,6 +100,25 @@ class LocalProfileTest {
     }
 
     @Test
+    void theDemoCanBePutBackForTheNextRun() throws Exception {
+        String doctor = tokenFor("doctor");
+        String body = mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
+                .andReturn().getResponse().getContentAsString();
+        String urgentPatient = json.readTree(body).get("items").get(0).get("patientId").asText();
+        mvc.perform(post("/api/clinic/call-list/{id}/called", urgentPatient).header("Authorization", doctor))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
+                .andExpect(jsonPath("$.items.length()").value(2));
+
+        mvc.perform(post("/dev/demo/reset")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.replies").value(4));
+
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
+                .andExpect(jsonPath("$.items.length()").value(3))
+                .andExpect(jsonPath("$.items[0].level").value("RED"));
+    }
+
+    @Test
     void theScreensServedLocallyMayCallTheApi() throws Exception {
         for (String path : new String[]{"/dev/token", "/api/clinic/call-list"}) {
             mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options(path)

@@ -1,5 +1,6 @@
 package com.khabar.api.dev;
 
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
@@ -20,6 +21,7 @@ import com.khabar.api.patients.CaregiverLinkRepository;
 import com.khabar.api.patients.CaregiverScope;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
+import com.khabar.api.readings.ReadingRepository;
 import com.khabar.api.service.AgentDtos.IntakeAnswer;
 import com.khabar.api.service.AgentDtos.IntakeFlag;
 import com.khabar.api.service.AgentDtos.MedicineMention;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Fake people for the `local` profile. Every name, IC and phone number here is made up, and the phone
@@ -60,11 +63,13 @@ public class DemoData implements ApplicationRunner {
     private final IntakeSessionRepository intakes;
     private final IntakeRecords intakeRecords;
     private final ApprovedAnswerRepository answers;
+    private final ReadingRepository readings;
+    private final AdjustableClock clock;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
                     MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
-                    ApprovedAnswerRepository answers) {
+                    ApprovedAnswerRepository answers, ReadingRepository readings, AdjustableClock clock) {
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -74,6 +79,8 @@ public class DemoData implements ApplicationRunner {
         this.intakes = intakes;
         this.intakeRecords = intakeRecords;
         this.answers = answers;
+        this.readings = readings;
+        this.clock = clock;
     }
 
     @Override
@@ -87,20 +94,16 @@ public class DemoData implements ApplicationRunner {
         AppUser aminahAccount = users.save(new AppUser(AMINAH_ACCOUNT_ID, Role.PATIENT, "Aminah", null));
         AppUser nurul = users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 
-        LocalDate today = LocalDate.now();
-        Patient aminah = inFollowUp(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "03-0000 0001", "ms"), today.minusDays(3));
-        Patient rosnah = inFollowUp(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "03-0000 0002", "ms"), today.minusDays(6));
-        Patient tan = inFollowUp(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "03-0000 0003", "zh"), today.minusDays(9));
-        Patient muthu = inFollowUp(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "03-0000 0004", "ta"), today.minusDays(6));
+        FollowUpStory story = new FollowUpStory(
+                patients.save(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "03-0000 0001", "ms")),
+                patients.save(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "03-0000 0002", "ms")),
+                patients.save(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "03-0000 0003", "zh")),
+                patients.save(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "03-0000 0004", "ta")));
+        Patient aminah = story.aminah();
         caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
+        followUp(story);
 
-        // Replies as if they had come back from the follow-up check-ins (levels as the triage would set them).
         Instant now = Instant.now();
-        replies.save(new PatientReply(rosnah, "Sakit dada sejak pagi, rasa sesak sikit", now.minus(Duration.ofMinutes(12)), TriageLevel.RED, "sakit dada"));
-        replies.save(new PatientReply(aminah, "Pening dan berpeluh ni", now.minus(Duration.ofMinutes(40)), TriageLevel.WATCH, "pening"));
-        replies.save(new PatientReply(tan, "药吃完了，要不要再去拿？", now.minus(Duration.ofHours(3)), TriageLevel.REVIEW, null));
-        replies.save(new PatientReply(muthu, "நலம், மருந்து சாப்பிட்டேன்", now.minus(Duration.ofHours(5)), TriageLevel.OK, "நலம்"));
-
         aminahsIntake(aminah, aminahAccount, now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2)));
         approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
         generatedPatients(clinic, doctor, now.minus(Duration.ofDays(60)));
@@ -180,8 +183,46 @@ public class DemoData implements ApplicationRunner {
         medications.save(new MedicationItem(aminah, "Jus peria (bitter gourd)", MedicationItem.Kind.HERB, "Her sister", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(2)));
     }
 
-    private Patient inFollowUp(Patient patient, LocalDate visitDay) {
-        patient.startFollowUp(visitDay);
-        return patients.save(patient);
+    /**
+     * Puts the follow-up part of the demo back as it was seeded, so the next run starts from the same call
+     * list: the clock back to today, every reply and home reading in the demo clinic removed, the four
+     * story patients back on their follow-up day, and their four replies again. Returns the replies seeded.
+     */
+    @Transactional
+    public int resetFollowUp() {
+        clock.reset();
+        UUID clinicId = users.findById(DOCTOR_ID).orElseThrow().getClinic().getId();
+        replies.deleteAll(replies.findByPatientClinicId(clinicId));
+        readings.deleteAll(readings.findByPatientClinicId(clinicId));
+        // Name and phone together: a generated patient may share one of them, never both.
+        Map<String, Patient> byNameAndPhone = patients.findByClinicId(clinicId).stream()
+                .collect(Collectors.toMap(p -> p.getFullName() + "|" + p.getPhone(), p -> p, (a, b) -> a));
+        FollowUpStory story = new FollowUpStory(
+                byNameAndPhone.get("Aminah binti Yusof|03-0000 0001"),
+                byNameAndPhone.get("Rosnah binti Ahmad|03-0000 0002"),
+                byNameAndPhone.get("Tan Kok Hoe|03-0000 0003"),
+                byNameAndPhone.get("Muthu a/l Rajan|03-0000 0004"));
+        return followUp(story);
+    }
+
+    private record FollowUpStory(Patient aminah, Patient rosnah, Patient tan, Patient muthu) {
+    }
+
+    /** The four story patients a few days into follow-up, with replies as the triage would have levelled them. */
+    private int followUp(FollowUpStory story) {
+        LocalDate today = LocalDate.now(clock);
+        story.aminah().startFollowUp(today.minusDays(3));
+        story.rosnah().startFollowUp(today.minusDays(6));
+        story.tan().startFollowUp(today.minusDays(9));
+        story.muthu().startFollowUp(today.minusDays(6));
+        patients.saveAll(List.of(story.aminah(), story.rosnah(), story.tan(), story.muthu()));
+
+        Instant now = clock.instant();
+        List<PatientReply> seeded = replies.saveAll(List.of(
+                new PatientReply(story.rosnah(), "Sakit dada sejak pagi, rasa sesak sikit", now.minus(Duration.ofMinutes(12)), TriageLevel.RED, "sakit dada"),
+                new PatientReply(story.aminah(), "Pening dan berpeluh ni", now.minus(Duration.ofMinutes(40)), TriageLevel.WATCH, "pening"),
+                new PatientReply(story.tan(), "药吃完了，要不要再去拿？", now.minus(Duration.ofHours(3)), TriageLevel.REVIEW, null),
+                new PatientReply(story.muthu(), "நலம், மருந்து சாப்பிட்டேன்", now.minus(Duration.ofHours(5)), TriageLevel.OK, "நலம்")));
+        return seeded.size();
     }
 }

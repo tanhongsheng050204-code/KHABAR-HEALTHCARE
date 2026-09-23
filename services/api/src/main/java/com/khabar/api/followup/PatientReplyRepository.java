@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface PatientReplyRepository extends JpaRepository<PatientReply, UUID> {
 
+    List<PatientReply> findByPatientClinicId(UUID clinicId);
+
     List<PatientReply> findByPatientClinicIdAndHandledAtIsNull(UUID clinicId);
 
     List<PatientReply> findByPatientIdAndHandledAtIsNull(UUID patientId);
