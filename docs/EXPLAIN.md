@@ -74,3 +74,35 @@ Supabase proves who someone is; Khabar decides what they are. A doctor registers
 ### 7. How it is tested
 
 Test first, every time: 103 tests in the agents service and 98 in the API. LLM calls are replaced by small fakes in tests, so the suite runs offline and checks what we send (for example, that IC numbers never reach the model). One API test uses a real tiny HTTP server, because the bug it guards against (Java's HTTP client asking uvicorn to upgrade to HTTP/2 and losing the body) only shows up on the wire.
+
+---
+
+## 23 Sep 2026: Live, and browsable
+
+Khabar now runs on the internet, not only on a laptop.
+
+### 1. One project for the app, one for the backend
+The Next.js app deploys to Vercel on every push to `main` (`.github/workflows/deploy-vercel.yml`). The
+backend is a second Vercel project in Singapore holding both services at once (`services/vercel.json`):
+the Spring Boot API as a **container** built from `services/api/Dockerfile.vercel`, and the FastAPI
+agents as a Python service. `/agents/*` goes to the agents; everything else to the API, which calls the
+agents over the same domain with the internal service key. Both sleep when idle, so the first request
+after a quiet spell takes about 15 seconds.
+
+### 2. A demo that is honest about being a demo
+The deployed API runs `SPRING_PROFILES_ACTIVE=local,demo`: the fictional clinic and the "Doctor view /
+Patient view" sign-in of the `local` profile, but with a real Postgres database (Supabase, Singapore)
+and its own secrets from the environment. `application-demo.yml` overrides the development values in
+the repository, and a test proves a token signed with the repository's development secret is refused
+online, and that only the deployed site may call the API.
+
+### 3. The database, without pasting passwords
+The container's start script turns whatever database the platform provides into a JDBC URL: a Supabase
+session-pooler URI, Neon's `PG*` variables, or a plain `SPRING_DATASOURCE_URL`. The Supabase database is
+connected to the project from Vercel's Marketplace, so its password lives only in Vercel and never in
+the repository or in a chat.
+
+### 4. Every endpoint, readable and callable
+`/docs` serves a browsable reference generated from the code itself, so it cannot drift from what the
+API does: press Authorize, paste a token from `/dev/token`, and try any endpoint as the demo doctor.
+Opening the API's own address in a browser now redirects to the app instead of showing a bare 401.
