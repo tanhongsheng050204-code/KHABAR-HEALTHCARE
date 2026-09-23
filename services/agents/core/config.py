@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-3.6-flash"
     GROQ_API_KEY: Optional[str] = None
     
-    # Neo4j Graph DB (Read-Only Graph-RAG)
-    NEO4J_URI: str = "bolt://localhost:7687"
+    # Neo4j patient graph, read-only. Empty means no graph: the agents use what Spring Boot sends.
+    NEO4J_URI: str = ""
     NEO4J_USERNAME: str = "neo4j"
     NEO4J_PASSWORD: str = "password"
 

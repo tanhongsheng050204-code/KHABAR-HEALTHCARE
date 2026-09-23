@@ -4,7 +4,10 @@ doctor before the consultation. It is built from rules and the drug data, never
 from the model's opinion, so everything in it can be traced to the patient's
 own words. The doctor still confirms each point with the patient.
 """
+import json
 import re
+from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -22,6 +25,8 @@ TOPICS = (
 
 # Remedies worth asking about when the patient does not name what is in them.
 ASK_ABOUT = ("jamu", "herbal", "traditional", "tradisional", "ubat kampung", "supplement", "supplemen", "中药", "草药", "நாட்டு மருந்து")
+
+CONDITIONS_FILE = Path(__file__).resolve().parents[1] / "data" / "conditions.json"
 
 _STRENGTH = r"(?:\s*\d+(?:\.\d+)?\s*(?:mg|mcg|g)\b)?"
 
@@ -48,6 +53,8 @@ class PreVisitReport(BaseModel):
     medicines: list[MedicineMention] = Field(default_factory=list)
     herbs: list[str] = Field(default_factory=list)
     allergies: list[str] = Field(default_factory=list)
+    # Long-term conditions from the conditions answer, in plain English (diabetes, hypertension, ...)
+    conditions: list[str] = Field(default_factory=list)
     ask_about: list[str] = Field(default_factory=list)
     red_flags: list[Flag] = Field(default_factory=list)
 
@@ -108,6 +115,28 @@ def _herbs(text: str) -> list[str]:
     return found
 
 
+@lru_cache(maxsize=1)
+def _condition_data() -> dict:
+    return json.loads(CONDITIONS_FILE.read_text(encoding="utf-8"))
+
+
+def _negated(text: str, start: int) -> bool:
+    """True when a "no" / "tak ada" / "没有" comes just before the word, as in "no diabetes"."""
+    before = text[max(0, start - 14):start].lower()
+    return any(_pattern(n).search(before) for n in _condition_data()["negations"])
+
+
+def _conditions(text: str) -> list[tuple[int, str]]:
+    found = []
+    for condition, words in _condition_data()["conditions"].items():
+        for word in words:
+            match = _pattern(word).search(text)
+            if match and not _negated(text, match.start()):
+                found.append((match.start(), condition))
+                break
+    return found
+
+
 def _unique(items):
     seen, out = set(), []
     for item in items:
@@ -120,8 +149,10 @@ def _unique(items):
 
 def build_previsit_report(messages: list[dict]) -> PreVisitReport:
     answers = _pair(messages)
-    medicines, herbs, allergies, ask_about, flags = [], [], [], [], []
+    medicines, herbs, allergies, conditions, ask_about, flags = [], [], [], [], [], []
     for a in answers:
+        if a.topic == "conditions":
+            conditions += [name for _, name in sorted(_conditions(a.answer))]
         if a.topic == "allergies":
             allergies += [name for _, name in sorted(_allergies(a.answer))]
             continue
@@ -141,6 +172,7 @@ def build_previsit_report(messages: list[dict]) -> PreVisitReport:
         medicines=_unique(medicines),
         herbs=_unique(herbs),
         allergies=_unique(allergies),
+        conditions=_unique(conditions),
         ask_about=_unique(ask_about),
         red_flags=flags,
     )

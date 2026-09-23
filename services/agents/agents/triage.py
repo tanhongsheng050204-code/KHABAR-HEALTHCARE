@@ -79,7 +79,22 @@ def classify_reply(text: str) -> TriageResult:
     return TriageResult(level="review", missed_dose=missed)
 
 
-def triage(text: str, model: Optional[Any] = None) -> TriageResult:
+def _about_patient(context: Optional[dict]) -> str:
+    """What the patient graph knows, for the model: a sweaty diabetic on gliclazide is not the same as anyone sweating."""
+    if not context:
+        return ""
+    lines = []
+    if context.get("conditions"):
+        lines.append("Conditions: " + ", ".join(context["conditions"]))
+    taken = [m["name"] for m in context.get("medicines", [])] + [h["name"] for h in context.get("herbs", [])]
+    if taken:
+        lines.append("Takes: " + ", ".join(taken))
+    if context.get("allergies"):
+        lines.append("Allergies: " + ", ".join(context["allergies"]))
+    return "\n\nWhat the clinic knows about this patient:\n" + "\n".join(lines) if lines else ""
+
+
+def triage(text: str, model: Optional[Any] = None, context: Optional[dict] = None) -> TriageResult:
     """Word lists first, then the model if one is configured. The more urgent level wins."""
     keywords = classify_reply(text)
     if model is None:
@@ -87,7 +102,7 @@ def triage(text: str, model: Optional[Any] = None) -> TriageResult:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     try:
-        verdict = model.invoke([SystemMessage(content=MODEL_PROMPT), HumanMessage(content=scrub(text))])
+        verdict = model.invoke([SystemMessage(content=MODEL_PROMPT + _about_patient(context)), HumanMessage(content=scrub(text))])
     except Exception as e:  # the word lists alone still protect the patient
         log.warning("Triage model failed, using the word lists only: %s", e)
         return keywords

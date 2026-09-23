@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, NotRequired, Optional, TypedDict
+from typing import Any, Callable, Dict, List, NotRequired, Optional, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field
 
+from core import graph
 from core.config import settings
 from core.deid import scrub
 
@@ -89,6 +90,8 @@ def _scripted_turn(state: IntakeState) -> IntakeTurn:
 def _known(context: Dict[str, Any]) -> str:
     """The clinic's record, for the model: confirm these instead of asking from scratch."""
     lines = []
+    if context.get("conditions"):
+        lines.append("Conditions on record: " + ", ".join(context["conditions"]))
     if context.get("medicines"):
         lines.append("Medicines on record: " + ", ".join(context["medicines"]))
     if context.get("allergies"):
@@ -112,16 +115,34 @@ def _to_chat_messages(state: IntakeState) -> list:
     return chat
 
 
-def build_intake_graph(llm: Optional[Any] = None):
-    """Build the intake workflow. `llm` must return an IntakeTurn from .invoke(messages)."""
+def from_graph(context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """The patient graph's context in the shape the intake uses: names of what they take, allergies, conditions."""
+    if not context:
+        return {}
+    taken = [m["name"] for m in context.get("medicines", [])] + [h["name"] for h in context.get("herbs", [])]
+    return {"medicines": taken, "allergies": context.get("allergies", []), "conditions": context.get("conditions", [])}
+
+
+def build_intake_graph(llm: Optional[Any] = None, graph_context: Optional[Callable[[str], Optional[Dict[str, Any]]]] = None):
+    """
+    Build the intake workflow. `llm` must return an IntakeTurn from .invoke(messages). `graph_context`
+    looks the patient up in the patient graph by graph ID; what the clinic sent in the request wins.
+    """
+
+    def load_context(state: IntakeState) -> Dict[str, Any]:
+        sent = state.get("context") or {}
+        known = from_graph(graph_context(state["graph_id"])) if graph_context else {}
+        return {"context": {**{k: v for k, v in known.items() if v}, **{k: v for k, v in sent.items() if v}}}
 
     def process_intake(state: IntakeState) -> Dict[str, Any]:
         turn = llm.invoke(_to_chat_messages(state)) if llm is not None else _scripted_turn(state)
         return {"next_question": turn.next_question, "is_complete": turn.is_complete}
 
     builder = StateGraph(IntakeState)
+    builder.add_node("context", load_context)
     builder.add_node("intake", process_intake)
-    builder.add_edge(START, "intake")
+    builder.add_edge(START, "context")
+    builder.add_edge("context", "intake")
     builder.add_edge("intake", END)
     return builder.compile()
 
@@ -136,4 +157,4 @@ def default_llm():
     return model.with_structured_output(IntakeTurn)
 
 
-intake_graph = build_intake_graph(llm=default_llm())
+intake_graph = build_intake_graph(llm=default_llm(), graph_context=graph.context_or_none)

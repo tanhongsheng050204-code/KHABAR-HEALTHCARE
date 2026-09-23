@@ -123,3 +123,34 @@ def test_shortness_of_breath_matches_the_usual_abbreviation():
     report = {"diagnosis": "Shortness of breath, ?asthma", "plan": "Inhaler", "follow_up": "TCA 1/52"}
     findings = evaluate(draft(report=report, source_text="SOB on exertion x 2/7"))
     assert "symptom_grounding" not in checks(findings)
+
+
+def test_the_graph_adds_what_the_request_left_out_without_repeating_it():
+    from agents.evaluator import CurrentMed, Draft, PatientFacts, with_graph
+    draft = Draft(patient=PatientFacts(allergies=["aspirin"]), current_meds=[CurrentMed(name="Metformin 500mg", source="KK")])
+    context = {"pregnant": True, "allergies": ["penicillin", "aspirin"],
+               "medicines": [{"name": "metformin 500mg", "generic": "metformin", "source": "KK"},
+                             {"name": "Brand A 500mg", "generic": "metformin", "source": "GP clinic"}],
+               "herbs": [{"name": "Jus peria (bitter gourd)", "herb": "bitter gourd", "source": "Family"}]}
+    merged = with_graph(draft, context)
+    assert merged.patient.allergies == ["aspirin", "penicillin"]
+    assert merged.patient.pregnant is True
+    assert [m.name for m in merged.current_meds] == ["Metformin 500mg", "Brand A 500mg"]
+    assert merged.herbs == ["Jus peria (bitter gourd)"]
+
+
+def test_without_graph_context_the_draft_is_unchanged():
+    from agents.evaluator import Draft, with_graph
+    draft = Draft(herbs=["peria"])
+    assert with_graph(draft, None) == draft
+
+
+def test_the_check_endpoint_reads_the_graph_when_given_a_graph_id(monkeypatch):
+    from fastapi.testclient import TestClient
+    from main import app
+    from routers import evaluator as router
+    monkeypatch.setattr(router.graph, "context_or_none", lambda gid: {"allergies": ["penicillin"]} if gid == "g-1" else None)
+    body = {"graph_id": "g-1", "prescription": [{"name": "Amoxicillin", "dose_mg": 500, "times_per_day": 3}],
+            "report": {"diagnosis": "Tonsillitis", "plan": "Antibiotics", "follow_up": "PRN"}}
+    response = TestClient(app).post("/agents/evaluator/check", json=body, headers={"X-Internal-Service-Key": "dev-internal-secret"})
+    assert response.json()["findings"][0]["check"] == "allergy"

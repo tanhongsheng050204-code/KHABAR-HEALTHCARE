@@ -65,3 +65,23 @@ def test_an_empty_chat_gives_an_empty_report():
     report = build_previsit_report([])
     assert report.reason is None
     assert report.answers == [] and report.medicines == [] and report.red_flags == []
+
+
+def test_long_term_conditions_are_named_in_plain_english_whatever_language_they_were_given_in():
+    assert build_previsit_report(AMINAH).conditions == ["diabetes", "hypertension"]
+    zh = build_previsit_report(chat(EN, ["头晕", "我有糖尿病和高血压，还有心脏病"]))
+    assert zh.conditions == ["diabetes", "hypertension", "heart disease"]
+    ta = build_previsit_report(chat(EN, ["Tired", "நீரிழிவு நோய் உண்டு"]))
+    assert ta.conditions == ["diabetes"]
+
+
+def test_a_condition_mentioned_outside_the_conditions_answer_is_not_recorded():
+    report = build_previsit_report(chat(EN, ["My sister has diabetes, I have a cough", "None"]))
+    assert report.conditions == []
+
+
+def test_a_condition_the_patient_says_they_do_not_have_is_not_recorded():
+    report = build_previsit_report(chat(EN, ["Cough", "No diabetes, only high blood pressure"]))
+    assert report.conditions == ["hypertension"]
+    bm = build_previsit_report(chat(MS, ["Batuk", "Tak ada kencing manis"]))
+    assert bm.conditions == []

@@ -1,0 +1,12 @@
+{
+  "_note": "Words patients use for common long-term conditions, in English, BM, Chinese and Tamil, mapped to one plain-English name. The doctor confirms every one at the visit.",
+  "conditions": {
+    "diabetes": ["diabetes", "diabetis", "kencing manis", "糖尿病", "நீரிழிவு", "சர்க்கரை நோய்"],
+    "hypertension": ["high blood pressure", "hypertension", "darah tinggi", "高血压", "இரத்த அழுத்தம்", "ரத்த அழுத்தம்"],
+    "heart disease": ["heart disease", "heart problem", "sakit jantung", "penyakit jantung", "心脏病", "இதய நோய்"],
+    "kidney disease": ["kidney disease", "kidney problem", "sakit buah pinggang", "penyakit buah pinggang", "肾病", "சிறுநீரக நோய்"],
+    "high cholesterol": ["high cholesterol", "kolesterol tinggi", "胆固醇高", "高胆固醇", "கொலஸ்ட்ரால்"],
+    "asthma": ["asthma", "asma", "哮喘", "ஆஸ்துமா"]
+  },
+  "negations": ["no", "not", "don't have", "do not have", "never had", "tak ada", "tiada", "tidak ada", "bukan", "tak", "没有", "无"]
+}

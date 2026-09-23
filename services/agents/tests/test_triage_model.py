@@ -51,3 +51,18 @@ def test_the_reply_is_scrubbed_before_the_model_sees_it():
     sent = " ".join(m.content for m in model.sent)
     assert "590312-10-5566" not in sent
     assert "012-345 6789" not in sent
+
+
+def test_the_model_is_told_what_the_graph_knows_about_the_patient():
+    model = FakeModel("ok")
+    context = {"conditions": ["diabetes"], "medicines": [{"name": "Gliclazide 80mg", "generic": "gliclazide", "source": "GP"}],
+               "allergies": [], "herbs": [{"name": "Jus peria", "herb": "bitter gourd", "source": "Family"}]}
+    triage("berpeluh sikit", model=model, context=context)
+    system = model.sent[0].content
+    assert "diabetes" in system and "Gliclazide 80mg" in system and "Jus peria" in system
+
+
+def test_without_context_the_model_prompt_is_unchanged():
+    model = FakeModel("ok")
+    triage("berpeluh sikit", model=model)
+    assert "What the clinic knows" not in model.sent[0].content

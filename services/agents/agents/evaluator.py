@@ -43,6 +43,8 @@ class Draft(BaseModel):
     report: dict[str, str] = Field(default_factory=dict)
     # The doctor's own notes or transcript. When given, every prescribed drug must be traceable to it.
     source_text: Optional[str] = None
+    # The patient's random graph ID: what the patient graph knows is added to the facts above.
+    graph_id: Optional[str] = None
 
 
 class Finding(BaseModel):
@@ -75,6 +77,21 @@ def generic_of(name: str) -> Optional[str]:
     for generic in data["generics"]:
         if re.search(rf"\b{re.escape(generic)}\b", text):
             return generic
+    return None
+
+
+def written_as(name: str) -> dict[str, Optional[str]]:
+    """The generic, and the brand when the name is a brand: {"generic": "metformin", "brand": "brand a"}."""
+    text = _normalise(name)
+    return {"generic": generic_of(name), "brand": text if text in _data()["brands"] else None}
+
+
+def herb_of(name: str) -> Optional[str]:
+    """The herb in the herb list that a remedy contains, by its first listed name, or None."""
+    text = name.lower()
+    for rule in _data()["herbs"]:
+        if any(n in text for n in rule["names"]):
+            return rule["names"][0]
     return None
 
 
@@ -196,6 +213,24 @@ def _check_completeness(draft: Draft) -> list[Finding]:
     if not missing:
         return []
     return [Finding(check="completeness", severity="WARN", detail=f"Report is missing: {', '.join(missing)}.")]
+
+
+def with_graph(draft: Draft, context: Optional[dict]) -> Draft:
+    """
+    Adds what the patient graph knows and the request left out: allergies, pregnancy, medicines from
+    other clinics and herbs. It only ever adds, so the graph can raise a finding but never hide one.
+    """
+    if not context:
+        return draft
+    allergies = list(draft.patient.allergies)
+    allergies += [a for a in context.get("allergies", []) if a.lower() not in {x.lower() for x in allergies}]
+    meds = list(draft.current_meds)
+    meds += [CurrentMed(name=m["name"], source=m.get("source") or "unknown") for m in context.get("medicines", [])
+             if m["name"].lower() not in {x.name.lower() for x in meds}]
+    herbs = list(draft.herbs)
+    herbs += [h["name"] for h in context.get("herbs", []) if h["name"].lower() not in {x.lower() for x in herbs}]
+    patient = PatientFacts(allergies=allergies, pregnant=draft.patient.pregnant or bool(context.get("pregnant")))
+    return draft.model_copy(update={"patient": patient, "current_meds": meds, "herbs": herbs})
 
 
 def evaluate(draft: Draft) -> list[Finding]:

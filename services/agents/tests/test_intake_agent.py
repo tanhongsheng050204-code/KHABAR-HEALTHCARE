@@ -106,3 +106,40 @@ def test_the_model_is_told_what_the_clinic_already_knows():
     run_with(build_intake_graph(llm=llm), [{"role": "user", "content": "Pening"}], KNOWN)
     system = llm.sent[0].content
     assert "Metformin 500mg" in system and "penicillin" in system and "T2DM" in system
+
+
+GRAPH = {
+    "conditions": ["diabetes", "hypertension"],
+    "allergies": ["penicillin"],
+    "medicines": [{"name": "Metformin 500mg", "generic": "metformin", "source": "Klinik Kesihatan"},
+                  {"name": "Brand A 500mg", "generic": "metformin", "source": "GP clinic"}],
+    "herbs": [{"name": "Jus peria (bitter gourd)", "herb": "bitter gourd", "source": "Her sister"}],
+    "last_visit": None, "recent_symptoms": [], "recent_readings": [], "pregnant": False,
+}
+
+
+def test_the_intake_looks_up_the_patient_graph_by_graph_id_when_the_clinic_sent_nothing():
+    asked = []
+    graph = build_intake_graph(llm=None, graph_context=lambda gid: asked.append(gid) or GRAPH)
+    result = run_with(graph, TWO_ANSWERS, {})
+    assert asked == ["g-123"]
+    assert "Brand A 500mg" in result["next_question"] and "Jus peria (bitter gourd)" in result["next_question"]
+
+
+def test_what_the_clinic_sent_wins_over_the_graph():
+    graph = build_intake_graph(llm=None, graph_context=lambda gid: GRAPH)
+    result = run_with(graph, TWO_ANSWERS, {"medicines": ["Amlodipine 5mg"]})
+    assert "Amlodipine 5mg" in result["next_question"] and "Brand A" not in result["next_question"]
+
+
+def test_the_model_is_told_the_conditions_on_record_from_the_graph():
+    llm = RecordingLLM()
+    run_with(build_intake_graph(llm=llm, graph_context=lambda gid: GRAPH), [{"role": "user", "content": "Pening"}], {})
+    system = llm.sent[0].content
+    assert "Conditions on record: diabetes, hypertension" in system
+    assert "g-123" not in system
+
+
+def test_without_a_graph_the_intake_runs_as_before():
+    result = run_with(build_intake_graph(llm=None, graph_context=lambda gid: None), TWO_ANSWERS, {})
+    assert "jamu" in result["next_question"].lower()
