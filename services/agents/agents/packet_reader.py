@@ -13,7 +13,7 @@ from core.config import settings
 
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+GEMINI_PATH = "/v1beta/models/{model}:generateContent"
 
 
 class PacketCandidate(BaseModel):
@@ -68,7 +68,7 @@ def read_packet(image: bytes, mime_type: str, api_key: Optional[str] = None,
     client = client or httpx.Client(timeout=45)
     try:
         response = client.post(
-            GEMINI_URL.format(model=model),
+            settings.GEMINI_API_BASE.rstrip("/") + GEMINI_PATH.format(model=model),
             headers={"x-goog-api-key": api_key},
             json=payload,
         )

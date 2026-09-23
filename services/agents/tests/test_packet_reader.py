@@ -74,3 +74,10 @@ def test_endpoint_returns_provider_unavailable_without_persisting_upload(monkeyp
     response = client.post("/agents/packet/read?mime_type=image/jpeg", content=b"fake-jpeg",
                            headers={**KEY, "X-Image-Consent-Confirmed": "true"})
     assert response.status_code == 503
+
+
+def test_the_provider_address_can_point_at_a_local_stand_in(monkeypatch):
+    monkeypatch.setattr("agents.packet_reader.settings.GEMINI_API_BASE", "http://localhost:8099")
+    captured = {}
+    read_packet(b"fake-jpeg-bytes", "image/jpeg", api_key="test-key", model="m", client=provider_stub(captured))
+    assert captured["url"] == "http://localhost:8099/v1beta/models/m:generateContent"

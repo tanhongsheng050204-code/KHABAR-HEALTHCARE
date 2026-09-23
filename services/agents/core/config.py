@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     # External AI APIs
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3.6-flash"
+    # Where the packet reader sends images. Only changed to point at a local stand-in for testing.
+    GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com"
     GROQ_API_KEY: Optional[str] = None
     
     # Neo4j patient graph, read-only. Empty means no graph: the agents use what Spring Boot sends.
