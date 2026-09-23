@@ -31,6 +31,10 @@ management:
   endpoint:
     health:
       show-details: never
+  # The patient graph is optional context: AuraDB pausing must not mark the API as down
+  health:
+    neo4j:
+      enabled: false
 
 khabar:
   security:
@@ -66,6 +70,11 @@ khabar:
   # Leave empty to switch device readings off.
   favoriot:
     device-secret: ${FAVORIOT_DEVICE_SECRET:}
+  # The patient graph (Neo4j / AuraDB): de-identified facts for the agents. Leave NEO4J_URI empty to switch it off.
+  graph:
+    uri: ${NEO4J_URI:}
+    username: ${NEO4J_USERNAME:neo4j}
+    password: ${NEO4J_PASSWORD:}
   # Lets the very first doctor create a clinic (POST /api/onboarding/clinic). Leave empty to switch that off.
   onboarding:
     bootstrap-token: ${KHABAR_BOOTSTRAP_TOKEN:}

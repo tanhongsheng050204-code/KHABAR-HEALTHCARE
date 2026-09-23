@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static com.khabar.api.support.TestTokens.bearer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,7 +72,7 @@ class CallListTest {
     }
 
     void triageSays(String level, String matched) {
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", level, "matched", matched));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", level, "matched", matched));
     }
 
     ResultActions reply(AppUser as, String text) throws Exception {
@@ -95,12 +96,13 @@ class CallListTest {
         triageSays("watch", "pening");
         reply(aminahAccount, "Aminah sini, IC 590312-10-5566. Pening.").andExpect(status().isOk());
         verify(agents).triageReply(org.mockito.ArgumentMatchers.argThat(text ->
-                !text.contains("Aminah") && !text.contains("590312-10-5566") && text.contains("Pening")));
+                !text.contains("Aminah") && !text.contains("590312-10-5566") && text.contains("Pening")),
+                org.mockito.ArgumentMatchers.eq(aminah.getGraphId().toString()));
     }
 
     @Test
     void whenTheAgentsServiceIsDownTheReplyStillGoesToAPerson() throws Exception {
-        when(agents.triageReply(anyString())).thenThrow(new IllegalStateException("agents down"));
+        when(agents.triageReply(anyString(), any())).thenThrow(new IllegalStateException("agents down"));
         reply(aminahAccount, "Pening").andExpect(status().isOk()).andExpect(jsonPath("$.level").value("REVIEW"));
         callList(doctor).andExpect(jsonPath("$.items[0].patientId").value(aminah.getId().toString()))
                 .andExpect(jsonPath("$.items[0].level").value("REVIEW"));

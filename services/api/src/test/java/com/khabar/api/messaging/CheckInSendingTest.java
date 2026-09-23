@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import static com.khabar.api.support.TestTokens.bearer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -128,7 +129,7 @@ class CheckInSendingTest {
 
     @Test
     void aReplyAnswersTheCheckInAndClearsTheNoReplyFlag() throws Exception {
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "ok", "matched", "sihat"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "ok", "matched", "sihat"));
         planner.startFollowUp(aminah, null, today().minusDays(1), false);
         sender.sendDue();
         clock.advance(Duration.ofDays(3));

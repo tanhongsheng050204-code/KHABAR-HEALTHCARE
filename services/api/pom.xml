@@ -64,7 +64,12 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Testing -->
+        <!-- The patient graph (Neo4j / AuraDB). Spring Boot writes to it; the agents only read. -->
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+        </dependency>
+
         <!-- Browsable API reference at /docs -->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -81,6 +86,20 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- A real Neo4j inside the test JVM, so graph writes are tested without Docker -->
+        <dependency>
+            <groupId>org.neo4j.test</groupId>
+            <artifactId>neo4j-harness</artifactId>
+            <version>5.23.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Only its HTTP server needs this, and Hibernate would pick it up and fail on missing javax.xml.bind -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

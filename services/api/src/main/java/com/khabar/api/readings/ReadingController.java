@@ -5,6 +5,7 @@ import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.followup.TriageLevel;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -52,10 +53,11 @@ public class ReadingController {
     private final AuditLog auditLog;
     private final AdjustableClock clock;
     private final String deviceSecret;
+    private final PatientGraphSync graphSync;
 
     public ReadingController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, ReadingRepository readings,
                              DeviceLinkRepository devices, AuditLog auditLog, AdjustableClock clock,
-                             @Value("${khabar.favoriot.device-secret:}") String deviceSecret) {
+                             @Value("${khabar.favoriot.device-secret:}") String deviceSecret, PatientGraphSync graphSync) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
@@ -64,6 +66,7 @@ public class ReadingController {
         this.auditLog = auditLog;
         this.clock = clock;
         this.deviceSecret = deviceSecret;
+        this.graphSync = graphSync;
     }
 
     public record ReadingRequest(Double glucose, Integer systolic, Integer diastolic) {
@@ -89,7 +92,9 @@ public class ReadingController {
             case CAREGIVER -> "caregiver";
             case DOCTOR -> "clinic";
         };
-        return ReadingView.of(readings.save(build(patient, request.glucose(), request.systolic(), request.diastolic(), source)));
+        Reading saved = readings.save(build(patient, request.glucose(), request.systolic(), request.diastolic(), source));
+        graphSync.changed(patient.getId());
+        return ReadingView.of(saved);
     }
 
     @GetMapping("/api/patients/{patientId}/readings")
@@ -142,6 +147,7 @@ public class ReadingController {
         JsonNode data = body.path("data");
         return devices.findById(deviceId).map(link -> {
             readings.save(build(link.getPatient(), number(data, "glucose"), whole(data, "systolic"), whole(data, "diastolic"), "favoriot"));
+            graphSync.changed(link.getPatient().getId());
             return "OK";
         }).orElseGet(() -> {
             log.info("Reading from a device not linked to any patient; ignored.");

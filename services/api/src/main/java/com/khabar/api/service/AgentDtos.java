@@ -49,7 +49,9 @@ public final class AgentDtos {
             @JsonProperty("current_meds") List<CurrentMed> currentMeds,
             List<String> herbs,
             Map<String, String> report,
-            @JsonProperty("source_text") String sourceText) {
+            @JsonProperty("source_text") String sourceText,
+            // The patient's random graph ID: the evaluator adds what the patient graph knows
+            @JsonProperty("graph_id") String graphId) {
     }
 
     public record FindingDto(String check, String severity, String detail) {
@@ -87,7 +89,8 @@ public final class AgentDtos {
             List<String> herbs,
             List<String> allergies,
             @JsonAlias("ask_about") List<String> askAbout,
-            @JsonAlias("red_flags") List<IntakeFlag> redFlags) {
+            @JsonAlias("red_flags") List<IntakeFlag> redFlags,
+            List<String> conditions) {
     }
 
     /** A doctor-approved answer as offered to the matcher: an id and when to use it, never the answer text. */
@@ -102,5 +105,13 @@ public final class AgentDtos {
     }
 
     public record ReconcileResult(List<FindingDto> findings) {
+    }
+
+    /** A medicine name as the drug data reads it: its generic, and the brand it was written as, if any. */
+    public record WrittenAs(String generic, String brand) {
+    }
+
+    /** Generics for medicine names and herbs for remedy names, for the patient graph. Unknown names map to null. */
+    public record Normalised(Map<String, WrittenAs> medicines, Map<String, String> herbs) {
     }
 }

@@ -30,6 +30,7 @@ import java.util.UUID;
 import static com.khabar.api.support.TestTokens.bearer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -120,7 +121,7 @@ class ApprovedAnswersTest {
     @Test
     void aQuestionWithAnApprovedAnswerGetsTheDoctorsOwnWordsAndLeavesTheCallList() throws Exception {
         String answerId = approveMissedDose();
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
         when(agents.matchAnswer(anyString(), anyList())).thenReturn(answerId);
 
         reply("Semalam saya lupa makan ubat malam").andExpect(status().isOk())
@@ -137,7 +138,7 @@ class ApprovedAnswersTest {
     @Test
     void aRedFlagIsNeverAnsweredAutomaticallyButThePatientIsToldWhatToDoNow() throws Exception {
         approveMissedDose();
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "red", "matched", "sakit dada"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "red", "matched", "sakit dada"));
 
         reply("Sakit dada, lupa makan ubat").andExpect(jsonPath("$.level").value("RED"));
 
@@ -152,7 +153,7 @@ class ApprovedAnswersTest {
     @Test
     void aQuestionWithNoApprovedAnswerGoesToAPersonAndThePatientIsToldSo() throws Exception {
         approveMissedDose();
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 
         reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist());
 
@@ -165,7 +166,7 @@ class ApprovedAnswersTest {
         String answerId = approveMissedDose();
         mvc.perform(delete("/api/clinic/answers/{id}", answerId).header("Authorization", bearer(doctor.getId())))
                 .andExpect(status().isOk());
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 
         reply("Saya lupa makan ubat");
 
@@ -176,7 +177,7 @@ class ApprovedAnswersTest {
     void onlyAnswersWrittenInThePatientsLanguageOrEnglishAreOffered() throws Exception {
         approveMissedDose();
         approve(doctor, Map.of("title", "Chinese only", "triggers", List.of("药"), "texts", Map.of("zh", "请回诊所。")));
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 
         reply("Saya lupa makan ubat");
 

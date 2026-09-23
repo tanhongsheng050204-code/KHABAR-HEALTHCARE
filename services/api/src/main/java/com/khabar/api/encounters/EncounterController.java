@@ -4,6 +4,7 @@ import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.followup.CheckInPlanner;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -66,11 +67,12 @@ public class EncounterController {
     private final PatientMessages messages;
     private final MedicationList medications;
     private final IntakeRecords intakes;
+    private final PatientGraphSync graphSync;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
                                AuditLog auditLog, AdjustableClock clock, PatientMessages messages,
-                               MedicationList medications, IntakeRecords intakes) {
+                               MedicationList medications, IntakeRecords intakes, PatientGraphSync graphSync) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -82,6 +84,7 @@ public class EncounterController {
         this.messages = messages;
         this.medications = medications;
         this.intakes = intakes;
+        this.graphSync = graphSync;
     }
 
     public record NotesRequest(String notes, Boolean fasting) {
@@ -192,6 +195,7 @@ public class EncounterController {
         Patient patient = encounter.getPatient();
         checkIns.startFollowUp(patient, encounter.getId(), LocalDate.now(clock), encounter.isFasting());
         storeSummary(encounter, patient);
+        graphSync.changed(patient.getId());
         return view(encounter);
     }
 
@@ -228,7 +232,7 @@ public class EncounterController {
             }
         }
         return new AgentDtos.SafetyDraft(new AgentDtos.PatientFacts(allergies, patient.isPregnant()), rx,
-                currentMeds, herbs, report, Redactor.redact(nullToEmpty(encounter.getNotes()), patient));
+                currentMeds, herbs, report, Redactor.redact(nullToEmpty(encounter.getNotes()), patient), patient.getGraphId().toString());
     }
 
     private EncounterView guarded(Runnable change, Encounter encounter) {

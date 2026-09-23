@@ -25,6 +25,7 @@ import java.util.HexFormat;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -55,7 +56,7 @@ class WhatsAppWebhookTest {
         // A number unique to this test run, written the way a clinic would type it
         String local = "01" + (100_000_00 + (int) (Math.random() * 899_999_99));
         aminah = patients.save(new Patient(clinic, null, "Aminah binti Yusof", "590312-10-5566", local, "ms"));
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "watch", "matched", "pening"));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "watch", "matched", "pening"));
     }
 
     String whatsAppNumber(Patient p) {

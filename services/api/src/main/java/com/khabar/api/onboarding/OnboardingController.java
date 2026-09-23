@@ -1,6 +1,7 @@
 package com.khabar.api.onboarding;
 
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
@@ -51,10 +52,11 @@ public class OnboardingController {
     private final InviteRepository invites;
     private final AdjustableClock clock;
     private final String bootstrapToken;
+    private final PatientGraphSync graphSync;
 
     public OnboardingController(CurrentUser currentUser, AppUserRepository users, ClinicRepository clinics, PatientRepository patients,
                                 CaregiverLinkRepository caregiverLinks, InviteRepository invites, AdjustableClock clock,
-                                @Value("${khabar.onboarding.bootstrap-token:}") String bootstrapToken) {
+                                @Value("${khabar.onboarding.bootstrap-token:}") String bootstrapToken, PatientGraphSync graphSync) {
         this.currentUser = currentUser;
         this.users = users;
         this.clinics = clinics;
@@ -63,6 +65,7 @@ public class OnboardingController {
         this.invites = invites;
         this.clock = clock;
         this.bootstrapToken = bootstrapToken;
+        this.graphSync = graphSync;
     }
 
     public record RegisterPatientRequest(String fullName, String icNumber, String phone, String preferredLanguage,
@@ -103,6 +106,7 @@ public class OnboardingController {
         patient.recordAllergies(request.allergies());
         patient.setPregnant(Boolean.TRUE.equals(request.pregnant()));
         patients.save(patient);
+        graphSync.changed(patient.getId());
         InviteCode code = issue(Invite.Kind.PATIENT_ACCOUNT, doctor.getClinic(), patient, null, doctor.getId());
         return new RegisteredPatient(patient.getId(), code.inviteCode(), code.expiresAt());
     }

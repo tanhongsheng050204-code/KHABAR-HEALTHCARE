@@ -5,7 +5,9 @@ a random graph ID: no name, IC number or phone number is ever in it.
 
 Without NEO4J_URI there is no graph, and every agent works from what Spring Boot sends it instead.
 """
+import json
 import logging
+from pathlib import Path
 from typing import Any, Optional
 
 import neo4j
@@ -14,24 +16,18 @@ from core.config import settings
 
 log = logging.getLogger(__name__)
 
-PATIENT = "MATCH (p:Patient {graph_id: $graph_id}) RETURN p.pregnant AS pregnant"
-CONDITIONS = ("MATCH (:Patient {graph_id: $graph_id})-[:HAS_CONDITION]->(c:Condition) "
-              "RETURN c.name AS name ORDER BY name")
-ALLERGIES = ("MATCH (:Patient {graph_id: $graph_id})-[:ALLERGIC_TO]->(a:Allergy) "
-             "RETURN a.name AS name ORDER BY name")
-MEDICINES = ("MATCH (:Patient {graph_id: $graph_id})-[t:TAKES]->(m:Medication) "
-             "RETURN t.name AS name, m.generic AS generic, m.recognised AS recognised, t.source AS source "
-             "ORDER BY t.since, name")
-HERBS = ("MATCH (:Patient {graph_id: $graph_id})-[u:USES]->(h:Herb) "
-         "RETURN u.name AS name, h.name AS herb, u.source AS source ORDER BY u.since, name")
-LAST_VISIT = ("MATCH (:Patient {graph_id: $graph_id})-[:HAD]->(e:Encounter) "
-              "WITH e ORDER BY e.at DESC LIMIT 1 "
-              "OPTIONAL MATCH (e)-[:PRESCRIBED]->(m:Medication) "
-              "RETURN toString(e.at) AS at, collect(m.generic) AS prescribed")
-SYMPTOMS = ("MATCH (:Patient {graph_id: $graph_id})-[r:REPORTED]->(s:Symptom) "
-            "RETURN s.word AS word, r.level AS level, toString(r.at) AS at ORDER BY r.at DESC LIMIT 10")
-READINGS = ("MATCH (:Patient {graph_id: $graph_id})-[:RECORDED]->(r:Reading) "
-            "RETURN r.kind AS kind, r.value AS value, r.level AS level, toString(r.at) AS at ORDER BY r.at DESC LIMIT 10")
+# Shared with Spring Boot's writer test, which runs each one against a real Neo4j.
+QUERIES_FILE = Path(__file__).resolve().parents[1] / "data" / "graph_queries.json"
+_QUERIES = json.loads(QUERIES_FILE.read_text(encoding="utf-8"))
+
+PATIENT = _QUERIES["patient"]
+CONDITIONS = _QUERIES["conditions"]
+ALLERGIES = _QUERIES["allergies"]
+MEDICINES = _QUERIES["medicines"]
+HERBS = _QUERIES["herbs"]
+LAST_VISIT = _QUERIES["last_visit"]
+SYMPTOMS = _QUERIES["symptoms"]
+READINGS = _QUERIES["readings"]
 
 READ_QUERIES = (PATIENT, CONDITIONS, ALLERGIES, MEDICINES, HERBS, LAST_VISIT, SYMPTOMS, READINGS)
 

@@ -1,6 +1,7 @@
 package com.khabar.api.followup;
 
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.messaging.Messenger;
 import com.khabar.api.messaging.PatientMessages;
 import com.khabar.api.patients.Patient;
@@ -35,15 +36,17 @@ public class FollowUpService {
     private final AgentClientService agents;
     private final PatientMessages messages;
     private final AdjustableClock clock;
+    private final PatientGraphSync graphSync;
 
     public FollowUpService(PatientReplyRepository replies, CheckInRepository checkIns, ApprovedAnswerRepository answers,
-                           AgentClientService agents, PatientMessages messages, AdjustableClock clock) {
+                           AgentClientService agents, PatientMessages messages, AdjustableClock clock, PatientGraphSync graphSync) {
         this.replies = replies;
         this.checkIns = checkIns;
         this.answers = answers;
         this.agents = agents;
         this.messages = messages;
         this.clock = clock;
+        this.graphSync = graphSync;
     }
 
     /** What happened to a reply: its triage level, and the approved answer the patient was sent, if any. */
@@ -57,7 +60,7 @@ public class FollowUpService {
         String matched = null;
         boolean missedDose = false;
         try {
-            Map<String, Object> result = agents.triageReply(redacted);
+            Map<String, Object> result = agents.triageReply(redacted, patient.getGraphId().toString());
             level = TriageLevel.fromAgent(result == null ? null : result.get("level"));
             matched = result == null || result.get("matched") == null ? null : result.get("matched").toString();
             missedDose = result != null && Boolean.TRUE.equals(result.get("missed_dose"));
@@ -71,6 +74,7 @@ public class FollowUpService {
         }
         // save() merges (the id is set in the constructor), so keep the managed copy it returns
         PatientReply reply = replies.save(fresh);
+        graphSync.changed(patient.getId());
         checkIns.findByPatientIdAndStatus(patient.getId(), CheckIn.Status.SENT).stream()
                 .max(Comparator.comparing(CheckIn::getDueDate))
                 .ifPresent(CheckIn::markAnswered);

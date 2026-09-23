@@ -3,6 +3,7 @@ package com.khabar.api.intake;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -52,10 +53,11 @@ public class IntakeController {
     private final AuditLog auditLog;
     private final AdjustableClock clock;
     private final MedicationList medications;
+    private final PatientGraphSync graphSync;
 
     public IntakeController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AgentClientService agents,
                             IntakeSessionRepository sessions, IntakeRecords records, AuditLog auditLog, AdjustableClock clock,
-                            MedicationList medications) {
+                            MedicationList medications, PatientGraphSync graphSync) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
@@ -65,6 +67,7 @@ public class IntakeController {
         this.auditLog = auditLog;
         this.clock = clock;
         this.medications = medications;
+        this.graphSync = graphSync;
     }
 
     public record ChatMessage(String role, String content) {
@@ -152,6 +155,7 @@ public class IntakeController {
             if (report != null) {
                 records.addToMedicationList(patient, report, user, now);
             }
+            graphSync.changed(patient.getId());
         }
         sessions.save(session);
     }

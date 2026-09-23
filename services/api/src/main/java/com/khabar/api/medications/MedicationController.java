@@ -3,6 +3,7 @@ package com.khabar.api.medications;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -43,15 +44,18 @@ public class MedicationController {
     private final MedicationItemRepository items;
     private final AuditLog auditLog;
     private final AdjustableClock clock;
+    private final PatientGraphSync graphSync;
 
     public MedicationController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy,
-                                MedicationItemRepository items, AuditLog auditLog, AdjustableClock clock) {
+                                MedicationItemRepository items, AuditLog auditLog, AdjustableClock clock,
+                                PatientGraphSync graphSync) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
         this.items = items;
         this.auditLog = auditLog;
         this.clock = clock;
+        this.graphSync = graphSync;
     }
 
     public record AddRequest(String name, MedicationItem.Kind kind, String source) {
@@ -92,7 +96,9 @@ public class MedicationController {
         if (source != null && source.length() > MAX_LENGTH) {
             source = source.substring(0, MAX_LENGTH);
         }
-        return ItemView.of(items.save(new MedicationItem(patient, name, kind, source, user.getRole(), user.getId(), clock.instant())));
+        MedicationItem saved = items.save(new MedicationItem(patient, name, kind, source, user.getRole(), user.getId(), clock.instant()));
+        graphSync.changed(patient.getId());
+        return ItemView.of(saved);
     }
 
     @DeleteMapping("/{itemId}")
@@ -103,6 +109,7 @@ public class MedicationController {
                 .filter(i -> i.getPatient().getId().equals(patient.getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         item.stop(clock.instant());
+        graphSync.changed(patient.getId());
         return ItemView.of(item);
     }
 

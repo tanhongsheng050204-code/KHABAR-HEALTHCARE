@@ -79,7 +79,8 @@ class IntakeSessionTest {
             List.of("peria"),
             List.of("penicillin"),
             List.of("jamu"),
-            List.of(new IntakeFlag("watch", "pening")));
+            List.of(new IntakeFlag("watch", "pening")),
+            List.of("diabetes"));
 
     @BeforeEach
     void setUp() {

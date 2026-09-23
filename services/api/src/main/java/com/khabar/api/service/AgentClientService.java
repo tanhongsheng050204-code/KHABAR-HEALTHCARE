@@ -81,12 +81,18 @@ public class AgentClientService {
                 .body(AgentDtos.SummaryResult.class);
     }
 
-    /** Returns {"level": "red|watch|ok|review", "matched": word or null}. Throws if the agents service is unreachable. */
+    /**
+     * Returns {"level": "red|watch|ok|review", "matched": word or null}. Throws if the agents service is unreachable.
+     * graphId lets the triage model read the reply knowing the patient's conditions and medicines; it may be null.
+     */
     @SuppressWarnings("unchecked")
-    public Map<String, Object> triageReply(String text) {
+    public Map<String, Object> triageReply(String text, String graphId) {
+        java.util.HashMap<String, Object> body = new java.util.HashMap<>();
+        body.put("text", text);
+        body.put("graph_id", graphId);
         return restClient.post()
                 .uri("/agents/followup/triage")
-                .body(Map.of("text", text))
+                .body(body)
                 .retrieve()
                 .body(Map.class);
     }
@@ -146,5 +152,23 @@ public class AgentClientService {
                 .retrieve()
                 .body(Map.class);
         return result == null || result.get("text") == null ? "" : result.get("text").toString();
+    }
+
+    /** The generics of medicine names and the herbs in remedy names, from the agents' drug data. */
+    public AgentDtos.Normalised normalise(List<String> medicines, List<String> herbs) {
+        return restClient.post()
+                .uri("/agents/evaluator/normalise")
+                .body(Map.of("medicines", medicines, "herbs", herbs))
+                .retrieve()
+                .body(AgentDtos.Normalised.class);
+    }
+
+    /** What the patient graph holds for one patient, as the agents read it. Throws if there is no graph or no such patient. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> graphContext(String graphId) {
+        return restClient.get()
+                .uri("/agents/graph/{graphId}/context", graphId)
+                .retrieve()
+                .body(Map.class);
     }
 }

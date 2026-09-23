@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import static com.khabar.api.support.TestTokens.bearer;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -77,7 +78,7 @@ class MissedDoseTest {
     void aMissedDoseGetsTheApprovedAnswerAndStillShowsOnTheCallList() throws Exception {
         ApprovedAnswer missed = answers.save(new ApprovedAnswer(doctor.getClinic(), "Missed a dose", List.of("lupa makan ubat"),
                 Map.of("ms", "Ambil sebaik sahaja teringat."), doctor, clock.instant()));
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review", "missed_dose", true));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review", "missed_dose", true));
         when(agents.matchAnswer(anyString(), anyList())).thenReturn(missed.getId().toString());
 
         aminahReplies("Semalam lupa makan ubat").andExpect(jsonPath("$.answer").value("Ambil sebaik sahaja teringat."));
@@ -89,7 +90,7 @@ class MissedDoseTest {
 
     @Test
     void aCheerfulReplyThatAdmitsAMissedDoseIsStillListed() throws Exception {
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "ok", "matched", "ok", "missed_dose", true));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "ok", "matched", "ok", "missed_dose", true));
 
         aminahReplies("OK je, cuma lupa makan ubat semalam");
 
@@ -104,7 +105,7 @@ class MissedDoseTest {
         planner.startFollowUp(tan, null, today.minusDays(1), false);
         sender.sendDue();
         clock.advance(Duration.ofDays(3));
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review", "missed_dose", true));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review", "missed_dose", true));
 
         aminahReplies("Lupa makan ubat");
 
@@ -114,7 +115,7 @@ class MissedDoseTest {
 
     @Test
     void callingThePatientClearsTheMissedDose() throws Exception {
-        when(agents.triageReply(anyString())).thenReturn(Map.of("level", "review", "missed_dose", true));
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review", "missed_dose", true));
         aminahReplies("Lupa makan ubat");
 
         mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId()).header("Authorization", bearer(doctor.getId())));

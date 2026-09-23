@@ -11,6 +11,7 @@ import com.khabar.api.followup.ApprovedAnswerRepository;
 import com.khabar.api.followup.PatientReply;
 import com.khabar.api.followup.PatientReplyRepository;
 import com.khabar.api.followup.TriageLevel;
+import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.intake.IntakeRecords;
 import com.khabar.api.intake.IntakeSession;
 import com.khabar.api.intake.IntakeSessionRepository;
@@ -65,11 +66,13 @@ public class DemoData implements ApplicationRunner {
     private final ApprovedAnswerRepository answers;
     private final ReadingRepository readings;
     private final AdjustableClock clock;
+    private final PatientGraphSync graphSync;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
                     MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
-                    ApprovedAnswerRepository answers, ReadingRepository readings, AdjustableClock clock) {
+                    ApprovedAnswerRepository answers, ReadingRepository readings, AdjustableClock clock,
+                    PatientGraphSync graphSync) {
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -81,6 +84,7 @@ public class DemoData implements ApplicationRunner {
         this.answers = answers;
         this.readings = readings;
         this.clock = clock;
+        this.graphSync = graphSync;
     }
 
     @Override
@@ -107,6 +111,7 @@ public class DemoData implements ApplicationRunner {
         aminahsIntake(aminah, aminahAccount, now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2)));
         approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
         generatedPatients(clinic, doctor, now.minus(Duration.ofDays(60)));
+        patients.findByClinicId(clinic.getId()).forEach(p -> graphSync.changed(p.getId()));
     }
 
     /** 26 more made-up patients so the clinic looks like a clinic: not in follow-up, each with what they take. */
@@ -171,7 +176,7 @@ public class DemoData implements ApplicationRunner {
         transcript.add(Map.of("role", "assistant", "content", "Terima kasih. Doktor akan baca maklumat ini sebelum berjumpa."));
         PreVisitReport report = new PreVisitReport(chat.get(0)[2], answers,
                 List.of(new MedicineMention("Metformin", "metformin"), new MedicineMention("Brand A 500mg", "metformin")),
-                List.of("peria"), List.of(), List.of(), List.of(new IntakeFlag("watch", "pening")));
+                List.of("peria"), List.of(), List.of(), List.of(new IntakeFlag("watch", "pening")), List.of("diabetes", "hypertension"));
 
         IntakeSession session = new IntakeSession(aminah, when.minus(Duration.ofMinutes(6)));
         session.update(intakeRecords.toJson(transcript), when);
@@ -192,8 +197,12 @@ public class DemoData implements ApplicationRunner {
     public int resetFollowUp() {
         clock.reset();
         UUID clinicId = users.findById(DOCTOR_ID).orElseThrow().getClinic().getId();
-        replies.deleteAll(replies.findByPatientClinicId(clinicId));
-        readings.deleteAll(readings.findByPatientClinicId(clinicId));
+        List<PatientReply> oldReplies = replies.findByPatientClinicId(clinicId);
+        List<com.khabar.api.readings.Reading> oldReadings = readings.findByPatientClinicId(clinicId);
+        oldReplies.forEach(r -> graphSync.changed(r.getPatient().getId()));
+        oldReadings.forEach(r -> graphSync.changed(r.getPatient().getId()));
+        replies.deleteAll(oldReplies);
+        readings.deleteAll(oldReadings);
         // Name and phone together: a generated patient may share one of them, never both.
         Map<String, Patient> byNameAndPhone = patients.findByClinicId(clinicId).stream()
                 .collect(Collectors.toMap(p -> p.getFullName() + "|" + p.getPhone(), p -> p, (a, b) -> a));
@@ -216,6 +225,7 @@ public class DemoData implements ApplicationRunner {
         story.tan().startFollowUp(today.minusDays(9));
         story.muthu().startFollowUp(today.minusDays(6));
         patients.saveAll(List.of(story.aminah(), story.rosnah(), story.tan(), story.muthu()));
+        List.of(story.aminah(), story.rosnah(), story.tan(), story.muthu()).forEach(p -> graphSync.changed(p.getId()));
 
         Instant now = clock.instant();
         List<PatientReply> seeded = replies.saveAll(List.of(
