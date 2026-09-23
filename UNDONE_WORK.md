@@ -38,12 +38,12 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 1.2 Complete the real Supabase sign-in journey
 
-**Status:** Backend JWT validation and role onboarding are implemented; the visible sign-in experience still relies on local/demo-token paths for the documented demo.
+**Status:** Built and wired on the live site (23 Sep): the web project has the Supabase URL and publishable key, Supabase has email sign-in on, and the live API refuses forged or missing tokens. Not yet done: a real sign-in for each role, which needs someone to receive the email code. Doctors need a login created in the Supabase dashboard (the screen has no staff sign-up), then link it with a doctor-invite code. Supabase's built-in email only reaches the project's team members, so patient codes to other addresses need a custom SMTP sender.
 
 **Required work**
 
 - [ ] Configure Supabase Auth for doctor email/password and patient/caregiver email OTP.
-- [ ] Configure the web app with the public Supabase URL and publishable key.
+- [x] Configure the web app with the public Supabase URL and publishable key (already set on the `khabar-landing` project).
 - [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API.
 - [ ] Test doctor, patient, and caregiver sign-in on the deployed web app.
 - [ ] Test revoked caregiver consent immediately blocks access in the deployed environment.
@@ -52,15 +52,15 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 1.3 Verify the deployed end-to-end product
 
-**Status:** Services are deployable and individual screens exist, but a full deployed acceptance run is not documented.
+**Status:** Deployed rehearsal with demo sign-in passed on 23 Sep (see the end of [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Still open: the same run with real Supabase sign-in, AuraDB connected, and the web deploy workflow fixed (its `VERCEL_TOKEN` secret is invalid).
 
 **Required work**
 
 - [ ] Confirm deployed web, API, agent service, Supabase, and Neo4j environment variables are configured correctly.
-- [ ] Perform an end-to-end rehearsal using fake data: booking → intake → pre-visit → draft → safety review → finalise → summary → follow-up reply → call list.
+- [x] Perform an end-to-end rehearsal using fake data on the public URLs, with demo sign-in: pre-visit → draft → safety review → finalise → summary → follow-up reply → call list (booking and intake were run locally the same day).
 - [ ] Repeat the rehearsal for doctor, patient, and caregiver permissions.
 - [ ] Record defects and fix only issues that affect the core demo.
-- [ ] Keep a concise demo-run checklist and result in `docs/EXPLAIN.md` or a dedicated test record.
+- [x] Keep a concise demo-run checklist and result: [`docs/DEMO_RUN_CHECKLIST.md`](docs/DEMO_RUN_CHECKLIST.md) and [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md).
 
 **Done when:** the entire core story works from public URLs without local-only services or developer tokens.
 
