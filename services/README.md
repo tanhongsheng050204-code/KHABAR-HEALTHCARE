@@ -132,8 +132,8 @@ A blood sugar of 2.8 mmol/L puts Aminah at the top of the call list.
 ## Tests
 
 ```bash
-cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 183 tests
-cd services/api && ./mvnw clean test                              # 182 tests, some against a real in-process Neo4j
+cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 188 tests
+cd services/api && ./mvnw clean test                              # 184 tests, some against a real in-process Neo4j
 ```
 
 ## Endpoints
@@ -202,7 +202,7 @@ After the visit
 
 | Method | Path | Who | What |
 |---|---|---|---|
-| POST | `/api/followup/replies` | patient | A follow-up reply from the app. Triaged (identity removed first) and stored encrypted; if triage is down it still goes to a person. The patient hears back only in approved words: a red flag gets fixed advice to call 999, a question with an approved answer gets the doctor's answer, anything else is acknowledged |
+| POST | `/api/followup/replies` | patient | A follow-up reply from the app. Triaged (identity removed first) and stored encrypted; if triage is down it still goes to a person. The patient hears back only in approved words: a red flag gets fixed advice to call 999, a question with an approved answer gets the doctor's answer, anything else is acknowledged (with the 999 advice too if triage could not run). Returns `level`, `answer` (an approved answer, if one matched) and `message` (what the patient was sent) |
 | GET / POST | `/api/clinic/answers` · DELETE `/api/clinic/answers/{id}` | doctor | The clinic's approved answers: a title, trigger phrases, and the answer in ms / en / zh / ta. Retiring keeps the record |
 | POST | `/api/webhooks/favoriot` | a home device via Favoriot (no sign-in; checked by the `X-Khabar-Device-Secret` header) | A reading from a linked device. Unknown devices are acknowledged and ignored |
 | GET / POST | `/api/webhooks/whatsapp` | Meta (no sign-in; checked by verify token and signature) | The webhook handshake, and replies arriving on WhatsApp. Matched to a patient by a keyed hash of the phone number |
@@ -249,7 +249,7 @@ The API has **no working defaults for secrets** and refuses to start without the
 | `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | For the webhook handshake and signature check |
 | `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | The patient graph (AuraDB: `neo4j+s://...`). Leave `NEO4J_URI` empty to switch it off. Set the same values in the agents service |
 
-Agents: `INTERNAL_SERVICE_KEY`, `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` (read-only use of the patient graph; empty means none), `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.6-flash`), `GROQ_API_KEY` (speech to text; recordings can contain names, so use it only with fake patients until you have an agreement with a transcription provider).
+Agents: `INTERNAL_SERVICE_KEY`, `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` (read-only use of the patient graph; empty means none), `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.6-flash`), `GEMINI_API_BASE` (only to point the packet reader at a local stand-in when testing), `GROQ_API_KEY` (speech to text; recordings can contain names, so use it only with fake patients until you have an agreement with a transcription provider).
 
 ## Data files are seed data
 

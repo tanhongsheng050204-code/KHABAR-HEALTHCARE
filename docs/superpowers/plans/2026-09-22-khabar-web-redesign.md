@@ -30,7 +30,7 @@
 
 - [x] Build the cinematic landing story with one scroll-driven care thread and interactive product preview.
 - [x] Build OTP, demo, manual-token, and invitation access flows.
-- [ ] Complete desktop/mobile/reduced-motion browser verification.
+- [x] Complete desktop/mobile/reduced-motion browser verification (23 Sep bug bash; see `docs/BUG_BASH_2026-09-23.md`).
 
 ### Task 3: Role-aware home
 
@@ -38,7 +38,7 @@
 
 - [x] Build protected shell, doctor dashboard, patient dashboard, and caregiver workspace.
 - [x] Integrate scheduling, intake, medicines, readings, follow-up, consent, access-log, onboarding, and clinic priority endpoints.
-- [ ] Complete browser action verification.
+- [x] Complete browser action verification.
 
 ### Task 4: Clinical workflows
 
@@ -46,12 +46,12 @@
 
 - [x] Build patient record, pre-visit context, device link, visit notes/audio, draft, safety, override, finalisation, approved answers, and doctor invites.
 - [x] Resolve caregiver record discovery in `/api/me` and add its backend test.
-- [ ] Exercise consultation draft/check/finalisation behavior in the browser.
+- [x] Exercise consultation draft/check/finalisation behavior in the browser.
 
 ### Task 5: Verification and handoff
 
-- [ ] Run frontend typecheck, lint, and production build.
-- [ ] Run the full API and agent test suites.
-- [ ] Review desktop, mobile, reduced-motion, browser console, and primary API requests.
+- [x] Run frontend typecheck, lint, and production build.
+- [x] Run the full API and agent test suites (184 and 188 passing).
+- [x] Review desktop, mobile, reduced-motion, browser console, and primary API requests.
 - [ ] Run `git diff --check` and inspect status without staging, committing, or pushing.
 - [ ] Leave the live prototype running at `http://localhost:3001` and request user approval.

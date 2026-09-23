@@ -8,9 +8,10 @@
 
 The local core product is largely implemented and tested:
 
-- API: **182 automated tests passing**.
-- Agents: **183 automated tests passing** (project virtual environment).
-- Next.js web app: linting and TypeScript checks pass.
+- API: **184 automated tests passing** (23 Sep, after the bug bash).
+- Agents: **188 automated tests passing** (project virtual environment).
+- Next.js web app: linting, TypeScript and the production build pass.
+- Local bug bash done (23 Sep): [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md), 11 defects found and fixed, including one safety issue.
 - The main clinical workflow, access rules, encryption, de-identification, follow-up logic, and demo data are implemented locally.
 
 The remaining work is primarily real-provider integration, missing stretch features, evidence-gathering, and demo/public-readiness work.
@@ -114,7 +115,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 3.1 Medicine-packet photo reading (B4)
 
-**Status:** Partially implemented locally (23 Sep 2026). Patient/clinic-authorized users can upload an explicitly consented packet image through the API to the configured Gemini service for ephemeral label extraction. Results are mapped to known generics where possible and require user review before the existing medication-list add flow. The API and agent do not persist the image. A real-provider test and end-to-end reconciliation test remain open.
+**Status:** Implemented locally and tested end to end with a stand-in model (23 Sep 2026); a real Gemini test is open. Patient/clinic-authorized users can upload an explicitly consented packet image through the API to the configured Gemini service for ephemeral label extraction. Results are mapped to known generics where possible and require user review before the existing medication-list add flow. The API and agent do not persist the image. A real-provider test remains open.
 
 **Required work**
 
@@ -122,7 +123,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 - [x] Add packet-label extraction behind the authenticated agent service (`services/agents/agents/packet_reader.py`).
 - [x] Map extracted ingredient/brand text against known generics; present confidence/evidence and require explicit review before adding.
 - [x] Connect reviewed candidate selection to the existing medication list.
-- [ ] Test duplicate and herb-clash findings end-to-end from a photo-derived item; current automated tests cover validation, auth/consent, extraction schema and generic mapping, not a real OCR result.
+- [x] Test duplicate and herb-clash findings end-to-end from a photo-derived item (`services/agents/tests/test_packet_to_findings.py`), and once by hand through the real API and agents with a local stand-in for Gemini (`GEMINI_API_BASE`): the doctor's pre-visit check named the packet photo in the CRITICAL duplicate.
 - [ ] Run a real Gemini test on fictional packet images and confirm OCR quality/limitations.
 
 **Scope note:** This is a P1 feature and may be reduced to the existing typed medicine list if time is limited.
@@ -177,7 +178,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 **Status:** Future scheduled work; not evidenced as complete.
 
-- [ ] Bug bash the core workflow.
+- [x] Bug bash the core workflow locally ([`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Repeat on the deployed site once it is redeployed.
 - [ ] Prepare stable fake demo data, including Mak Cik Aminah’s full story.
 - [ ] Move services to reliable / always-on hosting before a live demo.
 - [x] Prepare first drafts of 3-, 5-, and 7-minute pitch versions (`docs/PITCH_SCRIPTS.md`). Personalization, factual check against the live demo environment, and timed rehearsal remain open.
