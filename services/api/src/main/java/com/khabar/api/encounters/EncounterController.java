@@ -102,7 +102,8 @@ public class EncounterController {
     public record FindingView(UUID id, String check, String severity, String detail, String overrideReason) {
     }
 
-    public record EncounterView(UUID id, UUID patientId, Encounter.Status status, String diagnosis, String plan, String followUp,
+    /** notes: the doctor's own words, so a reopened visit shows what was written. Only the clinic's doctors see this view. */
+    public record EncounterView(UUID id, UUID patientId, Encounter.Status status, String notes, String diagnosis, String plan, String followUp,
                                 Double followUpWeeks, boolean fasting, List<LineView> prescription, List<FindingView> findings,
                                 int openCriticalFindings, boolean checked) {
     }
@@ -269,7 +270,7 @@ public class EncounterController {
     }
 
     private static EncounterView view(Encounter e) {
-        return new EncounterView(e.getId(), e.getPatient().getId(), e.getStatus(), e.getDiagnosis(), e.getPlan(), e.getFollowUp(),
+        return new EncounterView(e.getId(), e.getPatient().getId(), e.getStatus(), e.getNotes(), e.getDiagnosis(), e.getPlan(), e.getFollowUp(),
                 e.getFollowUpWeeks(), e.isFasting(),
                 e.getPrescription().stream().map(l -> new LineView(l.getRaw(), l.getName(), l.getStrengthMg(), l.getUnitsPerDose(),
                         l.getTimesPerDay(), l.getTiming(), l.isAsNeeded())).toList(),

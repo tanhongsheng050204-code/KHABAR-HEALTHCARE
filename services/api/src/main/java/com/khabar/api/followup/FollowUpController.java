@@ -32,7 +32,8 @@ public class FollowUpController {
     public record ReplyRequest(String text) {
     }
 
-    public record ReplyResponse(TriageLevel level, String answer) {
+    /** answer: the doctor-approved answer, if one matched. message: what the patient was sent back, always. */
+    public record ReplyResponse(TriageLevel level, String answer, String message) {
     }
 
     @PostMapping("/replies")
@@ -47,6 +48,6 @@ public class FollowUpController {
         Patient patient = patients.findByAccountId(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No patient record is linked to this account."));
         FollowUpService.Outcome outcome = followUp.receiveReply(patient, request.text());
-        return new ReplyResponse(outcome.level(), outcome.answer());
+        return new ReplyResponse(outcome.level(), outcome.answer(), outcome.message());
     }
 }

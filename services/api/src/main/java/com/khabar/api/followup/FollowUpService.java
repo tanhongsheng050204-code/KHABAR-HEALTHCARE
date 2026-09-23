@@ -49,8 +49,11 @@ public class FollowUpService {
         this.graphSync = graphSync;
     }
 
-    /** What happened to a reply: its triage level, and the approved answer the patient was sent, if any. */
-    public record Outcome(TriageLevel level, String answer) {
+    /**
+     * What happened to a reply: its triage level, the approved answer the patient was sent (if any), and
+     * the words the patient was actually sent back, whichever kind they were.
+     */
+    public record Outcome(TriageLevel level, String answer, String message) {
     }
 
     @Transactional
@@ -59,6 +62,7 @@ public class FollowUpService {
         TriageLevel level;
         String matched = null;
         boolean missedDose = false;
+        boolean triaged = true;
         try {
             Map<String, Object> result = agents.triageReply(redacted, patient.getGraphId().toString());
             level = TriageLevel.fromAgent(result == null ? null : result.get("level"));
@@ -67,6 +71,7 @@ public class FollowUpService {
         } catch (RuntimeException e) {
             log.warn("Triage unavailable, sending reply to a person: {}", e.getMessage());
             level = TriageLevel.REVIEW;
+            triaged = false;
         }
         PatientReply fresh = new PatientReply(patient, text, clock.instant(), level, matched);
         if (missedDose) {
@@ -81,8 +86,9 @@ public class FollowUpService {
 
         String language = patient.getPreferredLanguage();
         if (level == TriageLevel.RED) {
-            messages.send(patient, PatientMessages.urgentText(language), Messenger.Kind.SAFETY);
-            return new Outcome(level, null);
+            String urgent = PatientMessages.urgentText(language);
+            messages.send(patient, urgent, Messenger.Kind.SAFETY);
+            return new Outcome(level, null, urgent);
         }
         if (level == TriageLevel.OK || level == TriageLevel.REVIEW) {
             Optional<ApprovedAnswer> answer = approvedAnswerFor(patient, redacted);
@@ -90,11 +96,12 @@ public class FollowUpService {
                 String words = answer.get().textFor(language);
                 messages.send(patient, words, Messenger.Kind.ANSWER);
                 reply.answeredWith(answer.get().getId(), clock.instant());
-                return new Outcome(level, words);
+                return new Outcome(level, words, words);
             }
         }
-        messages.send(patient, PatientMessages.acknowledgementText(language, level), Messenger.Kind.NOTICE);
-        return new Outcome(level, null);
+        String acknowledgement = triaged ? PatientMessages.acknowledgementText(language, level) : PatientMessages.uncheckedText(language);
+        messages.send(patient, acknowledgement, Messenger.Kind.NOTICE);
+        return new Outcome(level, null, acknowledgement);
     }
 
     private Optional<ApprovedAnswer> approvedAnswerFor(Patient patient, String redacted) {

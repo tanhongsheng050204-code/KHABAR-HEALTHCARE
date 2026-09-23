@@ -120,6 +120,15 @@ class EncounterFlowTest {
     }
 
     @Test
+    void reopeningAVisitShowsTheDoctorTheNotesTheyWrote() throws Exception {
+        String id = startVisit(doctor);
+        writeNotes(id, NOTES);
+        mvc.perform(get("/api/encounters/{id}", id).header("Authorization", bearer(doctor.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.notes").value(NOTES));
+    }
+
+    @Test
     void notesSentToTheReportAgentHaveThePatientsIdentityRemoved() throws Exception {
         writeNotes(startVisit(doctor), NOTES);
         verify(agents).draftReport(argThat(n -> !n.contains("Aminah") && !n.contains("590312-10-5566") && n.contains("Metformin")));

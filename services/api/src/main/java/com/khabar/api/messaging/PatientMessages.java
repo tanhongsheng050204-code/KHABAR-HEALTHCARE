@@ -30,6 +30,13 @@ public class PatientMessages {
             "zh", "诊所已收到通知，会联系您。如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
             "ta", "கிளினிக்கிற்குத் தெரிவிக்கப்பட்டது, அவர்கள் உங்களைத் தொடர்புகொள்வார்கள். நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
 
+    /** The emergency sentence of the urgent text on its own, for a reply nobody could check automatically. */
+    private static final Map<String, String> EMERGENCY_ADVICE = Map.of(
+            "ms", "Kalau sakit dada, sesak nafas atau pengsan, hubungi 999 atau pergi ke Jabatan Kecemasan yang terdekat sekarang.",
+            "en", "If you have chest pain, trouble breathing or have fainted, call 999 or go to the nearest emergency department now.",
+            "zh", "如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
+            "ta", "நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
+
     /** A reply that a person will read. */
     private static final Map<String, String> WILL_READ = Map.of(
             "ms", "Terima kasih. Klinik akan semak mesej anda secepat mungkin.",
@@ -61,6 +68,14 @@ public class PatientMessages {
 
     public static String urgentText(String language) {
         return URGENT.getOrDefault(language, URGENT.get("en"));
+    }
+
+    /**
+     * When triage could not run, nobody knows yet whether the reply is urgent: a person will read it,
+     * and meanwhile the patient gets the same emergency advice a red flag would.
+     */
+    public static String uncheckedText(String language) {
+        return WILL_READ.getOrDefault(language, WILL_READ.get("en")) + " " + EMERGENCY_ADVICE.getOrDefault(language, EMERGENCY_ADVICE.get("en"));
     }
 
     public static String acknowledgementText(String language, TriageLevel level) {

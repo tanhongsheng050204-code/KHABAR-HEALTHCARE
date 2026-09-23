@@ -109,6 +109,16 @@ class CallListTest {
     }
 
     @Test
+    void whenNobodyCouldCheckTheReplyThePatientIsStillToldWhatToDoInAnEmergency() throws Exception {
+        when(agents.triageReply(anyString(), any())).thenThrow(new IllegalStateException("agents down"));
+        reply(aminahAccount, "Sakit dada").andExpect(status().isOk())
+                .andExpect(jsonPath("$.level").value("REVIEW"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.allOf(
+                        org.hamcrest.Matchers.containsString("Klinik akan semak mesej anda"),
+                        org.hamcrest.Matchers.containsString("999"))));
+    }
+
+    @Test
     void onlyPatientsCanSendReplies() throws Exception {
         reply(doctor, "Pening").andExpect(status().isForbidden());
     }

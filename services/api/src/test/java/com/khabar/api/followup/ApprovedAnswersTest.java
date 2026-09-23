@@ -126,7 +126,8 @@ class ApprovedAnswersTest {
 
         reply("Semalam saya lupa makan ubat malam").andExpect(status().isOk())
                 .andExpect(jsonPath("$.level").value("REVIEW"))
-                .andExpect(jsonPath("$.answer").value("Ambil sebaik sahaja teringat. Jangan ambil dua dos sekali."));
+                .andExpect(jsonPath("$.answer").value("Ambil sebaik sahaja teringat. Jangan ambil dua dos sekali."))
+                .andExpect(jsonPath("$.message").value("Ambil sebaik sahaja teringat. Jangan ambil dua dos sekali."));
 
         assertThat(sentToAminah()).singleElement().satisfies(m -> {
             assertThat(m.getKind()).isEqualTo("ANSWER");
@@ -140,7 +141,8 @@ class ApprovedAnswersTest {
         approveMissedDose();
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "red", "matched", "sakit dada"));
 
-        reply("Sakit dada, lupa makan ubat").andExpect(jsonPath("$.level").value("RED"));
+        reply("Sakit dada, lupa makan ubat").andExpect(jsonPath("$.level").value("RED"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
 
         verify(agents, never()).matchAnswer(anyString(), anyList());
         assertThat(sentToAminah()).singleElement().satisfies(m -> {
@@ -155,7 +157,9 @@ class ApprovedAnswersTest {
         approveMissedDose();
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 
-        reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist());
+        // The app shows the patient the same acknowledgement their phone gets, never a blank message
+        reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist())
+                .andExpect(jsonPath("$.message").value(com.khabar.api.messaging.PatientMessages.acknowledgementText("ms", TriageLevel.REVIEW)));
 
         assertThat(sentToAminah()).singleElement().satisfies(m -> assertThat(m.getKind()).isEqualTo("NOTICE"));
         callList().andExpect(jsonPath("$.items[0].level").value("REVIEW"));
