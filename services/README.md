@@ -6,6 +6,7 @@ Two services. Spring Boot owns every piece of patient identity; the Python agent
 |---|---|---|---|
 | Clinical API | `api/` (Spring Boot 3, Java 21) | 8080 | Sign-in checks, access rules, encryption, audit log, visits, follow-up, messaging, talks to the agents |
 | Agents | `agents/` (FastAPI + LangGraph, Python) | 8000 | Intake chat and pre-visit report, report drafting, safety checks, patient summary, reply triage, approved-answer matching, speech to text |
+| Patient graph (optional) | Neo4j / AuraDB | 7687 | De-identified facts per patient under a random `graphId`: conditions, allergies, medicines (brand and generic), herbs, visits, warning symptoms, readings. Spring Boot writes it after every change; the agents only read it |
 
 ## Live
 
@@ -86,6 +87,23 @@ Without `GEMINI_API_KEY` the intake agent runs a scripted four-question intervie
 | POST | `/dev/clock/reset` | Back to the real date |
 | POST | `/dev/check-ins/run` | Send every check-in that is due now |
 | GET | `/dev/outbox` | Messages that would have gone out on WhatsApp |
+| POST | `/dev/demo/reset` | Puts the follow-up demo back as seeded: clock to today, the four story patients back on their follow-up day with their four replies, readings cleared |
+| POST | `/dev/graph/sync` | Writes every patient to the patient graph (after emptying it, or if it was down) |
+| GET | `/dev/graph/patients/{patientId}` | That patient's graph context, fetched through the agents service exactly as the agents read it |
+
+### Try the patient graph locally (no Docker)
+
+The graph is off unless `NEO4J_URI` is set. To try it, start a throwaway Neo4j from the API's test tools, then both services pointed at it:
+
+```bash
+cd services/api && ./mvnw -q test-compile exec:java -Dexec.mainClass=com.khabar.api.graph.LocalNeo4j -Dexec.classpathScope=test   # terminal 1
+cd services/agents && NEO4J_URI=bolt://localhost:7687 NEO4J_PASSWORD=local .venv/Scripts/python.exe -m uvicorn main:app --port 8000   # terminal 2
+cd services/api && NEO4J_URI=bolt://localhost:7687 NEO4J_PASSWORD=local ./mvnw spring-boot:run -Dspring-boot.run.profiles=local     # terminal 3
+```
+
+Or `scripts/run-local.ps1 -WithGraph`. Then `curl -s localhost:8080/dev/graph/patients/<Aminah's patientId>` shows her diabetes, hypertension,
+metformin twice (once as "Brand A"), bitter gourd and "pening", read back by graph ID alone. If the API started before Neo4j was up,
+`POST /dev/graph/sync` fills it. For AuraDB, set `NEO4J_URI=neo4j+s://<id>.databases.neo4j.io` and its username and password in both services.
 
 ### Try the WhatsApp webhook locally
 
@@ -114,8 +132,8 @@ A blood sugar of 2.8 mmol/L puts Aminah at the top of the call list.
 ## Tests
 
 ```bash
-cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 152 tests
-cd services/api && ./mvnw test                                    # 161 tests
+cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 175 tests
+cd services/api && ./mvnw clean test                              # 178 tests, some against a real in-process Neo4j
 ```
 
 ## Endpoints
@@ -201,6 +219,8 @@ Errors the screens should show come back as `{"status": 409, "message": "..."}`,
 | POST | `/agents/transcribe?language=ms` | Speech to text with Groq Whisper, hinted with clinic shorthand and drug names. The recording is the raw request body. 503 without `GROQ_API_KEY` |
 | POST | `/agents/report/draft` | Doctor's notes to a structured draft: diagnosis, plan, follow-up, warning signs, parsed prescription |
 | POST | `/agents/evaluator/check` | The data-based safety checks: allergy, interaction, duplicate, herb, dose, pregnancy, grounding (a drug or a symptom the notes never mention), completeness, unrecognised drug. `blocking: true` when anything is CRITICAL |
+| POST | `/agents/evaluator/normalise` | For the graph writer: the generic (and brand) behind each medicine name, and the herb in each remedy name, from the same drug data |
+| GET | `/agents/graph/{graph_id}/context` | What the patient graph holds for one patient. 503 with no graph configured, 404 for an unknown graph ID |
 | POST | `/agents/evaluator/reconcile` | The patient's own medicine list checked on its own: the same drug from two places, clashes, herbs, allergies |
 | POST | `/agents/summary/build` | The patient's summary in BM, English, Chinese or Tamil, with Ramadan timings when fasting |
 | POST | `/agents/followup/triage` | A reply as red / watch / ok / review, plus whether it reports a missed dose. The word lists always run; with Gemini configured the model reads it too, and the more urgent level wins |
@@ -225,8 +245,9 @@ The API has **no working defaults for secrets** and refuses to start without the
 | `WHATSAPP_SUMMARY_TEMPLATE` | Your approved summary template with one body parameter `{{1}}`. Long summaries are split between lines into several messages |
 | `FAVORIOT_DEVICE_SECRET` | The header value your Favoriot forwarding rule sends. Leave empty to switch device readings off |
 | `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | For the webhook handshake and signature check |
+| `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | The patient graph (AuraDB: `neo4j+s://...`). Leave `NEO4J_URI` empty to switch it off. Set the same values in the agents service |
 
-Agents: `INTERNAL_SERVICE_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.6-flash`), `GROQ_API_KEY` (speech to text; recordings can contain names, so use it only with fake patients until you have an agreement with a transcription provider).
+Agents: `INTERNAL_SERVICE_KEY`, `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` (read-only use of the patient graph; empty means none), `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.6-flash`), `GROQ_API_KEY` (speech to text; recordings can contain names, so use it only with fake patients until you have an agreement with a transcription provider).
 
 ## Data files are seed data
 

@@ -20,18 +20,17 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 1.1 Connect the Neo4j patient graph
 
-**Status:** Not implemented end to end.
-
-Neo4j exists in `infra/docker-compose.yml`, the Python service has Neo4j settings and the dependency is installed, but no API or agent code currently opens a Neo4j driver, writes patient facts, or queries the graph.
+**Status:** Done locally (23 Sep 2026); not yet connected to AuraDB for the deployed demo.
 
 **Required work**
 
-- [ ] Add a graph client with credentials supplied only by environment variables.
-- [ ] Write de-identified patient facts from Spring Boot using only `graph_id`; never write names, IC numbers, or phone numbers.
-- [ ] Implement the planned nodes and relationships needed for the demo: patient, conditions, medicines, brands, allergies, herbs, encounters, symptoms, and readings.
-- [ ] Give the agents read-only graph-query tools for intake, report, evaluator, and follow-up context.
-- [ ] Add tests proving that personally identifiable information cannot enter Neo4j.
-- [ ] Run the deployed flow against Neo4j/AuraDB, not just local Docker.
+- [x] Add a graph client with credentials supplied only by environment variables (`NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`; off when empty).
+- [x] Write de-identified patient facts from Spring Boot using only `graph_id`; never write names, IC numbers, or phone numbers (`services/api/.../graph/`).
+- [x] Implement the planned nodes and relationships needed for the demo: patient, conditions, medicines, brands, allergies, herbs, encounters, symptoms, and readings. (`INTERACTS_WITH` and `DUPLICATE_OF` are not stored: the evaluator derives them from the drug data and from two `TAKES` to one medicine.)
+- [x] Give the agents read-only graph-query tools for intake, evaluator, and follow-up context (`services/agents/core/graph.py`, plus `GET /agents/graph/{graph_id}/context`). The report agent does not use the graph: it only structures the doctor's notes.
+- [x] Add tests proving that personally identifiable information cannot enter Neo4j (`PatientGraphSyncTest`, `DemoGraphTest`, against a real in-process Neo4j).
+- [x] Manual happy path (23 Sep): local Neo4j + API + agents; Aminah's context read back by graph ID through the agents; a medicine added in the API appeared in the graph; the safety check given only her graph ID caught the duplicate metformin and the bitter-gourd clash.
+- [ ] Run the deployed flow against AuraDB: create a free AuraDB instance, set the three `NEO4J_*` variables in the `khabar-api` Vercel project, redeploy, then `POST /dev/graph/sync` once.
 
 **Done when:** the demo patient’s medication, allergy, herb, and condition context is written to and read from Neo4j using only the random graph ID.
 
@@ -206,7 +205,7 @@ These are not implementation tasks, but they are still open in `plan.md`.
 
 ## Recommended next sequence
 
-1. Implement and test **Neo4j graph writes and reads**.
+1. ~~Implement and test **Neo4j graph writes and reads**~~ (done locally; connect AuraDB to the deployment).
 2. Complete deployed **Supabase authentication** for every role.
 3. Finish a deployed end-to-end rehearsal using fake data.
 4. Configure **WhatsApp templates and webhook**; perform one real test-number loop.

@@ -106,3 +106,37 @@ the repository or in a chat.
 `/docs` serves a browsable reference generated from the code itself, so it cannot drift from what the
 API does: press Authorize, paste a token from `/dev/token`, and try any endpoint as the demo doctor.
 Opening the API's own address in a browser now redirects to the app instead of showing a bare 401.
+
+---
+
+## 23 Sep 2026 (night): The patient graph is real
+
+The architecture always said "Spring Boot writes a Neo4j graph with no names, and the agents read it".
+Until tonight nothing opened a Neo4j connection. Now it does, end to end.
+
+### 1. What goes in, and what never does
+Each patient is one `Patient` node with a random `graph_id` and a pregnancy flag. Nothing else about who
+they are. Around it: `HAS_CONDITION` (diabetes, hypertension... picked out of the intake answer by a word
+list in four languages), `ALLERGIC_TO`, `TAKES {name, source}` to a `Medication` keyed by its generic, with
+`BRAND_OF` from a brand, `USES` to a `Herb`, `HAD` visits with what was `PRESCRIBED`, `REPORTED` warning
+words, and `RECORDED` readings. Every piece of text goes through the same `Redactor` used before the AI,
+and a last check refuses to write anything that still contains the patient's name, IC or phone.
+
+### 2. When it is written
+Postgres stays the record. Whenever something changes what the graph would show (a medicine added or
+stopped, an intake finished, a visit finalised, a reply, a reading, a new patient), the code calls
+`graphSync.changed(patientId)`. After that transaction commits, the patient's facts are rebuilt and the
+patient's part of the graph is replaced in one Neo4j transaction. If Neo4j is down, the change still
+stands and only a warning is logged; the next change, or `POST /dev/graph/sync`, catches up.
+
+### 3. Who reads it
+The agents open Neo4j in read-only sessions, with queries kept in `agents/data/graph_queries.json`.
+Intake uses it to confirm what the patient already takes; the safety check adds anything it knows that
+the request did not send (it can only add, so it can raise a finding but never hide one); triage tells
+the model the patient's conditions and medicines, so "berpeluh" from a diabetic on gliclazide reads as
+possible low sugar.
+
+### 4. How it is tested without Docker
+The API tests start a real Neo4j inside the test (`neo4j-harness`), write to it, and read back with the
+agents' own query file, so the writer and the reader cannot drift apart. One test adds medicines whose
+names and sources contain the patient's name, IC and phone, then scans every property in the graph.
