@@ -140,3 +140,47 @@ possible low sugar.
 The API tests start a real Neo4j inside the test (`neo4j-harness`), write to it, and read back with the
 agents' own query file, so the writer and the reader cannot drift apart. One test adds medicines whose
 names and sources contain the patient's name, IC and phone, then scans every property in the graph.
+
+---
+
+## 23 Sep 2026: Interaction data and sign-in paths
+
+### 1. Drug interaction data
+
+The evaluator now reads a reproducible, demo-sized subset from the official DDInter 2.0 CSV files instead of
+the hand-picked interaction pairs previously embedded in `drugs.json`. `services/agents/scripts/import_ddinter.py`
+keeps the import reproducible and filters the official data to the generic medicines used by the demo. The
+resulting data retains the source/license notice and reports its coverage. DDInter's `Major` findings are
+critical; other levels, including `Unknown`, are warnings. Missing pairs are not treated as evidence of safety.
+The local herb rules carry source links and evidence caveats, but still need pharmacist review.
+
+### 2. Sign-in UI
+
+The login panel now presents clinic staff password sign-in and patient/caregiver email OTP as distinct paths.
+Both paths obtain a Supabase access token, accept an invitation before requesting the user's Khabar profile,
+and store the token only after profile loading succeeds. This is an implementation change, not proof that
+Supabase Auth is configured or that the deployed roles have passed an end-to-end access test.
+
+### 3. Packet-photo reading (partial B4)
+
+The patient medicine panel can submit a JPEG, PNG, or WebP image after the user checks an explicit Gemini
+processing notice. Spring Boot checks that the user is the patient or a doctor at that clinic, confirms consent,
+checks the actual image signature and 8 MB limit, then forwards the bytes to the internal agent service. The
+agent sends the image inline to Gemini and keeps no file; the model is instructed to extract only visible text,
+not infer a dose or recommend treatment. Brand/ingredient text is matched against the local known-generic data.
+The UI shows evidence and confidence, asks the user to choose medicine vs herb/remedy, and only adds after an
+explicit click. This does not prove OCR accuracy or authorize real-patient image processing; use fictional packets
+until the clinic has approved its provider and privacy arrangements.
+
+### 4. Verification performed
+
+The full agent suite passes (183 tests, run from the project virtual environment) and the full API suite passed
+(181 tests, including the Neo4j-backed tests and packet upload access/consent checks); the added raw-byte packet
+transport test passes in its focused service suite, bringing the passing API test count to 182. The web TypeScript check
+and lint pass. One Starlette/AnyIO deprecation warning remains. Real Gemini OCR quality, deployed sign-in, live
+provider loops, and full demo rehearsal remain unverified; use
+`docs/DEMO_RUN_CHECKLIST.md` to record those results rather than assuming local checks prove production readiness.
+
+The first 3-, 5-, and 7-minute pitch drafts are in `docs/PITCH_SCRIPTS.md`. They are explicitly framed as a
+prototype and avoid clinical-outcome claims; the presenter still needs to tailor and time them against the
+actual demo setup.

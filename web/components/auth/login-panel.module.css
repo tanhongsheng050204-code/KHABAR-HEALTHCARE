@@ -1,0 +1,50 @@
+.methodGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 5px;
+  background: #e8f1ef;
+  border: 1px solid #d6e5e1;
+  border-radius: 13px;
+}
+
+.method,
+.methodSelected {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.method {
+  color: #5d7475;
+  background: transparent;
+}
+
+.methodSelected {
+  color: #073c3a;
+  background: white;
+  border-color: #c8ddd8;
+  box-shadow: 0 2px 6px rgb(7 31 36 / 5%);
+}
+
+.method:disabled,
+.methodSelected:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 560px) {
+  .method,
+  .methodSelected {
+    gap: 5px;
+    padding: 8px 6px;
+    font-size: 0.66rem;
+  }
+}

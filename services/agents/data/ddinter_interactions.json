@@ -1,0 +1,1084 @@
+{
+  "source": "DDInter 2.0",
+  "source_url": "https://ddinter.scbdd.com/download/",
+  "license": "CC BY-NC-SA 4.0",
+  "source_files_sha256": {
+    "ddinter_downloads_code_A.csv": "a22ca451d2b755ca2331886f7e00540c86f555f9f55704a59a19c691251f52e0",
+    "ddinter_downloads_code_B.csv": "76de5115a55587f0e822e1096b684fd3ddde058fbefcbb19896df58820ace130",
+    "ddinter_downloads_code_D.csv": "c0627ec39965dbe27829e4934cd20d71eb079f4e373287678737bba9423a306a",
+    "ddinter_downloads_code_H.csv": "f0f925f0ba1ee68c4668d3e7a6732719b34623b22a0f5d017f9090e59f63c88e",
+    "ddinter_downloads_code_L.csv": "f54f4486cc00344f8c86508c31c2ca3fad6d1d37ec3af5bcf609b4bbda5507ef",
+    "ddinter_downloads_code_P.csv": "83f8c0edb20d09ef29b8500b48f9623e208379525688ade9e70a7df2d8749d55",
+    "ddinter_downloads_code_R.csv": "1c39c3d4a6e41659b7a988538d7f363867592abc6f41a815de8746f6e2150574",
+    "ddinter_downloads_code_V.csv": "353973fb300453946aea95733e8fb52338e4b59426d2ce6ca318363d4f84f10a"
+  },
+  "notice": "A missing pair is not evidence that the combination is safe. Gliclazide has no pair record in this downloaded subset.",
+  "interactions": [
+    {
+      "drugs": [
+        "amlodipine",
+        "amoxicillin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter79",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Amoxicillin"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "aspirin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter20",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Amlodipine"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "clarithromycin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter393",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Clarithromycin"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "clopidogrel"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter413",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Clopidogrel"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "ibuprofen"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter79",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "metformin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "omeprazole"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "simvastatin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "amlodipine",
+        "warfarin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter79"
+      ],
+      "ddinter_names": [
+        "Amlodipine",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "aspirin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter20",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Amoxicillin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "clarithromycin"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter393",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Clarithromycin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "clopidogrel"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter413",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Clopidogrel"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "ibuprofen"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter83",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "metformin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "omeprazole"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Amoxicillin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "spironolactone"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "amoxicillin",
+        "warfarin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter83"
+      ],
+      "ddinter_names": [
+        "Amoxicillin",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "clarithromycin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter20",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Clarithromycin"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "clopidogrel"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter20",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Clopidogrel"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "ibuprofen"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter20",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "metformin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "omeprazole"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Acetylsalicylic acid"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "perindopril"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1431",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Perindopril"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "spironolactone"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "aspirin",
+        "warfarin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter20"
+      ],
+      "ddinter_names": [
+        "Acetylsalicylic acid",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "clopidogrel"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter393",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Clopidogrel"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "ibuprofen"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter393",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "metformin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "omeprazole"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Clarithromycin"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "simvastatin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "spironolactone"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "clarithromycin",
+        "warfarin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter393"
+      ],
+      "ddinter_names": [
+        "Clarithromycin",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "ibuprofen"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter413",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "metformin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "omeprazole"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Clopidogrel"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "perindopril"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1431",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Perindopril"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "spironolactone"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "clopidogrel",
+        "warfarin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter413"
+      ],
+      "ddinter_names": [
+        "Clopidogrel",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "metformin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "omeprazole"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Ibuprofen"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "perindopril"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1431",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Perindopril"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "spironolactone"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "ibuprofen",
+        "warfarin"
+      ],
+      "level": "major",
+      "ddinter_ids": [
+        "DDInter1951",
+        "DDInter900"
+      ],
+      "ddinter_names": [
+        "Ibuprofen",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "omeprazole"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter1340"
+      ],
+      "ddinter_names": [
+        "Metformin",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter14"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Metformin"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "perindopril"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter1431"
+      ],
+      "ddinter_names": [
+        "Metformin",
+        "Perindopril"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter1675"
+      ],
+      "ddinter_names": [
+        "Metformin",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "spironolactone"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter1707"
+      ],
+      "ddinter_names": [
+        "Metformin",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "metformin",
+        "warfarin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1164",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Metformin",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "omeprazole",
+        "paracetamol"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter14"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Omeprazole"
+      ]
+    },
+    {
+      "drugs": [
+        "omeprazole",
+        "perindopril"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter1431"
+      ],
+      "ddinter_names": [
+        "Omeprazole",
+        "Perindopril"
+      ]
+    },
+    {
+      "drugs": [
+        "omeprazole",
+        "simvastatin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter1675"
+      ],
+      "ddinter_names": [
+        "Omeprazole",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "omeprazole",
+        "spironolactone"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter1707"
+      ],
+      "ddinter_names": [
+        "Omeprazole",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "omeprazole",
+        "warfarin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter1340",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Omeprazole",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "paracetamol",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter1675"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "paracetamol",
+        "warfarin"
+      ],
+      "level": "moderate",
+      "ddinter_ids": [
+        "DDInter14",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Acetaminophen",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "perindopril",
+        "simvastatin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1431",
+        "DDInter1675"
+      ],
+      "ddinter_names": [
+        "Perindopril",
+        "Simvastatin"
+      ]
+    },
+    {
+      "drugs": [
+        "perindopril",
+        "warfarin"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1431",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Perindopril",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "simvastatin",
+        "spironolactone"
+      ],
+      "level": "unknown",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter1707"
+      ],
+      "ddinter_names": [
+        "Simvastatin",
+        "Spironolactone"
+      ]
+    },
+    {
+      "drugs": [
+        "simvastatin",
+        "warfarin"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter1675",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Simvastatin",
+        "Warfarin"
+      ]
+    },
+    {
+      "drugs": [
+        "spironolactone",
+        "warfarin"
+      ],
+      "level": "minor",
+      "ddinter_ids": [
+        "DDInter1707",
+        "DDInter1951"
+      ],
+      "ddinter_names": [
+        "Spironolactone",
+        "Warfarin"
+      ]
+    }
+  ],
+  "coverage_pairs_per_generic": {
+    "amlodipine": 9,
+    "amoxicillin": 11,
+    "aspirin": 12,
+    "clarithromycin": 11,
+    "clopidogrel": 12,
+    "gliclazide": 0,
+    "ibuprofen": 12,
+    "metformin": 12,
+    "omeprazole": 12,
+    "paracetamol": 9,
+    "perindopril": 7,
+    "simvastatin": 12,
+    "spironolactone": 9,
+    "warfarin": 12
+  }
+}

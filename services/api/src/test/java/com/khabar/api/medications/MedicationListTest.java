@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -34,10 +35,12 @@ import static com.khabar.api.support.TestTokens.bearer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -145,5 +148,48 @@ class MedicationListTest {
         verify(agents).checkSafety(argThat(draft ->
                 draft.currentMeds().equals(List.of(new CurrentMed("Brand A 500mg", "Klinik Kesihatan")))
                         && draft.herbs().equals(List.of("Teh hijau"))));
+    }
+
+    @Test
+    void aConsentedPacketPhotoIsForwardedEphemerallyForAnAllowedUser() throws Exception {
+        when(agents.readMedicinePacket(any(byte[].class), anyString())).thenReturn(Map.of(
+                "candidates", List.of(Map.of("brand", "Norvasc", "generic_candidate", "amlodipine")),
+                "unreadable", false, "message", ""));
+        MockMultipartFile image = new MockMultipartFile("image", "packet.jpg", "image/jpeg",
+                new byte[]{(byte) 0xff, (byte) 0xd8, (byte) 0xff, 0x01});
+
+        mvc.perform(multipart("/api/patients/{id}/medications/packet-photo", aminah.getId())
+                        .file(image).param("consentConfirmed", "true")
+                        .header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.candidates[0].brand").value("Norvasc"))
+                .andExpect(jsonPath("$.candidates[0].generic_candidate").value("amlodipine"));
+        verify(agents).readMedicinePacket(any(byte[].class), eq("image/jpeg"));
+    }
+
+    @Test
+    void aPacketPhotoCannotBeSentWithoutConsentOrFromAnotherClinic() throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", "packet.jpg", "image/jpeg",
+                new byte[]{(byte) 0xff, (byte) 0xd8, (byte) 0xff, 0x01});
+
+        mvc.perform(multipart("/api/patients/{id}/medications/packet-photo", aminah.getId())
+                        .file(image).param("consentConfirmed", "false")
+                        .header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isBadRequest());
+        mvc.perform(multipart("/api/patients/{id}/medications/packet-photo", aminah.getId())
+                        .file(image).param("consentConfirmed", "true")
+                        .header("Authorization", bearer(doctorElsewhere.getId())))
+                .andExpect(status().isForbidden());
+        org.mockito.Mockito.verifyNoInteractions(agents);
+    }
+
+    @Test
+    void aPacketPhotoMustHaveAnAllowedImageSignature() throws Exception {
+        MockMultipartFile fake = new MockMultipartFile("image", "packet.jpg", "image/jpeg", "not an image".getBytes());
+        mvc.perform(multipart("/api/patients/{id}/medications/packet-photo", aminah.getId())
+                        .file(fake).param("consentConfirmed", "true")
+                        .header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isBadRequest());
+        org.mockito.Mockito.verifyNoInteractions(agents);
     }
 }

@@ -76,7 +76,7 @@
   ],
   "clean": {
     "prescription": [{"name": "Metformin", "dose_mg": 500, "times_per_day": 2}],
-    "current_meds": [{"name": "Amlodipine 5mg", "source": "Klinik Kesihatan"}],
+    "current_meds": [],
     "report": {"diagnosis": "T2DM, HTN", "plan": "Continue meds, diet advice", "follow_up": "TCA 2/52"},
     "source_text": "c/o giddiness\nDx: T2DM, HTN\nT. Metformin 500mg BD\nTCA 2/52"
   }

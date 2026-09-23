@@ -1,37 +1,61 @@
 {
-  "_note": "SEED DATA for development only. Interactions are a small hand-picked set of well-known pairs until the DDInter 2.0 subset is imported; dose limits and pregnancy flags must be checked by a pharmacist. Brand A / Brand B are fictional demo brands.",
+  "_note": "Demo drug metadata only. Drug interactions come from the reproducible DDInter 2.0 subset in ddinter_interactions.json; see scripts/import_ddinter.py. Dose limits, pregnancy flags and herb rules are demo seed data and require pharmacist review. Brand A / Brand B are fictional demo brands.",
   "generics": {
-    "metformin":      { "classes": ["biguanide"], "max_daily_mg": 3000 },
-    "gliclazide":     { "classes": ["sulfonylurea"], "max_daily_mg": 320 },
-    "amlodipine":     { "classes": ["calcium channel blocker"], "max_daily_mg": 10 },
-    "aspirin":        { "classes": ["antiplatelet", "nsaid"], "max_daily_mg": 4000 },
-    "warfarin":       { "classes": ["anticoagulant"], "pregnancy_avoid": true },
-    "simvastatin":    { "classes": ["statin"], "max_daily_mg": 80, "pregnancy_avoid": true },
-    "clarithromycin": { "classes": ["macrolide"] },
-    "amoxicillin":    { "classes": ["penicillin"] },
-    "perindopril":    { "classes": ["ace inhibitor"], "max_daily_mg": 8, "pregnancy_avoid": true },
-    "spironolactone": { "classes": ["potassium-sparing diuretic"] },
-    "clopidogrel":    { "classes": ["antiplatelet"] },
-    "omeprazole":     { "classes": ["proton pump inhibitor"] },
-    "ibuprofen":      { "classes": ["nsaid"], "max_daily_mg": 2400 },
-    "paracetamol":    { "classes": ["analgesic"], "max_daily_mg": 4000 }
+    "metformin":      { "classes": ["biguanide"], "max_daily_mg": 3000, "ddinter_name": "Metformin" },
+    "gliclazide":     { "classes": ["sulfonylurea"], "max_daily_mg": 320, "ddinter_name": "Gliclazide" },
+    "amlodipine":     { "classes": ["calcium channel blocker"], "max_daily_mg": 10, "ddinter_name": "Amlodipine" },
+    "aspirin":        { "classes": ["antiplatelet", "nsaid"], "max_daily_mg": 4000, "ddinter_name": "Acetylsalicylic acid" },
+    "warfarin":       { "classes": ["anticoagulant"], "pregnancy_avoid": true, "ddinter_name": "Warfarin" },
+    "simvastatin":    { "classes": ["statin"], "max_daily_mg": 80, "pregnancy_avoid": true, "ddinter_name": "Simvastatin" },
+    "clarithromycin": { "classes": ["macrolide"], "ddinter_name": "Clarithromycin" },
+    "amoxicillin":    { "classes": ["penicillin"], "ddinter_name": "Amoxicillin" },
+    "perindopril":    { "classes": ["ace inhibitor"], "max_daily_mg": 8, "pregnancy_avoid": true, "ddinter_name": "Perindopril" },
+    "spironolactone": { "classes": ["potassium-sparing diuretic"], "ddinter_name": "Spironolactone" },
+    "clopidogrel":    { "classes": ["antiplatelet"], "ddinter_name": "Clopidogrel" },
+    "omeprazole":     { "classes": ["proton pump inhibitor"], "ddinter_name": "Omeprazole" },
+    "ibuprofen":      { "classes": ["nsaid"], "max_daily_mg": 2400, "ddinter_name": "Ibuprofen" },
+    "paracetamol":    { "classes": ["analgesic"], "max_daily_mg": 4000, "ddinter_name": "Acetaminophen" }
   },
   "brands": {
     "brand a": "metformin",
     "brand b": "metformin"
   },
-  "interactions": [
-    { "drugs": ["warfarin", "aspirin"], "severity": "major", "effect": "Higher bleeding risk." },
-    { "drugs": ["simvastatin", "clarithromycin"], "severity": "major", "effect": "Much higher risk of muscle damage (myopathy)." },
-    { "drugs": ["simvastatin", "amlodipine"], "severity": "moderate", "effect": "Raises simvastatin levels; keep simvastatin at 20 mg a day or less." },
-    { "drugs": ["perindopril", "spironolactone"], "severity": "moderate", "effect": "Risk of high potassium." },
-    { "drugs": ["clopidogrel", "omeprazole"], "severity": "moderate", "effect": "May reduce clopidogrel's effect." },
-    { "drugs": ["aspirin", "ibuprofen"], "severity": "moderate", "effect": "Stomach bleeding risk; may blunt aspirin's heart protection." }
-  ],
   "herbs": [
-    { "names": ["ginkgo"], "affects_classes": ["antiplatelet", "anticoagulant"], "effect": "Bleeding risk." },
-    { "names": ["bitter gourd", "peria", "momordica"], "affects_classes": ["sulfonylurea", "biguanide", "insulin"], "effect": "Blood sugar may drop further." },
-    { "names": ["garlic"], "affects_classes": ["anticoagulant"], "effect": "Bleeding risk with high-dose garlic supplements." },
-    { "names": ["st john's wort", "st johns wort"], "affects_generics": ["warfarin", "clopidogrel", "simvastatin"], "effect": "Can lower the effect of this medicine." }
+    {
+      "names": ["ginkgo"],
+      "affects_classes": ["antiplatelet", "anticoagulant"],
+      "effect": "Possible bleeding concern; controlled studies did not confirm a consistent increase, so evidence is mixed.",
+      "sources": [
+        "https://pubmed.ncbi.nlm.nih.gov/18214851/",
+        "https://pubmed.ncbi.nlm.nih.gov/32478963/"
+      ]
+    },
+    {
+      "names": ["bitter gourd", "peria", "momordica"],
+      "affects_classes": ["sulfonylurea", "biguanide", "insulin"],
+      "effect": "May add to glucose-lowering treatment; evidence for specific combinations is limited. Monitor glucose and review with a clinician.",
+      "sources": [
+        "https://pubmed.ncbi.nlm.nih.gov/35140559/",
+        "https://pubmed.ncbi.nlm.nih.gov/25429471/"
+      ]
+    },
+    {
+      "names": ["garlic"],
+      "affects_classes": ["anticoagulant"],
+      "effect": "Bleeding concern is reported, but a small controlled study found no significant warfarin effect; this warning is precautionary, especially for concentrated supplements.",
+      "sources": [
+        "https://pubmed.ncbi.nlm.nih.gov/18516070/",
+        "https://pubmed.ncbi.nlm.nih.gov/36304597/"
+      ]
+    },
+    {
+      "names": ["st john's wort", "st johns wort"],
+      "affects_generics": ["warfarin", "simvastatin"],
+      "effect": "May change medicine exposure or effect; a controlled study found lower simvastatin exposure. Check the product and medicine with a clinician.",
+      "sources": [
+        "https://pubmed.ncbi.nlm.nih.gov/11753267/",
+        "https://pubmed.ncbi.nlm.nih.gov/32478963/"
+      ]
+    }
   ]
 }

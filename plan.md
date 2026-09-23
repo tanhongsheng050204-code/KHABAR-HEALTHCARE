@@ -192,7 +192,7 @@ flowchart LR
 | Data | Source | Notes |
 |---|---|---|
 | Patients | Script generating ~30 Malaysian-style fake patients (Malay, Chinese, Indian and East Malaysian names; mixed languages; diabetes, hypertension, heart and kidney conditions; allergies; medicines from 2–3 clinics; some herbal use) | **No real patient data, ever** |
-| Drug–drug interactions | **DDInter 2.0** (ddinter2.scbdd.com) | CC BY-NC 4.0: non-commercial only, **credit it in the README**. Cover only the drugs your fake patients take. |
+| Drug–drug interactions | **DDInter 2.0** (ddinter.scbdd.com) | CC BY-NC-SA 4.0: non-commercial only, **credit it in the README**. Cover only the drugs your fake patients take. |
 | Brand to generic names | Hand-made table of ~50 drugs, checked against NPRA's QUEST3+ product search | No bulk download exists |
 | Herb–drug interactions | Hand-curated list of ~20 herbs common in Malaysia, from published sources | Record the source for each row |
 | Red flags | Doctor-style list per condition in BM, English, Chinese and Tamil | Example for low blood sugar: *pening, berpeluh, menggeletar* |
@@ -324,7 +324,7 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 
 ## 11. Going public
 - README credit: *"Inspired by CliniFlow AI (UM Hackathon 2026 champion)."*
-- README credit: *"Drug interaction data: DDInter 2.0 (CC BY-NC 4.0)."*
+- README credit: *"Drug interaction data: DDInter 2.0 (CC BY-NC-SA 4.0)."*
 - State clearly: **fake data only; not a medical device; not for clinical use.**
 - Check that the `khabar` domain and GitHub name are free before announcing.
 

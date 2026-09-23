@@ -8,7 +8,8 @@
 
 The local core product is largely implemented and tested:
 
-- API: **161 automated tests passing**.
+- API: **182 automated tests passing**.
+- Agents: **183 automated tests passing** (project virtual environment).
 - Next.js web app: linting and TypeScript checks pass.
 - The main clinical workflow, access rules, encryption, de-identification, follow-up logic, and demo data are implemented locally.
 
@@ -113,15 +114,16 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 3.1 Medicine-packet photo reading (B4)
 
-**Status:** Not implemented. The patient can maintain a typed medicine/remedy list, but no photo upload, OCR, image understanding, or reconciliation-from-image flow exists.
+**Status:** Partially implemented locally (23 Sep 2026). Patient/clinic-authorized users can upload an explicitly consented packet image through the API to the configured Gemini service for ephemeral label extraction. Results are mapped to known generics where possible and require user review before the existing medication-list add flow. The API and agent do not persist the image. A real-provider test and end-to-end reconciliation test remain open.
 
 **Required work**
 
-- [ ] Add a privacy-safe image upload flow and retention policy for fake data.
-- [ ] Add packet-label extraction / vision processing behind the agent service.
-- [ ] Match brand names to generics and ask for confirmation when confidence is low.
-- [ ] Add extracted items to the existing medication reconciliation workflow.
-- [ ] Test duplicate and herb-clash findings originating from the photo-derived list.
+- [x] Add a consent-gated, size/MIME-checked image upload flow; uploads are not stored by Khabar and the UI warns to use fake/demo packets unless real-patient use is approved.
+- [x] Add packet-label extraction behind the authenticated agent service (`services/agents/agents/packet_reader.py`).
+- [x] Map extracted ingredient/brand text against known generics; present confidence/evidence and require explicit review before adding.
+- [x] Connect reviewed candidate selection to the existing medication list.
+- [ ] Test duplicate and herb-clash findings end-to-end from a photo-derived item; current automated tests cover validation, auth/consent, extraction schema and generic mapping, not a real OCR result.
+- [ ] Run a real Gemini test on fictional packet images and confirm OCR quality/limitations.
 
 **Scope note:** This is a P1 feature and may be reduced to the existing typed medicine list if time is limited.
 
@@ -140,14 +142,15 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### 3.3 DDInter data replacement
 
-**Status:** The safety checker works with seed data. Replacing it with the planned limited DDInter subset remains unfinished.
+**Status:** A reproducible DDInter 2.0 subset is now used by the checker (23 Sep 2026). Herb rules now include literature references and evidence caveats. Gliclazide has no pair records in the downloaded DDInter files; absence is not treated as safety.
 
 **Required work**
 
-- [ ] Build a small, reproducible subset covering the fake patients’ medicines only.
-- [ ] Preserve DDInter attribution and the CC BY-NC 4.0 notice in the README.
-- [ ] Add source references for the Malaysian herb-interaction list.
-- [ ] Re-run the planted-error tests against the refreshed data.
+- [x] Build a small, reproducible subset covering the demo generics (`services/agents/scripts/import_ddinter.py`; 70 pairs from the eight official CSV files).
+- [x] Preserve DDInter attribution and the CC BY-NC-SA 4.0 notice in the README.
+- [x] Add literature references and evidence caveats to the four herb rules. A locally curated Malaysian herb list still needs pharmacist review.
+- [x] Re-run the evaluator and planted-error checks: 35 passed. The one graph-endpoint test was deselected because the machine-wide Python lacks the Neo4j driver.
+- [x] Full local agent suite passed (183 tests); full API suite passed (181 tests, including Neo4j-backed tests), then the packet raw-byte transport test passed in the focused API service suite (4 tests). Combined API test count is 182. One Starlette/AnyIO deprecation warning remains.
 
 ### 3.4 Doctor writing-style learning (V5)
 
@@ -177,15 +180,16 @@ The remaining work is primarily real-provider integration, missing stretch featu
 - [ ] Bug bash the core workflow.
 - [ ] Prepare stable fake demo data, including Mak Cik Aminah’s full story.
 - [ ] Move services to reliable / always-on hosting before a live demo.
-- [ ] Prepare 3-, 5-, and 7-minute pitch versions.
+- [x] Prepare first drafts of 3-, 5-, and 7-minute pitch versions (`docs/PITCH_SCRIPTS.md`). Personalization, factual check against the live demo environment, and timed rehearsal remain open.
 - [ ] Record and review a demo video.
 - [ ] Rehearse the demo with poor-network and provider-failure fallbacks.
+- [x] Create a repeatable rehearsal checklist with core workflow, role/access checks, failure fallbacks, and a result template (`docs/DEMO_RUN_CHECKLIST.md`). This is preparation only; no rehearsal result is implied.
 
 ### 4.3 Documentation habit
 
 **Status:** `docs/EXPLAIN.md` exists, but daily coverage has not been verified.
 
-- [ ] Add a brief daily entry explaining major code changes in your own words.
+- [x] Add a dated entry explaining the DDInter evaluator and sign-in changes in plain language (`docs/EXPLAIN.md`, 23 Sep 2026). Ongoing daily coverage remains the builder's responsibility.
 - [ ] Record architecture decisions, integration credentials setup steps without secrets, and test results.
 - [ ] Keep a short list of code areas you can personally explain for the SDC review.
 
@@ -221,4 +225,3 @@ Do not mark a task complete merely because code exists. Mark it complete only wh
 - **Provider integration:** a successful test against the real provider using fake data.
 - **Security/access work:** an explicit denied-access test as well as an allowed-access test.
 - **Demo work:** one uninterrupted rehearsal from deployed URLs.
-

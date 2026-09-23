@@ -154,6 +154,18 @@ public class AgentClientService {
         return result == null || result.get("text") == null ? "" : result.get("text").toString();
     }
 
+    /** Sends a user-consented packet image inline to the agent for ephemeral label extraction. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> readMedicinePacket(byte[] image, String mimeType) {
+        return restClient.post()
+                .uri(uri -> uri.path("/agents/packet/read").queryParam("mime_type", mimeType).build())
+                .contentType(MediaType.parseMediaType(mimeType))
+                .header("X-Image-Consent-Confirmed", "true")
+                .body(image)
+                .retrieve()
+                .body(Map.class);
+    }
+
     /** The generics of medicine names and the herbs in remedy names, from the agents' drug data. */
     public AgentDtos.Normalised normalise(List<String> medicines, List<String> herbs) {
         return restClient.post()

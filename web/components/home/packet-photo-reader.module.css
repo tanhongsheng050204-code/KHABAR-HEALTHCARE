@@ -1,0 +1,34 @@
+.card {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 17px;
+  background: #f8fbfa;
+  border: 1px solid #dce9e6;
+  border-radius: 13px;
+}
+.heading { display: flex; align-items: center; gap: 11px; }
+.heading > span { display: grid; place-items: center; width: 34px; height: 34px; color: #176e68; background: #e4f2ef; border-radius: 10px; }
+.heading h3 { margin: 0; color: #1b3738; font-size: .85rem; }
+.heading p { margin: 4px 0 0; color: #6d8384; font-size: .69rem; line-height: 1.45; }
+.form { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; }
+.fileLabel { display: flex; align-items: center; gap: 8px; min-height: 39px; padding: 0 12px; color: #275b59; background: #fff; border: 1px solid #cddedb; border-radius: 9px; font-size: .72rem; font-weight: 680; cursor: pointer; }
+.fileLabel input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.fileLabel:focus-within { outline: 2px solid #4f9b90; outline-offset: 2px; }
+.consent { display: flex; flex: 1 1 100%; align-items: start; gap: 9px; color: #536d70; font-size: .68rem; line-height: 1.5; }
+.consent input { flex: 0 0 auto; margin: 3px 0 0; accent-color: #14766e; }
+.form button, .candidate button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.form button:disabled, .candidate button:disabled { opacity: .55; cursor: not-allowed; }
+.results { display: grid; gap: 9px; }
+.candidate { display: grid; gap: 7px; padding: 12px; background: #fff; border: 1px solid #dae8e5; border-radius: 10px; }
+.candidate > div { display: grid; gap: 3px; }
+.candidate strong { color: #263f40; font-size: .77rem; }
+.candidate span, .candidate small, .candidate p, .empty { margin: 0; color: #6c8182; font-size: .67rem; line-height: 1.5; }
+.candidate > p { color: #465f61; }
+.kindChoice { display: grid; gap: 4px; max-width: 270px; color: #526d6e; font-size: .66rem; font-weight: 700; }
+.kindChoice select { min-height: 35px; padding: 0 9px; color: #30494a; background: #fff; border: 1px solid #d3e1de; border-radius: 8px; font: inherit; }
+.candidate button { justify-self: start; min-height: 34px; }
+.error { margin: 0; color: #a63c34; font-size: .72rem; }
+.empty { padding: 11px; background: #fff; border-radius: 9px; }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

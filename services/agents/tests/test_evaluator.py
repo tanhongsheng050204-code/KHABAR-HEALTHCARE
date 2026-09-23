@@ -32,10 +32,25 @@ def test_major_interaction_with_a_medicine_from_another_clinic_is_critical():
     assert "interaction" in checks(findings, "CRITICAL")
 
 
-def test_moderate_interaction_is_a_warning():
+def test_ddinter_major_interaction_is_critical():
     findings = evaluate(draft(current_meds=[CurrentMed(name="Amlodipine")], prescription=[Rx(name="Simvastatin", dose_mg=40)]))
     assert checks(findings) == ["interaction"]
+    assert findings[0].severity == "CRITICAL"
+    assert "DDInter 2.0 level Major" in findings[0].detail
+
+
+def test_ddinter_minor_interaction_is_a_warning():
+    findings = evaluate(draft(current_meds=[CurrentMed(name="Warfarin")], prescription=[Rx(name="Simvastatin", dose_mg=20)]))
+    assert checks(findings) == ["interaction"]
     assert findings[0].severity == "WARN"
+    assert "level Minor" in findings[0].detail
+
+
+def test_ddinter_unknown_severity_stays_visible_as_a_warning():
+    findings = evaluate(draft(current_meds=[CurrentMed(name="Amlodipine")], prescription=[Rx(name="Metformin", dose_mg=500)]))
+    assert checks(findings) == ["interaction"]
+    assert findings[0].severity == "WARN"
+    assert "level Unknown" in findings[0].detail
 
 
 def test_same_medicine_under_two_brand_names_is_a_critical_duplicate():

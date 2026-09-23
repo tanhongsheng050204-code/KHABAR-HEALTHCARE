@@ -35,5 +35,8 @@ def test_names_not_in_the_drug_list_are_left_for_the_doctor_to_check():
     assert checks(findings) == ["unrecognised"]
 
 
-def test_a_tidy_list_has_no_findings():
-    assert reconcile([KK, CurrentMed(name="Amlodipine 5mg", source="Klinik Kesihatan")], herbs=[]) == []
+def test_ddinter_unknown_pair_is_cautioned_even_when_no_duplicate_or_known_clash_exists():
+    findings = reconcile([KK, CurrentMed(name="Amlodipine 5mg", source="Klinik Kesihatan")], herbs=[])
+    assert checks(findings) == ["interaction"]
+    assert findings[0].severity == "WARN"
+    assert "Unknown" in findings[0].detail

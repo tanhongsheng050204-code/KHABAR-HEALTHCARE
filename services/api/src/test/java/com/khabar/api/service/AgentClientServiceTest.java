@@ -24,6 +24,9 @@ class AgentClientServiceTest {
     final AtomicReference<String> query = new AtomicReference<>();
     final AtomicReference<String> contentType = new AtomicReference<>();
     final AtomicReference<byte[]> audio = new AtomicReference<>();
+    final AtomicReference<byte[]> packetImage = new AtomicReference<>();
+    final AtomicReference<String> consentConfirmed = new AtomicReference<>();
+    final AtomicReference<String> packetContentType = new AtomicReference<>();
 
     @BeforeEach
     void startFakeAgentsService() throws IOException {
@@ -53,6 +56,17 @@ class AgentClientServiceTest {
             contentType.set(exchange.getRequestHeaders().getFirst("Content-Type"));
             audio.set(exchange.getRequestBody().readAllBytes());
             byte[] reply = "{\"text\":\"c/o pening\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, reply.length);
+            exchange.getResponseBody().write(reply);
+            exchange.close();
+        });
+        server.createContext("/agents/packet/read", exchange -> {
+            query.set(exchange.getRequestURI().getQuery());
+            consentConfirmed.set(exchange.getRequestHeaders().getFirst("X-Image-Consent-Confirmed"));
+            packetContentType.set(exchange.getRequestHeaders().getFirst("Content-Type"));
+            packetImage.set(exchange.getRequestBody().readAllBytes());
+            byte[] reply = "{\"candidates\":[],\"unreadable\":true,\"message\":\"\"}".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, reply.length);
             exchange.getResponseBody().write(reply);
@@ -100,5 +114,18 @@ class AgentClientServiceTest {
         assertThat(audio.get()).containsExactly(9, 8, 7);
         assertThat(contentType.get()).isEqualTo("application/octet-stream");
         assertThat(query.get()).contains("language=ms").contains("filename=visit.webm");
+    }
+
+    @Test
+    void sendsThePacketImageAsRawBytesWithConsentAndMimeType() {
+        AgentClientService client = new AgentClientService("http://127.0.0.1:" + server.getAddress().getPort(), "secret-key");
+
+        Map<String, Object> reply = client.readMedicinePacket(new byte[]{(byte) 0xff, (byte) 0xd8, (byte) 0xff}, "image/jpeg");
+
+        assertThat(packetImage.get()).containsExactly((byte) 0xff, (byte) 0xd8, (byte) 0xff);
+        assertThat(packetContentType.get()).isEqualTo("image/jpeg");
+        assertThat(consentConfirmed.get()).isEqualTo("true");
+        assertThat(query.get()).isEqualTo("mime_type=image/jpeg");
+        assertThat(reply).containsEntry("unreadable", true);
     }
 }

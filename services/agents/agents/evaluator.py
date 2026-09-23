@@ -13,6 +13,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "drugs.json"
+DDINTER_FILE = Path(__file__).resolve().parents[1] / "data" / "ddinter_interactions.json"
 SYMPTOMS_FILE = Path(__file__).resolve().parents[1] / "data" / "symptoms.json"
 REQUIRED_REPORT_FIELDS = ("diagnosis", "plan", "follow_up")
 
@@ -56,6 +57,11 @@ class Finding(BaseModel):
 @lru_cache(maxsize=1)
 def _data() -> dict:
     return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def _ddinter() -> dict:
+    return json.loads(DDINTER_FILE.read_text(encoding="utf-8"))
 
 
 _DOSE = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mg|mcg|g|ml|iu)\b")
@@ -121,12 +127,15 @@ def _check_duplicates(prescribed: dict[str, Rx], current: dict[str, list[Current
 def _check_interactions(prescribed: dict[str, Rx], current: dict[str, list[CurrentMed]]) -> list[Finding]:
     all_drugs = set(prescribed) | set(current)
     found = []
-    for rule in _data()["interactions"]:
+    for rule in _ddinter()["interactions"]:
         a, b = rule["drugs"]
         involves_new = a in prescribed or b in prescribed
         if a in all_drugs and b in all_drugs and involves_new:
-            severity = "CRITICAL" if rule["severity"] == "major" else "WARN"
-            found.append(Finding(check="interaction", severity=severity, detail=f"{a.title()} + {b.title()}: {rule['effect']}"))
+            severity = "CRITICAL" if rule["level"] == "major" else "WARN"
+            level = rule["level"].title()
+            ids = ", ".join(rule["ddinter_ids"])
+            found.append(Finding(check="interaction", severity=severity,
+                                 detail=f"{a.title()} + {b.title()}: DDInter 2.0 level {level} (records {ids}); check the clinical context."))
     return found
 
 
@@ -290,11 +299,14 @@ def reconcile(current_meds: list[CurrentMed], herbs: list[str], patient: Optiona
             findings.append(Finding(check="allergy", severity="CRITICAL",
                                     detail=f"{generic.title()} is being taken, but the patient is allergic to {', '.join(sorted(hits))}."))
 
-    for rule in _data()["interactions"]:
+    for rule in _ddinter()["interactions"]:
         a, b = rule["drugs"]
         if a in groups and b in groups:
-            severity = "CRITICAL" if rule["severity"] == "major" else "WARN"
-            findings.append(Finding(check="interaction", severity=severity, detail=f"{a.title()} + {b.title()}: {rule['effect']}"))
+            severity = "CRITICAL" if rule["level"] == "major" else "WARN"
+            level = rule["level"].title()
+            ids = ", ".join(rule["ddinter_ids"])
+            findings.append(Finding(check="interaction", severity=severity,
+                                    detail=f"{a.title()} + {b.title()}: DDInter 2.0 level {level} (records {ids}); check the clinical context."))
 
     taken = {generic: Rx(name=generic) for generic in groups}
     findings += _check_herbs(Draft(patient=patient, herbs=herbs), taken)
