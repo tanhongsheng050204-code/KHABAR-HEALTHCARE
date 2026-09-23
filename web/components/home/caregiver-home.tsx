@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/api"
 import type { Me, Medication, Patient, Reading, Summary } from "@/lib/types"
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui"
 import styles from "@/app/home/home.module.css"
+import { greetingName } from "@/lib/names"
 
 type Notice={tone:"error"|"success"|"info";text:string}
 
@@ -28,7 +29,7 @@ export function CaregiverHome({me,notify}:{me:Me;notify:(notice:Notice|null)=>vo
   },[linkedPatientId,notify])
 
   return <main className={styles.workspace} id="overview">
-    <section className={styles.workspaceIntro}><div><p>Consented caregiver access</p><h1>Hello, {me.displayName.split(" ")[0]}.</h1><span>You only see what the patient has chosen to share.</span></div><div className={styles.consentSeal}><ShieldCheck size={18}/>Consent active</div></section>
+    <section className={styles.workspaceIntro}><div><p>Consented caregiver access</p><h1>Hello, {greetingName(me.displayName)}.</h1><span>You only see what the patient has chosen to share.</span></div>{linkedPatientId&&<div className={styles.consentSeal}><ShieldCheck size={18}/>Consent active</div>}</section>
     {!linkedPatientId?<section className={styles.permissionCard}><span><LockKeyhole size={25}/></span><div><p>Caregiver connection</p><h2>Your account is ready for an invitation.</h2><p>Ask the patient for their one-time invitation code, then sign out and enter it from the sign-in screen. Access begins only after the patient grants consent.</p></div></section>:<>
       <section className={styles.caregiverHero}><div><span className={styles.largeAvatar}><UserRound size={24}/></span><div><p>Supporting</p><h2>{patient?.fullName||"Shared patient"}</h2><span>{patient?.clinicName}</span></div></div><div><ShieldCheck size={18}/><span><strong>Read-only view</strong>You cannot change the clinical record.</span></div></section>
       <div className={styles.caregiverGrid}><section className={styles.peopleCard}><SectionHeading eyebrow="Latest plan" title="What matters now"/>{summary?<><blockquote className={styles.caregiverSummary}>{summary.text}</blockquote>{summary.needsDoctor&&<div className={styles.doctorAttention}><HeartPulse size={17}/><span><strong>Needs clinic advice</strong>{summary.needsDoctor}</span></div>}</>:<EmptyState title="No care summary yet" copy="The latest finalised plan will appear here when it is ready."/>}</section><aside className={styles.peopleCard}><SectionHeading eyebrow="Shared context" title="Medicines"/><div className={styles.compactList}>{medicines.map(m=><div key={m.id}><Pill size={16}/><span><strong>{m.name}</strong><small>{m.source||"Source not stated"}</small></span></div>)}{!medicines.length&&<p>No medicines have been shared.</p>}</div></aside></div>

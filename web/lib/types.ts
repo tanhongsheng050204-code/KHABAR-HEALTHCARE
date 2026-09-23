@@ -23,7 +23,7 @@ export type Intake = {
 
 export type Finding = { id: string; check: string; severity: "CRITICAL" | "WARNING" | "INFO"; detail: string; overrideReason: string | null }
 export type PrescriptionLine = { raw: string; name: string | null; strengthMg: number | null; unitsPerDose: number | null; timesPerDay: number | null; timing: string | null; asNeeded: boolean }
-export type Encounter = { id: string; patientId: string; status: "DRAFT" | "FINAL"; diagnosis: string | null; plan: string | null; followUp: string | null; prescription: PrescriptionLine[]; findings: Finding[]; checked: boolean; openCriticalFindings: number; fasting?: boolean }
+export type Encounter = { id: string; patientId: string; status: "DRAFT" | "FINAL"; notes?: string | null; diagnosis: string | null; plan: string | null; followUp: string | null; prescription: PrescriptionLine[]; findings: Finding[]; checked: boolean; openCriticalFindings: number; fasting?: boolean }
 
 export type Previsit = {
   patient: Patient & { allergies: string[]; pregnant: boolean }
