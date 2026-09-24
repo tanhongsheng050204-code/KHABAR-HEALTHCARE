@@ -1,7 +1,7 @@
 # Khabar UI redesign — implementation and verification
 
 Date: 24 September 2026  
-Status: implemented locally; remaining browser verification listed below. Not committed, pushed, or deployed as part of this work.
+Status: implemented, committed and published to the live web app on 24 September 2026 (GitHub deploy workflow). Remaining browser verification is listed below.
 
 ## Approved direction
 

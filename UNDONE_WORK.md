@@ -18,7 +18,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 ### UI redesign update — 24 September 2026
 
-The approved teal/lavender care-story redesign is implemented locally across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. Frontend lint, TypeScript, and production build pass. This is not yet a published release.
+The approved teal/lavender care-story redesign is implemented locally across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. Frontend lint, TypeScript, and production build pass. Published on 24 Sep through the GitHub deploy workflow; the new landing and login pages were confirmed on the live site.
 
 See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the implementation summary and explicit remaining checks. Local patient and doctor browser flows have since been verified; device reduced-motion, full accessibility checks, real sign-in, and deployment verification remain open.
 
@@ -51,7 +51,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 - [ ] Configure Supabase Auth for doctor email/password and patient/caregiver email OTP.
 - [x] Configure the web app with the public Supabase URL and publishable key (already set on the `khabar-landing` project).
-- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API. Local part done (24 Sep): the API now accepts real Supabase sign-ins (ES256, checked against the project's published keys) and the demo buttons' HS256 tokens side by side, each only against its own key (`SecurityConfig.jwtDecoder`). `SupabaseTokenDecoderTest` (8 tests) covers both token kinds, another project's key, the wrong secret, expired tokens, the wrong audience, unsigned and malformed tokens, and refusing to start with neither key configured. The live key set was checked: one ES256 P-256 key. The issuer is not checked: the project's key set already pins tokens to this project. Still open: deploy `khabar-api` (production has both `SUPABASE_JWKS_URL` and `SUPABASE_JWT_SECRET`, and the currently deployed code uses only the key set when both are present, which refuses demo-button tokens), then confirm one real and one demo sign-in on the live site.
+- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API. Local part done (24 Sep): the API now accepts real Supabase sign-ins (ES256, checked against the project's published keys) and the demo buttons' HS256 tokens side by side, each only against its own key (`SecurityConfig.jwtDecoder`). `SupabaseTokenDecoderTest` (8 tests) covers both token kinds, another project's key, the wrong secret, expired tokens, the wrong audience, unsigned and malformed tokens, and refusing to start with neither key configured. The live key set was checked: one ES256 P-256 key. The issuer is not checked: the project's key set already pins tokens to this project. Deployed to `khabar-api` production on 24 Sep (production has both `SUPABASE_JWKS_URL` and `SUPABASE_JWT_SECRET`; the code deployed before this used only the key set when both were present, which refused demo-button tokens). Still open: confirm one real and one demo sign-in on the live site.
 - [ ] Test doctor, patient, and caregiver sign-in on the deployed web app.
 - [ ] Test revoked caregiver consent immediately blocks access in the deployed environment.
 
@@ -59,7 +59,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ### 1.3 Verify the deployed end-to-end product
 
-**Status:** Deployed rehearsal with demo sign-in passed on 23 Sep (see the end of [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Still open: the same run with real Supabase sign-in, AuraDB connected, and the web deploy workflow fixed (its `VERCEL_TOKEN` secret is invalid).
+**Status:** Deployed rehearsal with demo sign-in passed on 23 Sep (see the end of [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Still open: the same run with real Supabase sign-in and AuraDB connected. The web deploy workflow was fixed on 24 Sep (new token; the org and project ID secrets had a hidden character from a PowerShell pipe): every push to `main` that changes `web/` now lints, type-checks and deploys the web app.
 
 **Required work**
 
