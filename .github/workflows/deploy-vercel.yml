@@ -1,9 +1,15 @@
 name: Deploy Khabar web to Vercel
 
+# Every push to main that changes the web app goes live on khabar-landing.
+# The API and agents (services/) are a separate Vercel project and are deployed by hand.
 on:
   push:
     branches:
       - main
+    paths:
+      - "web/**"
+      - ".github/workflows/deploy-vercel.yml"
+  workflow_dispatch:
 
 concurrency:
   group: khabar-vercel-production
@@ -11,7 +17,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build and deploy production
+    name: Check, build and deploy production
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,11 +27,27 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # A broken UI never reaches the live site: lint and type errors stop the deploy.
+      - name: Lint and type-check
+        working-directory: web
+        run: |
+          npm ci
+          npm run lint
+          npm run typecheck
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@59.25.0
+        run: npm install --global vercel@59.26.0
 
+      # The project's Root Directory is web/, so these run from the repository root.
       - name: Pull production configuration
         run: vercel pull --yes --environment=production
 
