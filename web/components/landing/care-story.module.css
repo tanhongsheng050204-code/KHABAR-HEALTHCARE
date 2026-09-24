@@ -1,0 +1,407 @@
+.scene {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  padding: 24px;
+  color: #f4f8f5;
+  background:
+    radial-gradient(ellipse at 80% 5%, #357872 0, transparent 58%),
+    linear-gradient(145deg, #173b3f, #082c30);
+  border: 1px solid #ffffff24;
+  border-radius: 32px;
+  box-shadow: 0 30px 70px -35px #0b3e3966;
+  overflow: hidden;
+}
+.sceneTop,
+.sceneTop > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.sceneTop {
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.sceneTop > span {
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+.sceneTop small {
+  font-size: 0.65rem;
+  color: #cfdfdc;
+}
+.orbit {
+  position: absolute;
+  inset: 25px;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.orbit i {
+  position: absolute;
+  width: 90%;
+  aspect-ratio: 1;
+  border: 1px solid #d4e6df15;
+  border-radius: 50%;
+  transform: rotate(-25deg) scaleY(0.65);
+}
+.orbit i:nth-child(2) {
+  transform: rotate(30deg) scaleY(0.7);
+}
+.orbit i:nth-child(3) {
+  width: 55%;
+  transform: rotate(75deg) scaleY(0.7);
+}
+.people {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 34px 14px 25px;
+}
+.person {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.person > span {
+  font-size: 0.73rem;
+  color: #e1ebe7;
+  white-space: nowrap;
+}
+.portrait,
+.clinician {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 79px;
+  height: 79px;
+  border: 5px solid #ffffff13;
+  border-radius: 50%;
+  background: #d9d0ee;
+  background-clip: padding-box;
+  color: #3e3157;
+  font-family: Georgia, serif;
+  font-size: 2.4rem;
+}
+.portrait > span {
+  position: absolute;
+  bottom: -5px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: #e0eaca;
+  border: 3px solid #194346;
+  border-radius: 50%;
+  color: #214e45;
+  font-size: 1.1rem;
+}
+.clinician {
+  background-color: #c1dbcd;
+  color: #174d46;
+}
+.connection {
+  position: relative;
+  flex: 1;
+  max-width: 110px;
+  display: grid;
+  place-items: center;
+  margin-top: -25px;
+}
+.connection > div {
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1px;
+  background: #b7d4c4;
+  transform-origin: left;
+}
+.connection > span {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: #285753;
+  color: #d7eaca;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #a2c5b660;
+}
+.storyCards {
+  position: relative;
+  padding: 0 0 42px;
+  min-height: 300px;
+}
+.phone {
+  width: 69%;
+  min-width: 250px;
+  background: #fffefa;
+  border: 5px solid #ebefe8;
+  border-radius: 22px;
+  color: #153e3c;
+  box-shadow: 0 16px 35px #041c3030;
+  overflow: hidden;
+}
+.phoneTop {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 15px 12px;
+  border-bottom: 1px solid #e4ece4;
+}
+.phoneTop > span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #daeae1;
+}
+.phoneTop > div {
+  display: grid;
+  gap: 2px;
+}
+.phoneTop strong {
+  font-size: 0.8rem;
+}
+.phoneTop small {
+  font-size: 0.61rem;
+  color: #596e65;
+}
+.phoneTop > i {
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  background: #327369;
+  border-radius: 50%;
+}
+.messages {
+  display: grid;
+  gap: 13px;
+  min-height: 182px;
+  padding: 18px 14px;
+}
+.messages p {
+  max-width: 88%;
+  margin: 0;
+  padding: 11px 12px;
+  background: #eaf1e7;
+  border-radius: 3px 13px 13px;
+  font-size: 0.77rem;
+  line-height: 1.6;
+}
+.messages p + p {
+  justify-self: end;
+  background: #195f57;
+  color: white;
+  border-radius: 13px 3px 13px 13px;
+}
+.messages svg {
+  display: block;
+  margin: 5px 0 0 auto;
+}
+.phoneFoot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 12px;
+  color: #63766d;
+  font-size: 0.6rem;
+  background: #f2f5ee;
+}
+.phoneFoot > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #407c67;
+}
+.clinicCard {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  width: 52%;
+  padding: 20px;
+  color: #2e2842;
+  background: #e9e2f4;
+  border: 1px solid #f3edff;
+  border-radius: 20px;
+  box-shadow: 0 14px 35px #071c3340;
+}
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: #fff9;
+  border-radius: 12px;
+  color: #625082;
+}
+.clinicCard > small {
+  font-size: 0.57rem;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  color: #645774;
+}
+.clinicCard > strong {
+  font-size: 1.1rem;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.clinicCard > p {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: #62566f;
+}
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding-top: 12px;
+  border-top: 1px solid #c9bed9;
+  font-size: 0.6rem;
+}
+.cardFooter > span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #d2c2e7;
+  font-weight: 750;
+}
+.cardFooter > svg {
+  margin-left: auto;
+}
+.caption {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-height: 80px;
+  padding: 21px 0;
+}
+.caption > span {
+  font-size: 0.62rem;
+  color: #c3d5ce;
+  white-space: nowrap;
+}
+.caption > p {
+  margin: 0;
+  max-width: 350px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.4rem;
+  line-height: 1.15;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 5px;
+  padding-top: 14px;
+  border-top: 1px solid #bed8ca33;
+}
+.controls button {
+  min-height: 48px;
+  padding: 7px 5px;
+  text-align: left;
+  color: #c6dcd3;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.63rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.controls button > span {
+  display: block;
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
+.controls button[aria-pressed="true"] {
+  color: #fff;
+  background: #ffffff12;
+}
+.controls button:hover {
+  background: #ffffff18;
+}
+.controls .play {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+}
+.controls .play:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+@media (max-width: 680px) {
+  .scene {
+    padding: 20px 15px;
+    border-radius: 24px;
+  }
+  .sceneTop > span {
+    font-size: 0.72rem;
+  }
+  .sceneTop small {
+    font-size: 0.57rem;
+  }
+  .people {
+    margin: 28px 10px 24px;
+  }
+  .person > span {
+    font-size: 0.64rem;
+  }
+  .portrait,
+  .clinician {
+    width: 66px;
+    height: 66px;
+  }
+  .storyCards {
+    padding-bottom: 84px;
+  }
+  .phone {
+    width: 85%;
+    min-width: 0;
+  }
+  .clinicCard {
+    width: 61%;
+    padding: 15px;
+    gap: 7px;
+  }
+  .clinicCard > p {
+    font-size: 0.68rem;
+  }
+  .clinicCard > strong {
+    font-size: 0.96rem;
+  }
+  .clinicCard > small {
+    font-size: 0.52rem;
+  }
+  .cardIcon {
+    width: 28px;
+    height: 28px;
+  }
+  .cardFooter {
+    font-size: 0.56rem;
+  }
+  .caption > p {
+    font-size: 1.25rem;
+  }
+  .controls {
+    gap: 2px;
+  }
+  .controls button {
+    font-size: 0.59rem;
+  }
+  .controls .play {
+    min-width: 30px;
+  }
+}

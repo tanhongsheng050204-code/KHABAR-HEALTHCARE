@@ -12,6 +12,7 @@ import {
 import { Brand } from "@/components/brand";
 import { CareThread } from "@/components/landing/care-thread";
 import { ProductPreview } from "@/components/landing/product-preview";
+import { CareStory } from "@/components/landing/care-story";
 import {
   LandingMotion,
   CareOrbit,
@@ -33,6 +34,7 @@ export default function LandingPage() {
           <Brand />
           <nav aria-label="Main navigation">
             <a href="#journey">How it works</a>
+            <a href="#preview">Explore the app</a>
             <a href="#safety">Safety</a>
             <Link className="button-secondary" href="/login">
               Sign in
@@ -58,7 +60,7 @@ export default function LandingPage() {
             </p>
             <div className={styles.heroActions}>
               <Link className="button-primary" href="/login">
-                Open Khabar <ArrowRight size={17} />
+                Find your care space <ArrowRight size={17} />
               </Link>
               <a className="button-quiet" href="#journey">
                 Follow the care journey
@@ -77,7 +79,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className={styles.previewWrap}>
-            <ProductPreview />
+            <CareStory />
           </div>
         </section>
         <section
@@ -88,6 +90,25 @@ export default function LandingPage() {
           <p>
             From the question before the appointment to the check-in after it.
           </p>
+        </section>
+        <section className={styles.productTour} id="preview">
+          <Reveal>
+            <div className={styles.tourHeading}>
+              <p className={styles.eyebrow}>
+                <span /> One story. Two perspectives.
+              </p>
+              <h2>
+                A clearer day.
+                <br />
+                <em>On both sides of care.</em>
+              </h2>
+              <p>
+                Switch between the clinic and patient experience. Select a card
+                to see how the details connect.
+              </p>
+            </div>
+            <ProductPreview />
+          </Reveal>
         </section>
         <CareThread />
         <Reveal>

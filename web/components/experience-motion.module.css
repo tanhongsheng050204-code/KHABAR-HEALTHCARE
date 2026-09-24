@@ -1,0 +1,34 @@
+.root {
+  min-height: 100svh;
+}
+.root[data-motion="off"] *,
+.root[data-motion="off"] *::before,
+.root[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 11px;
+  font-size: 0.7rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 100px;
+  cursor: pointer;
+}
+.toggle:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+@media (max-width: 400px) {
+  .toggle {
+    font-size: 0.63rem;
+    padding: 7px;
+  }
+}
