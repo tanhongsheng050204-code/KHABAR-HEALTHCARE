@@ -107,6 +107,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(Arrays.stream(origins.split(",")).map(String::trim).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of(RequestCorrelationFilter.REQUEST_ID_HEADER));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
         source.registerCorsConfiguration("/dev/**", config);

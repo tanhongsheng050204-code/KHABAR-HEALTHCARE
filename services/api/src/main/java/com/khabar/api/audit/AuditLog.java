@@ -31,6 +31,8 @@ public class AuditLog {
     private static String labelFor(AppUser actor) {
         return switch (actor.getRole()) {
             case DOCTOR -> actor.getDisplayName() + (actor.getClinic() != null ? " · " + actor.getClinic().getName() : "");
+            case NURSE -> actor.getDisplayName() + " · nurse";
+            case CLINIC_ADMIN -> actor.getDisplayName() + " · clinic admin";
             case CAREGIVER -> actor.getDisplayName() + " · caregiver";
             case PATIENT -> actor.getDisplayName();
         };

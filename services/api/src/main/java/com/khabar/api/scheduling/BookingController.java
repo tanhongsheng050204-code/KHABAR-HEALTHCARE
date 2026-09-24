@@ -3,6 +3,8 @@ package com.khabar.api.scheduling;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.Clinic;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
 import com.khabar.api.patients.Patient;
@@ -42,12 +44,15 @@ public class BookingController {
     private final PatientRepository patients;
     private final AppointmentRepository appointments;
     private final AdjustableClock clock;
+    private final ClinicStaffAccess staffAccess;
 
-    public BookingController(CurrentUser currentUser, PatientRepository patients, AppointmentRepository appointments, AdjustableClock clock) {
+    public BookingController(CurrentUser currentUser, PatientRepository patients, AppointmentRepository appointments, AdjustableClock clock,
+                             ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.appointments = appointments;
         this.clock = clock;
+        this.staffAccess = staffAccess;
     }
 
     public record Slot(Instant startsAt, String date, String time) {
@@ -131,7 +136,7 @@ public class BookingController {
     @Transactional(readOnly = true)
     public List<DayRow> day(@RequestParam("date") LocalDate date, @AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != Role.DOCTOR || user.getClinic() == null) {
+        if (!staffAccess.hasRole(user, ClinicStaffRole.DOCTOR) || user.getClinic() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The day list is for clinic doctors.");
         }
         Instant from = date.atStartOfDay(zone()).toInstant();
@@ -159,12 +164,13 @@ public class BookingController {
     private Clinic clinicOf(AppUser user) {
         return switch (user.getRole()) {
             case DOCTOR -> {
-                if (user.getClinic() == null) {
+                if (user.getClinic() == null || !staffAccess.hasRole(user, ClinicStaffRole.DOCTOR)) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 }
                 yield user.getClinic();
             }
             case PATIENT -> ownRecord(user).getClinic();
+            case NURSE, CLINIC_ADMIN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Clinic staff cannot book patient visits.");
             case CAREGIVER -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Patients book their own visits.");
         };
     }
@@ -181,8 +187,8 @@ public class BookingController {
         return a.getPatient().getAccount() != null && a.getPatient().getAccount().getId().equals(user.getId());
     }
 
-    private static boolean worksAtTheClinic(AppUser user, Appointment a) {
-        return user.getRole() == Role.DOCTOR && user.getClinic() != null && user.getClinic().getId().equals(a.getClinic().getId());
+    private boolean worksAtTheClinic(AppUser user, Appointment a) {
+        return staffAccess.hasRole(user, ClinicStaffRole.DOCTOR) && user.getClinic() != null && user.getClinic().getId().equals(a.getClinic().getId());
     }
 
     private static ResponseStatusException taken() {

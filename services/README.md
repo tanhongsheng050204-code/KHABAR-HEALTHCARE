@@ -21,6 +21,8 @@ as a Python service, with a Supabase Postgres database. Everything there is fict
 sign in as a demo person. The backend sleeps after five idle minutes, so the first request takes about
 15 seconds.
 
+That deployment is a **public fictional-data demo**, not a clinic-pilot environment. For pilot preparation, the API now has a separate `pilot` Spring profile (`SPRING_PROFILES_ACTIVE=pilot`) that does not load `local` demo controllers or seed data, refuses to start if combined with `local` or `demo`, applies versioned Flyway migrations, validates rather than mutates the resulting schema, and keeps scheduled check-ins off unless explicitly enabled. Fresh databases apply V1 and V2; an existing non-empty database requires a separately reviewed schema comparison and explicit baseline before startup. H2 PostgreSQL-mode migration tests pass; a real PostgreSQL 16 smoke test is configured for CI but has not yet run. Production secrets, existing-database baseline, backup/restore and rollback rehearsal, clinical approval, and deployment remain separate gates. See [the database migration procedure](../docs/DATABASE_MIGRATIONS.md). Do not change the public demo's active profiles to `pilot` as a shortcut.
+
 On the docs page, press **Authorize** and paste a token from `POST /dev/token?as=doctor` to try the
 endpoints as the demo doctor. From the command line:
 
@@ -132,11 +134,13 @@ A blood sugar of 2.8 mmol/L puts Aminah at the top of the call list.
 ## Tests
 
 ```bash
-cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 188 tests
-cd services/api && ./mvnw clean test                              # 184 tests, some against a real in-process Neo4j
+cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 204 tests
+cd services/api && ./mvnw test                                    # 208 pass, 1 optional PostgreSQL smoke skipped; includes Neo4j
 ```
 
 ## Endpoints
+
+Controller/API errors use a stable JSON shape: `code`, `message`, `status`, `requestId` and `retryable`. The server also returns the generated support reference in `X-Request-ID` (exposed to the web app through CORS). A retryable response only means the server classifies the request as safe to retry (currently rate limiting); the client must not automatically repeat clinical write actions.
 
 **API (needs a Supabase sign-in token unless noted).** The same list, with request and response shapes,
 is browsable at [/docs](https://khabar-api.vercel.app/docs).
@@ -207,9 +211,9 @@ After the visit
 | POST | `/api/webhooks/favoriot` | a home device via Favoriot (no sign-in; checked by the `X-Khabar-Device-Secret` header) | A reading from a linked device. Unknown devices are acknowledged and ignored |
 | GET / POST | `/api/webhooks/whatsapp` | Meta (no sign-in; checked by verify token and signature) | The webhook handshake, and replies arriving on WhatsApp. Matched to a patient by a keyed hash of the phone number |
 | GET | `/api/clinic/call-list` | doctor | "Call these patients today", most urgent first. Within a level: replies, then home readings, then missed doses, then patients with no reply for 48 hours |
-| POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Marks the patient's replies and readings as handled and writes it to their access log |
+| POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Records successful contact for open items no newer than the displayed queue snapshot; requires `{ "observedThrough": "<snapshotAt from GET /api/clinic/call-list>" }`. Newer items stay open. Writes the contact to the patient's access log. |
 
-Errors the screens should show come back as `{"status": 409, "message": "..."}`, with a sentence written for people.
+Controller-handled errors use a stable response shape, for example `{"code":"CONFLICT","message":"...","status":409,"requestId":"…","retryable":false}`. The server-generated `X-Request-ID` is also returned as a header; authentication-filter errors may have a different body, but still receive the correlation header.
 
 **Agents (`X-Internal-Service-Key` header required, except `/health`)**
 

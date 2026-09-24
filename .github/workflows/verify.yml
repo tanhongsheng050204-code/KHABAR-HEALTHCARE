@@ -1,0 +1,107 @@
+name: Verify Khabar
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: Spring API tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: khabar_test
+          POSTGRES_USER: khabar_test
+          POSTGRES_PASSWORD: khabar_test_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U khabar_test -d khabar_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: services/api/pom.xml
+
+      - name: Run API tests
+        working-directory: services/api
+        run: ./mvnw --batch-mode --no-transfer-progress test
+
+      - name: Verify pilot migrations on PostgreSQL
+        working-directory: services/api
+        run: ./mvnw --batch-mode --no-transfer-progress -Dkhabar.postgres-smoke=true -Dtest=PostgresPilotSchemaSmokeTest test
+        env:
+          KHABAR_POSTGRES_TEST_URL: jdbc:postgresql://localhost:5432/khabar_test
+          KHABAR_POSTGRES_TEST_USERNAME: khabar_test
+          KHABAR_POSTGRES_TEST_PASSWORD: khabar_test_only
+
+  agents:
+    name: Agent service tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: services/agents/.python-version
+          cache: pip
+          cache-dependency-path: services/agents/requirements.txt
+
+      - name: Install agent dependencies
+        working-directory: services/agents
+        run: python -m pip install -r requirements.txt
+
+      - name: Run agent tests
+        working-directory: services/agents
+        run: python -m pytest -q
+
+  web:
+    name: Web lint, typecheck and production build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Lint
+        working-directory: web
+        run: npm run lint
+
+      - name: Type-check
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Build production application
+        working-directory: web
+        run: npm run build

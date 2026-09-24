@@ -1,6 +1,7 @@
 package com.khabar.api.onboarding;
 
 import com.khabar.api.identity.Clinic;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.patients.CaregiverScope;
 import com.khabar.api.patients.Patient;
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ import java.util.UUID;
 @Table(name = "invite")
 public class Invite {
 
-    public enum Kind { PATIENT_ACCOUNT, CAREGIVER, DOCTOR }
+    public enum Kind { PATIENT_ACCOUNT, CAREGIVER, DOCTOR, STAFF }
 
     @Id
     private UUID id;
@@ -43,6 +44,10 @@ public class Invite {
     @Enumerated(EnumType.STRING)
     private CaregiverScope scope;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "staff_role")
+    private ClinicStaffRole staffRole;
+
     @Column(nullable = false)
     private UUID createdBy;
 
@@ -57,12 +62,18 @@ public class Invite {
     }
 
     public Invite(String codeHash, Kind kind, Clinic clinic, Patient patient, CaregiverScope scope, UUID createdBy, Instant expiresAt) {
+        this(codeHash, kind, clinic, patient, scope, null, createdBy, expiresAt);
+    }
+
+    public Invite(String codeHash, Kind kind, Clinic clinic, Patient patient, CaregiverScope scope, ClinicStaffRole staffRole,
+                  UUID createdBy, Instant expiresAt) {
         this.id = UUID.randomUUID();
         this.codeHash = codeHash;
         this.kind = kind;
         this.clinic = clinic;
         this.patient = patient;
         this.scope = scope;
+        this.staffRole = staffRole;
         this.createdBy = createdBy;
         this.expiresAt = expiresAt;
     }
@@ -90,6 +101,14 @@ public class Invite {
 
     public CaregiverScope getScope() {
         return scope;
+    }
+
+    public ClinicStaffRole getStaffRole() {
+        return staffRole;
+    }
+
+    public UUID getCreatedBy() {
+        return createdBy;
     }
 
     public Instant getExpiresAt() {

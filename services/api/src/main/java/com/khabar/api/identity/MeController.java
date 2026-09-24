@@ -19,16 +19,19 @@ public class MeController {
     private final CurrentUser currentUser;
     private final PatientRepository patients;
     private final CaregiverLinkRepository caregiverLinks;
+    private final ClinicStaffAccess staffAccess;
 
-    public MeController(CurrentUser currentUser, PatientRepository patients, CaregiverLinkRepository caregiverLinks) {
+    public MeController(CurrentUser currentUser, PatientRepository patients, CaregiverLinkRepository caregiverLinks,
+                        ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.caregiverLinks = caregiverLinks;
+        this.staffAccess = staffAccess;
     }
 
     /** patientId is the patient's own record. patientIds are active records a caregiver has consent to open. */
     public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId,
-                             List<UUID> patientIds) {
+                             List<UUID> patientIds, List<ClinicStaffRole> clinicRoles) {
     }
 
     @GetMapping
@@ -43,6 +46,7 @@ public class MeController {
                     .map(link -> link.getPatient().getId()).toList()
                 : List.of();
         return new MeResponse(user.getId(), user.getRole(), user.getDisplayName(),
-                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId, patientIds);
+                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId, patientIds,
+                staffAccess.rolesFor(user));
     }
 }

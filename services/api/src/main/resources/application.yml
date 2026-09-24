@@ -17,6 +17,11 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+  # Public demo/local profiles retain their existing Hibernate-managed schemas. The pilot
+  # profile opts into reviewed, versioned migrations explicitly.
+  flyway:
+    enabled: false
+
   # Voice recordings for speech-to-text notes (the transcription service accepts up to 25 MB)
   servlet:
     multipart:

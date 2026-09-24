@@ -1,6 +1,6 @@
 # Khabar — Remaining Work
 
-**Reviewed:** 23 September 2026  
+**Reviewed:** 24 September 2026
 **Source of truth:** [`plan.md`](plan.md), checked against the current codebase and project documentation.  
 **Scope:** This is an implementation and readiness backlog. It does not replace the SDC planning decisions in `plan.md`.
 
@@ -8,17 +8,27 @@
 
 The local core product is largely implemented and tested:
 
-- API: **193 automated tests passing** (24 Sep, after the sign-in decoder and IC-number checks).
-- Agents: **188 automated tests passing** (project virtual environment).
-- Next.js web app: linting, TypeScript and the production build pass.
+- API: **213 automated tests passing**, including embedded Neo4j graph tests; one optional PostgreSQL-only smoke test is skipped locally and runs in CI. The graph suite required a run outside the restricted sandbox; see [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
+- Agents: **204 automated tests passing** (project virtual environment, 24 Sep; one third-party deprecation warning).
+- Next.js web app: lint, TypeScript, and the production build pass. The build needed to run outside the restricted sandbox because its worker could not spawn there (`EPERM`); hosted CI/deployment confirmation remains open.
 - Local bug bash done (23 Sep): [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md), 11 defects found and fixed, including one safety issue.
 - The main clinical workflow, access rules, encryption, de-identification, follow-up logic, and demo data are implemented locally.
 
 The remaining work is primarily real-provider integration, missing stretch features, evidence-gathering, and demo/public-readiness work.
 
+### Pilot-readiness engineering added — 24 September 2026
+
+- [x] Call-list snapshots are server-timestamped. Recording successful contact closes only replies, readings, and unanswered check-ins that existed in that snapshot; later items remain open. The doctor UI confirms the effect before submission.
+- [x] Controller errors return a safe, consistent code/message/status/request-reference/retryability shape. `X-Request-ID` is server-generated and exposed to the web app through CORS.
+- [x] A separate Spring `pilot` profile refuses to run with `local` or `demo`, excludes local demo controllers/seeding, validates (rather than updates) the database schema, and leaves scheduled check-ins off by default.
+- [x] Added `.github/workflows/verify.yml` to run API tests, agent tests, and frontend lint/typecheck/build on pushes and pull requests. Its first hosted run is still required.
+- [x] Added V1 initial schema and V2 reading receive-time/backfill migrations. H2 PostgreSQL-mode tests verify clean creation, one-time migration, legacy timestamp backfill, and `pilot` profile startup with Hibernate schema validation.
+- [x] Added an isolated PostgreSQL 16 migration/schema-validation smoke job to CI. The job has not run until the workflow is triggered on GitHub.
+- [ ] Before pilot: run the hosted PostgreSQL job; verify/baseline any existing database only after schema comparison and backup; rehearse forward recovery and backup restore. The initial migration is not permission to point the pilot profile at the public demo database.
+
 ### UI redesign update — 24 September 2026
 
-The approved teal/lavender care-story redesign is implemented locally across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. Frontend lint, TypeScript, and production build pass. Published on 24 Sep through the GitHub deploy workflow; the new landing and login pages were confirmed on the live site.
+The approved teal/lavender care-story redesign is implemented locally across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. The previously deployed version was confirmed on the live site on 24 Sep. The latest local changes pass lint, TypeScript, and production build; a hosted build/deployment confirmation for the current uncommitted changes remains open. The root layout no longer downloads fonts during builds: it uses the existing system sans/monospace stacks and Georgia serif fallback. If exact Geist/Newsreader branding is required, self-host reviewed font assets and recheck their licensing before adding them.
 
 See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the implementation summary and explicit remaining checks. Local patient and doctor browser flows have since been verified; device reduced-motion, full accessibility checks, real sign-in, and deployment verification remain open.
 

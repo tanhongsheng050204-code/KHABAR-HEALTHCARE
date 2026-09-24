@@ -234,6 +234,48 @@
 .metricStrip .urgentMetric {
   background: #fff6f4;
 }
+.staffRows {
+  display: grid;
+  gap: 0;
+  padding: 0 22px 12px;
+}
+.staffRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line);
+}
+.staffRow > div { min-width: 0; }
+.staffRow strong,
+.staffRow span { display: block; }
+.staffRow strong { color: #183b3d; font-size: .88rem; }
+.staffRow span { margin-top: 4px; color: #63797a; font-size: .68rem; }
+.staffRow p { margin: 8px 0 0; color: #435d5f; font-size: .78rem; }
+.staffCaution {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 22px 18px;
+  color: #5f7475;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+.staffCaution svg { flex: 0 0 auto; color: var(--tidal); }
+.staffInvite { display: flex; align-items: end; gap: 12px; padding: 0 22px 16px; }
+.staffInvite label { display: grid; flex: 1; gap: 7px; color: #526e70; font-size: .73rem; font-weight: 700; }
+.staffInvite select { min-height: 42px; padding: 0 12px; color: #173c3f; background: white; border: 1px solid var(--line); border-radius: 9px; }
+.inviteCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 22px 8px; padding: 12px; background: #f6f2fc; border: 1px solid #e2d8f2; border-radius: 10px; }
+.inviteCode code { color: #2d425e; font-size: 1.1rem; letter-spacing: .14em; }
+.errorNotice { margin: 0 0 18px; color: #a02e2e; }
+@media (max-width: 760px) {
+  .staffRow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .staffRow > button { grid-column: 1 / -1; justify-self: start; }
+  .staffInvite { align-items: stretch; flex-direction: column; }
+  .inviteCode { align-items: flex-start; flex-direction: column; }
+  .inviteCode code { max-width: 100%; overflow-wrap: anywhere; }
+}
 .urgentMetric svg,
 .urgentMetric strong {
   color: var(--urgent);

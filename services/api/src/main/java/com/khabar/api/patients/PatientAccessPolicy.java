@@ -1,6 +1,7 @@
 package com.khabar.api.patients;
 
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,14 +12,19 @@ import org.springframework.stereotype.Component;
 public class PatientAccessPolicy {
 
     private final CaregiverLinkRepository caregiverLinks;
+    private final ClinicStaffAccess staffAccess;
 
-    public PatientAccessPolicy(CaregiverLinkRepository caregiverLinks) {
+    public PatientAccessPolicy(CaregiverLinkRepository caregiverLinks, ClinicStaffAccess staffAccess) {
         this.caregiverLinks = caregiverLinks;
+        this.staffAccess = staffAccess;
     }
 
     public boolean canView(AppUser user, Patient patient) {
+        if (staffAccess.hasClinicalAccess(user) && worksAtPatientsClinic(user, patient)) {
+            return true;
+        }
         return switch (user.getRole()) {
-            case DOCTOR -> worksAtPatientsClinic(user, patient);
+            case DOCTOR, NURSE, CLINIC_ADMIN -> false;
             case PATIENT -> isThePatient(user, patient);
             case CAREGIVER -> caregiverLinks.existsByPatientIdAndCaregiverIdAndRevokedAtIsNull(patient.getId(), user.getId());
         };
@@ -31,8 +37,11 @@ public class PatientAccessPolicy {
 
     /** Clinical detail (the access log, intake answers) is for the patient and their clinic, not caregivers. */
     public boolean isPatientOrTheirClinic(AppUser user, Patient patient) {
+        if (staffAccess.hasClinicalAccess(user) && worksAtPatientsClinic(user, patient)) {
+            return true;
+        }
         return switch (user.getRole()) {
-            case DOCTOR -> worksAtPatientsClinic(user, patient);
+            case DOCTOR, NURSE, CLINIC_ADMIN -> false;
             case PATIENT -> isThePatient(user, patient);
             case CAREGIVER -> false;
         };

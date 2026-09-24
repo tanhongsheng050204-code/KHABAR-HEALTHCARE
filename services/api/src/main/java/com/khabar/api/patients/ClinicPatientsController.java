@@ -2,8 +2,8 @@ package com.khabar.api.patients;
 
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
 import com.khabar.api.identity.CurrentUser;
-import com.khabar.api.identity.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -24,11 +24,13 @@ public class ClinicPatientsController {
     private final CurrentUser currentUser;
     private final PatientRepository patients;
     private final AdjustableClock clock;
+    private final ClinicStaffAccess staffAccess;
 
-    public ClinicPatientsController(CurrentUser currentUser, PatientRepository patients, AdjustableClock clock) {
+    public ClinicPatientsController(CurrentUser currentUser, PatientRepository patients, AdjustableClock clock, ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.clock = clock;
+        this.staffAccess = staffAccess;
     }
 
     public record PatientRow(UUID id, String fullName, String icMasked, String preferredLanguage, Integer followUpDay, boolean hasAccount) {
@@ -38,8 +40,8 @@ public class ClinicPatientsController {
     @Transactional(readOnly = true)
     public List<PatientRow> list(@AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != Role.DOCTOR || user.getClinic() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The patient list is for clinic doctors.");
+        if (!staffAccess.canManageFollowUp(user) || user.getClinic() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The patient list is for clinic doctors and nurses.");
         }
         LocalDate today = LocalDate.now(clock);
         return patients.findByClinicId(user.getClinic().getId()).stream()

@@ -1,5 +1,6 @@
 package com.khabar.api.followup;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MissedDoseTest {
 
     @Autowired MockMvc mvc;
+    @Autowired ObjectMapper json;
     @Autowired AdjustableClock clock;
     @Autowired ClinicRepository clinics;
     @Autowired AppUserRepository users;
@@ -72,6 +74,10 @@ class MissedDoseTest {
 
     ResultActions callList() throws Exception {
         return mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(doctor.getId())));
+    }
+
+    String snapshotAt() throws Exception {
+        return json.readTree(callList().andReturn().getResponse().getContentAsString()).get("snapshotAt").asText();
     }
 
     @Test
@@ -118,7 +124,10 @@ class MissedDoseTest {
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review", "missed_dose", true));
         aminahReplies("Lupa makan ubat");
 
-        mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId()).header("Authorization", bearer(doctor.getId())));
+        mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId())
+                .header("Authorization", bearer(doctor.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("observedThrough", snapshotAt()))));
 
         callList().andExpect(jsonPath("$.items.length()").value(0));
     }

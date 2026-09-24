@@ -4,7 +4,10 @@ import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
 import com.khabar.api.identity.ClinicRepository;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.Role;
+import com.khabar.api.config.AdjustableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +41,10 @@ class PatientRecordAccessTest {
     @Autowired PatientRepository patients;
     @Autowired CaregiverLinkRepository caregiverLinks;
     @Autowired JdbcTemplate jdbc;
+    @Autowired ClinicStaffAccess staffAccess;
+    @Autowired AdjustableClock clock;
 
-    AppUser doctorHere, doctorElsewhere, aminahAccount, nurul, formerCaregiver;
+    AppUser doctorHere, doctorElsewhere, nurse, clinicAdmin, aminahAccount, nurul, formerCaregiver;
     Patient aminah, someoneElse;
 
     @BeforeEach
@@ -48,6 +53,10 @@ class PatientRecordAccessTest {
         Clinic elsewhere = clinics.save(new Clinic("Klinik Lain"));
         doctorHere = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Priya", here));
         doctorElsewhere = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Lim", elsewhere));
+        nurse = users.save(new AppUser(UUID.randomUUID(), Role.NURSE, "Nurse Mei", here));
+        clinicAdmin = users.save(new AppUser(UUID.randomUUID(), Role.CLINIC_ADMIN, "Clinic Admin", here));
+        staffAccess.grant(nurse, here, ClinicStaffRole.NURSE, doctorHere.getId(), clock.instant());
+        staffAccess.grant(clinicAdmin, here, ClinicStaffRole.CLINIC_ADMIN, doctorHere.getId(), clock.instant());
         aminahAccount = users.save(new AppUser(UUID.randomUUID(), Role.PATIENT, "Aminah", null));
         nurul = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Nurul", null));
         formerCaregiver = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Ex Carer", null));
@@ -77,6 +86,26 @@ class PatientRecordAccessTest {
     @Test
     void doctorAtAnotherClinicIsRefused() throws Exception {
         view(aminah, doctorElsewhere).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void nurseCanManageFollowUpButCannotOpenFullPatientRecord() throws Exception {
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(nurse.getId())))
+                .andExpect(status().isOk());
+        view(aminah, nurse).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void clinicAdminWithoutClinicalGrantCannotOpenPatientRecordOrCallList() throws Exception {
+        view(aminah, clinicAdmin).andExpect(status().isForbidden());
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(clinicAdmin.getId())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void administratorNeedsASeparateDoctorGrantForClinicalRecordAccess() throws Exception {
+        staffAccess.grant(clinicAdmin, clinicAdmin.getClinic(), ClinicStaffRole.DOCTOR, doctorHere.getId(), clock.instant());
+        view(aminah, clinicAdmin).andExpect(status().isOk());
     }
 
     @Test

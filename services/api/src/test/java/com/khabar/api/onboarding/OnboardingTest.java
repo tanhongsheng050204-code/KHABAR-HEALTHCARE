@@ -156,6 +156,27 @@ class OnboardingTest {
     }
 
     @Test
+    void clinicStaffInvitationsCreateSeparateNurseAndAdministratorGrants() throws Exception {
+        String nurseCode = body(postJson("/api/clinic/staff-invites", doctor.getId(), "{\"role\":\"NURSE\"}")
+                .andExpect(status().isCreated())).get("inviteCode").asText();
+        UUID nurse = UUID.randomUUID();
+        accept(nurseCode, nurse, "Nurse Mei").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("NURSE"));
+        mvc.perform(get("/api/me").header("Authorization", bearer(nurse)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.clinicRoles[0]").value("NURSE"));
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(nurse))).andExpect(status().isOk());
+
+        String adminCode = body(postJson("/api/clinic/staff-invites", doctor.getId(), "{\"role\":\"CLINIC_ADMIN\"}")
+                .andExpect(status().isCreated())).get("inviteCode").asText();
+        UUID admin = UUID.randomUUID();
+        accept(adminCode, admin, "Clinic Admin").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("CLINIC_ADMIN"));
+        mvc.perform(get("/api/me").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.clinicRoles[0]").value("CLINIC_ADMIN"));
+        mvc.perform(get("/api/clinic/staff").header("Authorization", bearer(admin))).andExpect(status().isOk());
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(admin))).andExpect(status().isForbidden());
+        postJson("/api/clinic/staff-invites", admin, "{\"role\":\"DOCTOR\"}").andExpect(status().isForbidden());
+    }
+
+    @Test
     void theFirstClinicIsCreatedWithTheBootstrapToken() throws Exception {
         UUID founder = UUID.randomUUID();
         postJson("/api/onboarding/clinic", founder, "{\"bootstrapToken\":\"wrong\",\"clinicName\":\"Klinik Baru\",\"displayName\":\"Dr Aisyah\"}")

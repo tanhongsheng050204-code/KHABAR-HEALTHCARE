@@ -1,5 +1,7 @@
 package com.khabar.api.followup;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CallListTest {
 
     @Autowired MockMvc mvc;
+    @Autowired ObjectMapper json;
+    @Autowired AdjustableClock clock;
     @Autowired ClinicRepository clinics;
     @Autowired AppUserRepository users;
     @Autowired PatientRepository patients;
@@ -51,6 +56,7 @@ class CallListTest {
 
     @BeforeEach
     void setUp() {
+        clock.reset();
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya"));
         Clinic other = clinics.save(new Clinic("Klinik Lain"));
         doctor = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Priya", clinic));
@@ -82,6 +88,18 @@ class CallListTest {
 
     ResultActions callList(AppUser as) throws Exception {
         return mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(as.getId())));
+    }
+
+    String snapshotAt(AppUser as) throws Exception {
+        String body = callList(as).andReturn().getResponse().getContentAsString();
+        return json.readTree(body).get("snapshotAt").asText();
+    }
+
+    ResultActions recordContact(AppUser as, Patient patient, String observedThrough) throws Exception {
+        return mvc.perform(post("/api/clinic/call-list/{id}/called", patient.getId())
+                .header("Authorization", bearer(as.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("observedThrough", observedThrough))));
     }
 
     @Test
@@ -135,6 +153,7 @@ class CallListTest {
         reply(strangerAccount, "Sakit dada");
 
         callList(doctor).andExpect(status().isOk())
+                .andExpect(jsonPath("$.snapshotAt").exists())
                 .andExpect(jsonPath("$.items.length()").value(2))
                 .andExpect(jsonPath("$.items[0].fullName").value("Rosnah binti Ahmad"))
                 .andExpect(jsonPath("$.items[0].level").value("RED"))
@@ -162,7 +181,11 @@ class CallListTest {
 
     @Test
     void theCallListIsForDoctorsOnly() throws Exception {
-        callList(aminahAccount).andExpect(status().isForbidden());
+        callList(aminahAccount).andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("forbidden"))
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.requestId").isNotEmpty())
+                .andExpect(jsonPath("$.retryable").value(false));
     }
 
     @Test
@@ -170,7 +193,7 @@ class CallListTest {
         triageSays("red", "sakit dada");
         reply(rosnahAccount, "Sakit dada");
 
-        mvc.perform(post("/api/clinic/call-list/{id}/called", rosnah.getId()).header("Authorization", bearer(doctor.getId())))
+        recordContact(doctor, rosnah, snapshotAt(doctor))
                 .andExpect(status().isOk());
 
         callList(doctor).andExpect(jsonPath("$.items.length()").value(0));
@@ -180,8 +203,36 @@ class CallListTest {
     }
 
     @Test
+    void contactOnlyClosesItemsThatWereInTheQueueSnapshot() throws Exception {
+        triageSays("red", "sakit dada");
+        reply(rosnahAccount, "Sakit dada");
+        String snapshot = snapshotAt(doctor);
+
+        clock.advance(Duration.ofSeconds(2));
+        triageSays("watch", "pening");
+        reply(rosnahAccount, "Pening selepas itu");
+
+        recordContact(doctor, rosnah, snapshot).andExpect(status().isOk())
+                .andExpect(jsonPath("$.handledReplies").value(1));
+
+        callList(doctor).andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].latestReply").value("Pening selepas itu"))
+                .andExpect(jsonPath("$.items[0].unhandledReplies").value(1));
+    }
+
+    @Test
+    void contactCannotUseATimestampLaterThanTheServerClock() throws Exception {
+        String future = clock.instant().plusSeconds(60).toString();
+        recordContact(doctor, rosnah, future).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.requestId").isNotEmpty())
+                .andExpect(jsonPath("$.retryable").value(false));
+    }
+
+    @Test
     void aDoctorAtAnotherClinicCannotMarkThePatientAsCalled() throws Exception {
-        mvc.perform(post("/api/clinic/call-list/{id}/called", rosnah.getId()).header("Authorization", bearer(doctorElsewhere.getId())))
+        recordContact(doctorElsewhere, rosnah, snapshotAt(doctorElsewhere))
                 .andExpect(status().isForbidden());
     }
 }

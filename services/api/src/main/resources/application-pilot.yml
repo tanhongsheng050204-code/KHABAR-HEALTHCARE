@@ -1,0 +1,51 @@
+# Controlled clinic-pilot profile. Never combine with `local` or `demo`.
+# This profile intentionally does not seed fictional users or expose /dev helpers.
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      # Flyway applies reviewed migrations first; startup then fails rather than mutating a schema.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    # Existing non-empty databases must be reviewed and explicitly baselined by an operator.
+    baseline-on-migrate: false
+
+khabar:
+  security:
+    internal-service-key: ${INTERNAL_SERVICE_KEY}
+    supabase-jwks-url: ${SUPABASE_JWKS_URL:}
+    supabase-jwt-secret: ${SUPABASE_JWT_SECRET:}
+    field-encryption-key: ${FIELD_ENCRYPTION_KEY}
+  services:
+    agents-url: ${AGENTS_SERVICE_URL}
+  web:
+    allowed-origins: ${WEB_ALLOWED_ORIGINS}
+    app-url: ${WEB_APP_URL}
+  checkins:
+    # No patient messages are sent until the clinic explicitly enables the scheduler.
+    scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:false}
+  whatsapp:
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_TOKEN:}
+    api-version: ${WHATSAPP_API_VERSION:v21.0}
+    checkin-template: ${WHATSAPP_CHECKIN_TEMPLATE:}
+    summary-template: ${WHATSAPP_SUMMARY_TEMPLATE:}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    app-secret: ${WHATSAPP_APP_SECRET:}
+  favoriot:
+    device-secret: ${FAVORIOT_DEVICE_SECRET:}
+  graph:
+    uri: ${NEO4J_URI:}
+    username: ${NEO4J_USERNAME:neo4j}
+    password: ${NEO4J_PASSWORD:}
+  onboarding:
+    # Clinic bootstrap must be an explicit, time-limited operator action.
+    bootstrap-token: ${KHABAR_BOOTSTRAP_TOKEN:}

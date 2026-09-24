@@ -5,8 +5,9 @@ import com.khabar.api.audit.AuditLog;
 import com.khabar.api.followup.PatientReplyRepository;
 import com.khabar.api.followup.TriageLevel;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.CurrentUser;
-import com.khabar.api.identity.Role;
 import com.khabar.api.intake.IntakeController.IntakeView;
 import com.khabar.api.intake.IntakeRecords;
 import com.khabar.api.medications.MedicationController.ItemView;
@@ -49,9 +50,11 @@ public class PreVisitController {
     private final PatientReplyRepository replies;
     private final AgentClientService agents;
     private final AuditLog auditLog;
+    private final ClinicStaffAccess staffAccess;
 
     public PreVisitController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters, IntakeRecords intakes,
-                              MedicationList medications, PatientReplyRepository replies, AgentClientService agents, AuditLog auditLog) {
+                              MedicationList medications, PatientReplyRepository replies, AgentClientService agents, AuditLog auditLog,
+                              ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -60,6 +63,7 @@ public class PreVisitController {
         this.replies = replies;
         this.agents = agents;
         this.auditLog = auditLog;
+        this.staffAccess = staffAccess;
     }
 
     public record PatientSummary(UUID id, String fullName, String preferredLanguage, List<String> allergies, boolean pregnant) {
@@ -82,7 +86,7 @@ public class PreVisitController {
     public PreVisit previsit(@PathVariable UUID patientId, @AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = currentUser.from(jwt);
         Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (doctor.getRole() != Role.DOCTOR || doctor.getClinic() == null || !doctor.getClinic().getId().equals(patient.getClinic().getId())) {
+        if (!staffAccess.hasRole(doctor, ClinicStaffRole.DOCTOR) || doctor.getClinic() == null || !doctor.getClinic().getId().equals(patient.getClinic().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The pre-visit page is for the patient's clinic.");
         }
         auditLog.record(doctor, patient.getId(), AuditAction.VIEWED_PREVISIT);

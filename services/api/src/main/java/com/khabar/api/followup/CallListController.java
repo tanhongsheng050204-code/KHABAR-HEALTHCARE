@@ -4,8 +4,8 @@ import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
 import com.khabar.api.identity.CurrentUser;
-import com.khabar.api.identity.Role;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.readings.Reading;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,9 +45,10 @@ public class CallListController {
     private final AdjustableClock clock;
     private final CheckInRepository checkIns;
     private final ReadingRepository readings;
+    private final ClinicStaffAccess staffAccess;
 
     public CallListController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AuditLog auditLog,
-                              AdjustableClock clock, CheckInRepository checkIns, ReadingRepository readings) {
+                              AdjustableClock clock, CheckInRepository checkIns, ReadingRepository readings, ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.replies = replies;
@@ -54,6 +56,7 @@ public class CallListController {
         this.clock = clock;
         this.checkIns = checkIns;
         this.readings = readings;
+        this.staffAccess = staffAccess;
     }
 
     /**
@@ -69,17 +72,23 @@ public class CallListController {
     public record Counts(long red, long watch, long review) {
     }
 
-    public record CallList(List<CallListItem> items, Counts counts, long patientsInFollowUp) {
+    /** Server timestamp for the exact queue snapshot rendered to the clinician. */
+    public record CallList(List<CallListItem> items, Counts counts, long patientsInFollowUp, Instant snapshotAt) {
+    }
+
+    public record ContactRequest(Instant observedThrough) {
     }
 
     @GetMapping
     @Transactional(readOnly = true)
     public CallList callList(@AuthenticationPrincipal Jwt jwt) {
-        AppUser doctor = requireDoctor(jwt);
+        AppUser doctor = requireFollowUpStaff(jwt);
         UUID clinicId = doctor.getClinic().getId();
-        LocalDate today = LocalDate.now(clock);
+        Instant snapshotAt = clock.instant();
+        LocalDate today = LocalDate.ofInstant(snapshotAt, clock.getZone());
 
         Map<Patient, List<PatientReply>> byPatient = replies.findByPatientClinicIdAndHandledAtIsNull(clinicId).stream()
+                .filter(reply -> !reply.getReceivedAt().isAfter(snapshotAt))
                 .filter(PatientReply::needsACall)
                 .collect(Collectors.groupingBy(PatientReply::getPatient));
 
@@ -87,6 +96,7 @@ public class CallListController {
         byPatient.forEach((patient, open) -> byId.put(patient.getId(), toItem(patient, open, today)));
         // A worrying home reading adds the patient, or replaces their reply item when it is more urgent.
         readings.findByPatientClinicIdAndHandledAtIsNullAndLevelNot(clinicId, TriageLevel.OK).stream()
+                .filter(reading -> !reading.getWorkflowReceivedAt().isAfter(snapshotAt))
                 .collect(Collectors.groupingBy(r -> r.getPatient().getId()))
                 .forEach((id, open) -> {
                     CallListItem reading = readingItem(open, today);
@@ -97,7 +107,7 @@ public class CallListController {
                 });
         List<CallListItem> fromReplies = List.copyOf(byId.values());
         java.util.Set<UUID> listed = byId.keySet();
-        Instant cutoff = clock.instant().minus(NO_REPLY_AFTER);
+        Instant cutoff = snapshotAt.minus(NO_REPLY_AFTER);
         List<CallListItem> silent = checkIns.findByPatientClinicIdAndStatusAndSentAtBefore(clinicId, CheckIn.Status.SENT, cutoff).stream()
                 .filter(c -> !listed.contains(c.getPatient().getId()))
                 .collect(Collectors.toMap(c -> c.getPatient().getId(), c -> c, (a, b) -> a.getSentAt().isBefore(b.getSentAt()) ? a : b))
@@ -116,34 +126,42 @@ public class CallListController {
                 items.stream().filter(i -> i.level() == TriageLevel.RED).count(),
                 items.stream().filter(i -> i.level() == TriageLevel.WATCH).count(),
                 items.stream().filter(i -> i.level() == TriageLevel.REVIEW).count());
-        return new CallList(items, counts, patients.countByClinicIdAndFollowUpStartIsNotNull(clinicId));
+        return new CallList(items, counts, patients.countByClinicIdAndFollowUpStartIsNotNull(clinicId), snapshotAt);
     }
 
     @PostMapping("/{patientId}/called")
     @Transactional
-    public Map<String, Object> markCalled(@PathVariable UUID patientId, @AuthenticationPrincipal Jwt jwt) {
-        AppUser doctor = requireDoctor(jwt);
+    public Map<String, Object> markCalled(@PathVariable UUID patientId, @RequestBody ContactRequest request,
+                                         @AuthenticationPrincipal Jwt jwt) {
+        AppUser doctor = requireFollowUpStaff(jwt);
+        if (request == null || request.observedThrough() == null || request.observedThrough().isAfter(clock.instant())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh the call list before recording contact.");
+        }
         Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!patient.getClinic().getId().equals(doctor.getClinic().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        List<PatientReply> open = replies.findByPatientIdAndHandledAtIsNull(patientId);
+        Instant observedThrough = request.observedThrough();
+        List<PatientReply> open = replies.findByPatientIdAndHandledAtIsNull(patientId).stream()
+                .filter(reply -> !reply.getReceivedAt().isAfter(observedThrough)).toList();
         Instant now = clock.instant();
         open.forEach(r -> r.markHandled(doctor.getId(), now));
-        List<Reading> openReadings = readings.findByPatientIdAndHandledAtIsNull(patientId);
+        List<Reading> openReadings = readings.findByPatientIdAndHandledAtIsNull(patientId).stream()
+                .filter(reading -> !reading.getWorkflowReceivedAt().isAfter(observedThrough)).toList();
         openReadings.forEach(r -> r.markHandled(doctor.getId(), now));
-        List<CheckIn> unanswered = checkIns.findByPatientIdAndStatus(patientId, CheckIn.Status.SENT);
+        List<CheckIn> unanswered = checkIns.findByPatientIdAndStatus(patientId, CheckIn.Status.SENT).stream()
+                .filter(checkIn -> checkIn.getSentAt() != null && !checkIn.getSentAt().isAfter(observedThrough)).toList();
         unanswered.forEach(CheckIn::markAnswered);
         if (!open.isEmpty() || !unanswered.isEmpty() || !openReadings.isEmpty()) {
             auditLog.record(doctor, patientId, AuditAction.CALLED_ABOUT_REPLY);
         }
-        return Map.of("handledReplies", open.size());
+        return Map.of("handledReplies", open.size(), "handledReadings", openReadings.size(), "handledCheckIns", unanswered.size());
     }
 
-    private AppUser requireDoctor(Jwt jwt) {
+    private AppUser requireFollowUpStaff(Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != Role.DOCTOR || user.getClinic() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The call list is for clinic doctors.");
+        if (!staffAccess.canManageFollowUp(user) || user.getClinic() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The call list is for clinic doctors and nurses.");
         }
         return user;
     }

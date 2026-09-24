@@ -6,8 +6,9 @@ import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.followup.CheckInPlanner;
 import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.CurrentUser;
-import com.khabar.api.identity.Role;
 import com.khabar.api.intake.IntakeRecords;
 import com.khabar.api.medications.MedicationList;
 import com.khabar.api.messaging.Messenger;
@@ -68,11 +69,12 @@ public class EncounterController {
     private final MedicationList medications;
     private final IntakeRecords intakes;
     private final PatientGraphSync graphSync;
+    private final ClinicStaffAccess staffAccess;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
                                AuditLog auditLog, AdjustableClock clock, PatientMessages messages,
-                               MedicationList medications, IntakeRecords intakes, PatientGraphSync graphSync) {
+                               MedicationList medications, IntakeRecords intakes, PatientGraphSync graphSync, ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -85,6 +87,7 @@ public class EncounterController {
         this.medications = medications;
         this.intakes = intakes;
         this.graphSync = graphSync;
+        this.staffAccess = staffAccess;
     }
 
     public record NotesRequest(String notes, Boolean fasting) {
@@ -253,7 +256,7 @@ public class EncounterController {
 
     private AppUser requireDoctor(Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != Role.DOCTOR || user.getClinic() == null) {
+        if (!staffAccess.hasRole(user, ClinicStaffRole.DOCTOR) || user.getClinic() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Visits are written by clinic doctors.");
         }
         return user;

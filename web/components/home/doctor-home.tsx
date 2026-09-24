@@ -130,15 +130,20 @@ export function DoctorHome({
       ),
     [patients, query],
   );
-  async function markCalled(patientId: string) {
+  async function markCalled(patientId: string, snapshotAt: string) {
+    const confirmed = window.confirm(
+      "Record successful patient contact? This closes open replies, worrying readings, and unanswered check-ins that were present at the last refresh. Review all related concerns first; newer items will stay open.",
+    );
+    if (!confirmed) return;
     setBusy(patientId);
     try {
       await apiRequest(`/api/clinic/call-list/${patientId}/called`, {
         method: "POST",
+        body: JSON.stringify({ observedThrough: snapshotAt }),
       });
       notify({
         tone: "success",
-        text: "The call was recorded in the patient access log.",
+        text: "Successful contact was recorded. Newer items remain on the call list.",
       });
       await load();
     } catch (error) {
@@ -321,9 +326,9 @@ export function DoctorHome({
                 <button
                   className="button-secondary"
                   disabled={busy === item.patientId}
-                  onClick={() => void markCalled(item.patientId)}
+                  onClick={() => void markCalled(item.patientId, calls.snapshotAt)}
                 >
-                  {busy === item.patientId ? "Saving…" : "Mark called"}
+                  {busy === item.patientId ? "Saving…" : "Record contact"}
                 </button>
               </article>
             ))

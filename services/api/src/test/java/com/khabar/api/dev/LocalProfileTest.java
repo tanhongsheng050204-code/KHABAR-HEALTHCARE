@@ -107,8 +107,12 @@ class LocalProfileTest {
         String doctor = tokenFor("doctor");
         String body = mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
                 .andReturn().getResponse().getContentAsString();
-        String urgentPatient = json.readTree(body).get("items").get(0).get("patientId").asText();
-        mvc.perform(post("/api/clinic/call-list/{id}/called", urgentPatient).header("Authorization", doctor))
+        JsonNode callList = json.readTree(body);
+        String urgentPatient = callList.get("items").get(0).get("patientId").asText();
+        String snapshotAt = callList.get("snapshotAt").asText();
+        mvc.perform(post("/api/clinic/call-list/{id}/called", urgentPatient).header("Authorization", doctor)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(java.util.Map.of("observedThrough", snapshotAt))))
                 .andExpect(status().isOk());
         mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
                 .andExpect(jsonPath("$.items.length()").value(2));

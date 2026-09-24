@@ -5,6 +5,8 @@ import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.ClinicRepository;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
@@ -53,10 +55,12 @@ public class OnboardingController {
     private final AdjustableClock clock;
     private final String bootstrapToken;
     private final PatientGraphSync graphSync;
+    private final ClinicStaffAccess staffAccess;
 
     public OnboardingController(CurrentUser currentUser, AppUserRepository users, ClinicRepository clinics, PatientRepository patients,
                                 CaregiverLinkRepository caregiverLinks, InviteRepository invites, AdjustableClock clock,
-                                @Value("${khabar.onboarding.bootstrap-token:}") String bootstrapToken, PatientGraphSync graphSync) {
+                                @Value("${khabar.onboarding.bootstrap-token:}") String bootstrapToken, PatientGraphSync graphSync,
+                                ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.users = users;
         this.clinics = clinics;
@@ -66,6 +70,7 @@ public class OnboardingController {
         this.clock = clock;
         this.bootstrapToken = bootstrapToken;
         this.graphSync = graphSync;
+        this.staffAccess = staffAccess;
     }
 
     public record RegisterPatientRequest(String fullName, String icNumber, String phone, String preferredLanguage,
@@ -79,6 +84,9 @@ public class OnboardingController {
     }
 
     public record CaregiverInviteRequest(CaregiverScope scope) {
+    }
+
+    public record StaffInviteRequest(ClinicStaffRole role) {
     }
 
     public record AcceptRequest(String displayName) {
@@ -121,6 +129,27 @@ public class OnboardingController {
     public InviteCode inviteDoctor(@AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = requireRole(jwt, Role.DOCTOR);
         return issue(Invite.Kind.DOCTOR, doctor.getClinic(), null, null, doctor.getId());
+    }
+
+    @PostMapping("/api/clinic/staff-invites")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
+    public InviteCode inviteStaff(@RequestBody StaffInviteRequest request, @AuthenticationPrincipal Jwt jwt) {
+        AppUser actor = currentUser.from(jwt);
+        if (!staffAccess.canManageStaff(actor) || actor.getClinic() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only clinic doctors or administrators can invite staff.");
+        }
+        if (request == null || request.role() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose a clinic staff role for this invitation.");
+        }
+        if (request.role() == ClinicStaffRole.DOCTOR && !staffAccess.hasRole(actor, ClinicStaffRole.DOCTOR)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only a clinic doctor can invite another doctor.");
+        }
+        String code = InviteCodes.generate();
+        Instant expires = clock.instant().plus(INVITE_LIFETIME);
+        invites.save(new Invite(InviteCodes.hash(code), Invite.Kind.STAFF, actor.getClinic(), null, null,
+                request.role(), actor.getId(), expires));
+        return new InviteCode(code, expires);
     }
 
     @PostMapping("/api/patients/me/caregiver-invites")
@@ -191,7 +220,30 @@ public class OnboardingController {
                 if (existing.isPresent()) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "This sign-in is already registered.");
                 }
-                yield users.save(new AppUser(userId, Role.DOCTOR, name != null ? name : "Doctor", invite.getClinic()));
+                AppUser doctor = users.save(new AppUser(userId, Role.DOCTOR, name != null ? name : "Doctor", invite.getClinic()));
+                staffAccess.grant(doctor, invite.getClinic(), ClinicStaffRole.DOCTOR, invite.getCreatedBy(), now);
+                yield doctor;
+            }
+            case STAFF -> {
+                ClinicStaffRole staffRole = invite.getStaffRole();
+                if (staffRole == null || invite.getClinic() == null) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "That staff invitation is incomplete. Ask the clinic for a new one.");
+                }
+                AppUser staff;
+                if (existing.isPresent()) {
+                    staff = existing.get();
+                    if (!isClinicStaff(staff.getRole()) || staff.getClinic() == null
+                            || !staff.getClinic().getId().equals(invite.getClinic().getId())) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "This sign-in is already registered for a different Khabar role or clinic.");
+                    }
+                } else {
+                    Role role = roleFor(staffRole);
+                    String defaultName = staffRole == ClinicStaffRole.CLINIC_ADMIN ? "Clinic administrator"
+                            : staffRole == ClinicStaffRole.NURSE ? "Nurse" : "Doctor";
+                    staff = users.save(new AppUser(userId, role, name != null ? name : defaultName, invite.getClinic()));
+                }
+                staffAccess.grant(staff, invite.getClinic(), staffRole, invite.getCreatedBy(), now);
+                yield staff;
             }
         };
         invite.markUsed(userId, now);
@@ -215,6 +267,7 @@ public class OnboardingController {
         }
         Clinic clinic = clinics.save(new Clinic(request.clinicName().trim()));
         AppUser doctor = users.save(new AppUser(userId, Role.DOCTOR, request.displayName().trim(), clinic));
+        staffAccess.grant(doctor, clinic, ClinicStaffRole.DOCTOR, userId, clock.instant());
         return new Accepted(doctor.getRole(), doctor.getDisplayName());
     }
 
@@ -227,7 +280,10 @@ public class OnboardingController {
 
     private AppUser requireRole(Jwt jwt, Role role) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != role || (role == Role.DOCTOR && user.getClinic() == null)) {
+        boolean allowed = role == Role.DOCTOR
+                ? staffAccess.hasRole(user, ClinicStaffRole.DOCTOR)
+                : user.getRole() == role;
+        if (!allowed || (role == Role.DOCTOR && user.getClinic() == null)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         return user;
@@ -240,6 +296,18 @@ public class OnboardingController {
 
     private static String firstName(Patient patient) {
         return patient.getFullName().split("\\s+")[0];
+    }
+
+    private static Role roleFor(ClinicStaffRole role) {
+        return switch (role) {
+            case DOCTOR -> Role.DOCTOR;
+            case NURSE -> Role.NURSE;
+            case CLINIC_ADMIN -> Role.CLINIC_ADMIN;
+        };
+    }
+
+    private static boolean isClinicStaff(Role role) {
+        return role == Role.DOCTOR || role == Role.NURSE || role == Role.CLINIC_ADMIN;
     }
 
     private static boolean blank(String s) {

@@ -1,10 +1,12 @@
-export type Role = "DOCTOR" | "PATIENT" | "CAREGIVER"
+export type Role = "DOCTOR" | "NURSE" | "CLINIC_ADMIN" | "PATIENT" | "CAREGIVER"
+export type ClinicStaffRole = "DOCTOR" | "NURSE" | "CLINIC_ADMIN"
 export type TriageLevel = "RED" | "WATCH" | "REVIEW" | "OK"
 
-export type Me = { id: string; role: Role; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[] }
+export type Me = { id: string; role: Role; clinicRoles?: ClinicStaffRole[]; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[] }
+export type ClinicStaff = { grantId: string; userId: string; displayName: string; role: ClinicStaffRole; grantedAt: string; grantedBy: string | null }
 export type Patient = { id: string; fullName: string; icMasked: string; preferredLanguage: string; clinicName?: string; followUpDay?: number | null; hasAccount?: boolean }
 export type CallItem = { patientId: string; fullName: string; preferredLanguage: string; level: TriageLevel; urgentReply: string | null; latestReply: string | null; followUpDay: number | null; reason: "REPLY" | "READING" | "MISSED_DOSE" | "NO_REPLY" }
-export type CallList = { items: CallItem[]; counts: { red: number; watch: number; review: number }; patientsInFollowUp: number }
+export type CallList = { items: CallItem[]; counts: { red: number; watch: number; review: number }; patientsInFollowUp: number; snapshotAt: string }
 export type Summary = { encounterId: string; language: string; text: string; needsDoctor: string | null; createdAt: string }
 export type Appointment = { id: string; startsAt: string; date: string; time: string; reason: string | null; status: string; patientId?: string; fullName?: string }
 export type Slot = { startsAt: string; date: string; time: string }
