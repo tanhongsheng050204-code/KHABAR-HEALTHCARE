@@ -1,0 +1,67 @@
+{
+  "_note": "Fictional packets drawn by scripts/make_fictional_packets.py. Brands, clinic and patient are invented.",
+  "packets": [
+    {
+      "file": "01-clear-metformin.png",
+      "expect_generics": [
+        "metformin"
+      ],
+      "expect_herbs": [],
+      "unreadable": false,
+      "note": "Clear packet, fictional brand, generic printed"
+    },
+    {
+      "file": "02-brand-only.png",
+      "expect_generics": [
+        "metformin"
+      ],
+      "expect_herbs": [],
+      "unreadable": false,
+      "note": "Only a local brand name; the generic must come from our brand table, not the model"
+    },
+    {
+      "file": "03-amlodipine.png",
+      "expect_generics": [
+        "amlodipine"
+      ],
+      "expect_herbs": [],
+      "unreadable": false,
+      "note": "Salt name printed (besylate)"
+    },
+    {
+      "file": "04-herb-bitter-gourd.png",
+      "expect_generics": [],
+      "expect_herbs": [
+        "bitter gourd"
+      ],
+      "unreadable": false,
+      "note": "A traditional remedy, which the list must keep as a herb"
+    },
+    {
+      "file": "05-two-packets.png",
+      "expect_generics": [
+        "aspirin",
+        "simvastatin"
+      ],
+      "expect_herbs": [],
+      "unreadable": false,
+      "note": "Two products in one photo; each should be listed once"
+    },
+    {
+      "file": "06-small-tilted-blurred.png",
+      "expect_generics": [
+        "metformin"
+      ],
+      "expect_herbs": [],
+      "unreadable": false,
+      "note": "Hard: small, tilted and slightly blurred, as a real phone photo can be"
+    },
+    {
+      "file": "07-unreadable.png",
+      "expect_generics": [],
+      "expect_herbs": [],
+      "unreadable": true,
+      "note": "Too blurred to read: the reader must say so rather than guess"
+    }
+  ]
+}
