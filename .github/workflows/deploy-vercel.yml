@@ -47,15 +47,18 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@59.26.0
 
-      # Explains "Project not found" without printing any secret: GitHub masks the org ID wherever it appears,
-      # so the team that shows *** as its ID is the one VERCEL_ORG_ID points at.
+      # Explains "Project not found" without printing any secret.
       - name: Check Vercel access
         run: |
           for name in VERCEL_ORG_ID VERCEL_PROJECT_ID; do
-            if [[ "${!name}" =~ [[:space:]] ]]; then echo "::error::$name contains a space or line break"; exit 1; fi
+            if [[ ! "${!name}" =~ ^[A-Za-z0-9_]+$ ]]; then
+              echo "::error::$name holds more than letters, digits and _ (often a line break or byte-order mark added when it was saved)"
+              exit 1
+            fi
           done
           echo "Token belongs to: $(vercel whoami)"
-          vercel teams ls
+          echo "Projects the token can see in the VERCEL_ORG_ID team:"
+          VERCEL_PROJECT_ID= vercel project ls --scope "$VERCEL_ORG_ID"
 
       # The project's Root Directory is web/, so these run from the repository root.
       - name: Pull production configuration
