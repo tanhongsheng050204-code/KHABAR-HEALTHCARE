@@ -8,7 +8,7 @@
 
 The local core product is largely implemented and tested:
 
-- API: **184 automated tests passing** (23 Sep, after the bug bash).
+- API: **193 automated tests passing** (24 Sep, after the sign-in decoder and IC-number checks).
 - Agents: **188 automated tests passing** (project virtual environment).
 - Next.js web app: linting, TypeScript and the production build pass.
 - Local bug bash done (23 Sep): [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md), 11 defects found and fixed, including one safety issue.
@@ -16,13 +16,19 @@ The local core product is largely implemented and tested:
 
 The remaining work is primarily real-provider integration, missing stretch features, evidence-gathering, and demo/public-readiness work.
 
+### UI redesign update — 24 September 2026
+
+The approved teal/lavender care-story redesign is implemented locally across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. Frontend lint, TypeScript, and production build pass. This is not yet a published release.
+
+See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the implementation summary and explicit remaining checks. Local patient and doctor browser flows have since been verified; device reduced-motion, full accessibility checks, real sign-in, and deployment verification remain open.
+
 ---
 
 ## 1. Highest priority — make the claimed architecture real
 
 ### 1.1 Connect the Neo4j patient graph
 
-**Status:** Done locally (23 Sep 2026); not yet connected to AuraDB for the deployed demo.
+**Status:** Done, locally (23 Sep 2026) and on the deployed demo with AuraDB (24 Sep 2026).
 
 **Required work**
 
@@ -32,7 +38,8 @@ The remaining work is primarily real-provider integration, missing stretch featu
 - [x] Give the agents read-only graph-query tools for intake, evaluator, and follow-up context (`services/agents/core/graph.py`, plus `GET /agents/graph/{graph_id}/context`). The report agent does not use the graph: it only structures the doctor's notes.
 - [x] Add tests proving that personally identifiable information cannot enter Neo4j (`PatientGraphSyncTest`, `DemoGraphTest`, against a real in-process Neo4j).
 - [x] Manual happy path (23 Sep): local Neo4j + API + agents; Aminah's context read back by graph ID through the agents; a medicine added in the API appeared in the graph; the safety check given only her graph ID caught the duplicate metformin and the bitter-gourd clash.
-- [ ] Run the deployed flow against AuraDB: create a free AuraDB instance, set the three `NEO4J_*` variables in the `khabar-api` Vercel project, redeploy, then `POST /dev/graph/sync` once.
+- [x] Run the deployed flow against AuraDB (24 Sep): free AuraDB instance `ebc9e325` (replaced the first instance, `18125f54`, whose password had been exposed; Aura Free allows no password change); the three `NEO4J_*` variables set on `khabar-api` production; redeployed; `POST /dev/graph/sync` wrote 31 patients. Aminah's context read back through the live agents by graph ID only (duplicate metformin from two clinics, bitter gourd, last visit, "pening" symptom). AuraDB checked directly: patient nodes hold only `graph_id` and `pregnant`; no names, IC numbers or phone numbers found.
+- [ ] No patient in the live database has a recorded condition yet, so the graph has no `Condition` nodes. Conditions arrive through the guided intake; run it once on the live site before the demo.
 
 **Done when:** the demo patient’s medication, allergy, herb, and condition context is written to and read from Neo4j using only the random graph ID.
 
@@ -44,7 +51,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 
 - [ ] Configure Supabase Auth for doctor email/password and patient/caregiver email OTP.
 - [x] Configure the web app with the public Supabase URL and publishable key (already set on the `khabar-landing` project).
-- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API.
+- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API. Local part done (24 Sep): the API now accepts real Supabase sign-ins (ES256, checked against the project's published keys) and the demo buttons' HS256 tokens side by side, each only against its own key (`SecurityConfig.jwtDecoder`). `SupabaseTokenDecoderTest` (8 tests) covers both token kinds, another project's key, the wrong secret, expired tokens, the wrong audience, unsigned and malformed tokens, and refusing to start with neither key configured. The live key set was checked: one ES256 P-256 key. The issuer is not checked: the project's key set already pins tokens to this project. Still open: deploy `khabar-api` (production has both `SUPABASE_JWKS_URL` and `SUPABASE_JWT_SECRET`, and the currently deployed code uses only the key set when both are present, which refuses demo-button tokens), then confirm one real and one demo sign-in on the live site.
 - [ ] Test doctor, patient, and caregiver sign-in on the deployed web app.
 - [ ] Test revoked caregiver consent immediately blocks access in the deployed environment.
 
@@ -210,7 +217,7 @@ These are not implementation tasks, but they are still open in `plan.md`.
 
 ## Recommended next sequence
 
-1. ~~Implement and test **Neo4j graph writes and reads**~~ (done locally; connect AuraDB to the deployment).
+1. ~~Implement and test **Neo4j graph writes and reads**~~ (done locally and on the deployment with AuraDB, 24 Sep).
 2. Complete deployed **Supabase authentication** for every role.
 3. Finish a deployed end-to-end rehearsal using fake data.
 4. Configure **WhatsApp templates and webhook**; perform one real test-number loop.

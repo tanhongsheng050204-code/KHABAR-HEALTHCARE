@@ -1,4 +1,23 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "files.watcherExclude": {
+        "**/.git/**": true,
+        "**/node_modules/**": true,
+        "**/.next/**": true,
+        "**/.venv/**": true,
+        "**/__pycache__/**": true,
+        "**/target/**": true,
+        "**/.pytest_cache/**": true,
+        "**/.playwright-mcp/**": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/.next": true,
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "**/target": true,
+        "**/.pytest_cache": true,
+        "**/.playwright-mcp": true
+    }
 }
