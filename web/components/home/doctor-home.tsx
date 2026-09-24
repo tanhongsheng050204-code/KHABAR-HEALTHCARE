@@ -15,7 +15,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import type { Appointment, CallList, Me, Patient } from "@/lib/types";
+import type { Appointment, Assignee, CallList, Me, Patient } from "@/lib/types";
+import { CaseControls, CoverageBanner, QueueFilters, filterItems, type QueueFilter } from "./case-controls";
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import { ClinicTools } from "@/components/clinical/clinic-tools";
 import styles from "@/app/home/home.module.css";
@@ -41,6 +42,8 @@ export function DoctorHome({
   notify: (notice: Notice | null) => void;
 }) {
   const [calls, setCalls] = useState<CallList | null>(null);
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
+  const [filter, setFilter] = useState<QueueFilter>("ALL");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [query, setQuery] = useState("");
@@ -85,12 +88,14 @@ export function DoctorHome({
     setLoading(true);
     setLoadError("");
     try {
-      const [nextCalls, nextPatients, nextAppointments] = await Promise.all([
+      const [nextCalls, nextPatients, nextAppointments, nextAssignees] = await Promise.all([
         apiRequest<CallList>("/api/clinic/call-list"),
         apiRequest<Patient[]>("/api/clinic/patients"),
         apiRequest<Appointment[]>(`/api/clinic/appointments?date=${today}`),
+        apiRequest<Assignee[]>("/api/clinic/cases/assignees").catch(() => [] as Assignee[]),
       ]);
       setCalls(nextCalls);
+      setAssignees(nextAssignees);
       setPatients(nextPatients);
       setAppointments(nextAppointments);
       setLoaded(true);
@@ -121,6 +126,15 @@ export function DoctorHome({
     const timer = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timer);
   }, [load]);
+  // Coming back from Staff & access, reload: the rota or cases may have changed there.
+  const lastSection = useRef(section);
+  useEffect(() => {
+    const cameBack = lastSection.current === "staff" && section !== "staff";
+    lastSection.current = section;
+    if (!cameBack) return;
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [section, load]);
   const visible = useMemo(
     () =>
       patients.filter(
@@ -130,34 +144,7 @@ export function DoctorHome({
       ),
     [patients, query],
   );
-  async function markCalled(patientId: string, snapshotAt: string) {
-    const confirmed = window.confirm(
-      "Record successful patient contact? This closes open replies, worrying readings, and unanswered check-ins that were present at the last refresh. Review all related concerns first; newer items will stay open.",
-    );
-    if (!confirmed) return;
-    setBusy(patientId);
-    try {
-      await apiRequest(`/api/clinic/call-list/${patientId}/called`, {
-        method: "POST",
-        body: JSON.stringify({ observedThrough: snapshotAt }),
-      });
-      notify({
-        tone: "success",
-        text: "Successful contact was recorded. Newer items remain on the call list.",
-      });
-      await load();
-    } catch (error) {
-      notify({
-        tone: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "The call could not be recorded.",
-      });
-    } finally {
-      setBusy(null);
-    }
-  }
+
   async function addPatient(event: React.FormEvent) {
     event.preventDefault();
     setBusy("patient");
@@ -293,8 +280,10 @@ export function DoctorHome({
               </button>
             }
           />
-          {calls?.items.length ? (
-            calls.items.slice(0, callLimit).map((item, index) => (
+          <CoverageBanner coverage={calls?.coverage} />
+          {calls && calls.items.length > 0 && <QueueFilters value={filter} onChange={setFilter} items={calls.items} me={me} />}
+          {calls && filterItems(calls.items, filter, me).length ? (
+            filterItems(calls.items, filter, me).slice(0, callLimit).map((item, index) => (
               <article className={styles.priorityRow} key={item.patientId}>
                 <span
                   className={`${styles.rank} ${styles[`rank${item.level}`]}`}
@@ -320,16 +309,12 @@ export function DoctorHome({
                   <p>
                     {item.urgentReply ||
                       item.latestReply ||
-                      "No reply for 48 hours."}
+                      (item.reason === "OPEN_CASE"
+                        ? "Still open: what raised it has cleared. Close the case when follow-up is done."
+                        : "No reply for 48 hours.")}
                   </p>
+                  <CaseControls item={item} snapshotAt={calls.snapshotAt} me={me} assignees={assignees} onChanged={load} notify={notify} />
                 </div>
-                <button
-                  className="button-secondary"
-                  disabled={busy === item.patientId}
-                  onClick={() => void markCalled(item.patientId, calls.snapshotAt)}
-                >
-                  {busy === item.patientId ? "Saving…" : "Record contact"}
-                </button>
               </article>
             ))
           ) : (

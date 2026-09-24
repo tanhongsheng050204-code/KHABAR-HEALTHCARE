@@ -6,13 +6,14 @@ The `pilot` Spring profile is the only profile that enables Flyway. It runs migr
 
 - `V1__initial_clinical_schema.sql` creates the current baseline schema before receipt-time tracking was added to readings.
 - `V2__record_reading_receive_time.sql` adds `reading.received_at`, backfills existing rows from `measured_at`, then makes the new field required. This is an approximation for legacy rows; readings written after V2 store the server receipt time separately from the measurement time.
+- `V4__follow_up_cases_and_clinic_settings.sql` adds follow-up cases and their append-only history (one open case per patient, enforced by a unique key that is cleared on closure, and a check that a closed case has a reason), clinic settings, the weekly rota, and the clinic activity log. It creates tables only; no existing data changes.
 - `V3__clinic_staff_grants.sql` adds audited clinic-scoped doctor, nurse, and clinic-administrator grants; adds staff invitations; expands role checks; and backfills existing clinic doctors. The historical grantor is unknown and is kept null.
 
 H2 PostgreSQL-mode tests cover empty-database creation, migration idempotency, V2's legacy-row backfill, V3's doctor grant backfill, and Hibernate validation under the `pilot` profile. A separate conditional smoke test is configured to run against PostgreSQL 16 in GitHub Actions. H2 success alone is not proof of PostgreSQL compatibility; run and retain the hosted result before pilot database use.
 
 ## Database handling
 
-For an empty pilot database, the first start with `SPRING_PROFILES_ACTIVE=pilot` applies V1, V2, and V3. Back up the database before enabling a new migration in any non-empty environment. Review its SQL and expected data transformation, record the backup, then run the migration and confirm Flyway history plus the application schema validation result. V3 preserves access for pre-existing clinic doctors; it does not infer nurse or administrator membership.
+For an empty pilot database, the first start with `SPRING_PROFILES_ACTIVE=pilot` applies V1 to V4. Back up the database before enabling a new migration in any non-empty environment. Review its SQL and expected data transformation, record the backup, then run the migration and confirm Flyway history plus the application schema validation result. V3 preserves access for pre-existing clinic doctors; it does not infer nurse or administrator membership.
 
 For an existing non-empty database, automatic baseline-on-migrate is deliberately disabled. Do not enable it globally. An operator must first compare the schema with V1, confirm the database is compatible with that baseline, take and verify a backup, then explicitly baseline it at version 1 using the organization's approved Flyway tooling. Startup can then apply V2 and V3. If any relevant table or column differs, create a reviewed forward migration rather than forcing the baseline.
 

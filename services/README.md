@@ -211,6 +211,16 @@ After the visit
 | POST | `/api/webhooks/favoriot` | a home device via Favoriot (no sign-in; checked by the `X-Khabar-Device-Secret` header) | A reading from a linked device. Unknown devices are acknowledged and ignored |
 | GET / POST | `/api/webhooks/whatsapp` | Meta (no sign-in; checked by verify token and signature) | The webhook handshake, and replies arriving on WhatsApp. Matched to a patient by a keyed hash of the phone number |
 | GET | `/api/clinic/call-list` | doctor | "Call these patients today", most urgent first. Within a level: replies, then home readings, then missed doses, then patients with no reply for 48 hours |
+| GET | `/api/clinic/cases/assignees` | doctor or nurse | Doctors and nurses a case can be assigned to |
+| GET | `/api/clinic/cases/{id}` | doctor or nurse at the clinic | The case and its full history |
+| POST | `/api/clinic/cases/{id}/assign` | doctor or nurse | `{ "ownerId": "…" }`, or empty to take it yourself. Only doctors and nurses of the clinic |
+| POST | `/api/clinic/cases/{id}/acknowledge` | doctor or nurse | Stops the overdue clock. Repeating it changes nothing |
+| POST | `/api/clinic/cases/{id}/contact` | doctor or nurse | `{ "outcome": "REACHED" \| "NO_ANSWER", "note": "…" }` |
+| POST | `/api/clinic/cases/{id}/escalate` | doctor or nurse | `{ "note": "why", "toUserId": "doctor, optional" }` |
+| POST | `/api/clinic/cases/{id}/close` | doctor or nurse | `{ "reason": "…", "note": "…", "observedThrough": "<snapshotAt>" }`. Urgent cases need a 10-character note, and can be closed as unreachable only after escalation. Resolves only what was in the snapshot |
+| GET, PUT | `/api/clinic/settings` | read: clinic staff; change: doctor or clinic admin | Hours, escalation contact, acknowledgement minutes per level, weekly rota with backup |
+| GET | `/api/clinic/activity` | doctor or clinic admin | Staff, settings and case actions, newest first; cases by reference only |
+| GET | `/api/clinic/integrations` | doctor or clinic admin | Whether agents, patient messages, the scheduler, the graph and real sign-in are working |
 | POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Records successful contact for open items no newer than the displayed queue snapshot; requires `{ "observedThrough": "<snapshotAt from GET /api/clinic/call-list>" }`. Newer items stay open. Writes the contact to the patient's access log. |
 
 Controller-handled errors use a stable response shape, for example `{"code":"CONFLICT","message":"...","status":409,"requestId":"…","retryable":false}`. The server-generated `X-Request-ID` is also returned as a header; authentication-filter errors may have a different body, but still receive the correlation header.

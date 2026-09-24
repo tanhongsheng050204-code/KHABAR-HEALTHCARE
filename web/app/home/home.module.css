@@ -2377,3 +2377,13 @@
     width: 100%;
   }
 }
+
+/* Badges inside staff rows keep their own colours; the rows' muted text colour is for plain text only. */
+.staffRow span:global(.status-badge) { margin-top: 0; font-size: inherit; }
+.staffRow span:global(.status-red) { color: #9c2f2b; }
+.staffRow span:global(.status-watch) { color: #80510f; }
+.staffRow span:global(.status-review) { color: #315f79; }
+.staffRow span:global(.status-ok) { color: #21675a; }
+
+/* Hovering the current page's link must not turn its text white on the pale highlight. */
+.rail nav a.activeNav:hover { color: #102f2f; }

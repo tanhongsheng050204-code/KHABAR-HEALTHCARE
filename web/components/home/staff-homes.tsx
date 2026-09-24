@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Copy, RefreshCw, ShieldCheck } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import type { CallList, ClinicStaff, ClinicStaffRole, Me, Patient } from "@/lib/types";
+import type { Assignee, CallList, ClinicStaff, ClinicStaffRole, Me, Patient } from "@/lib/types";
+import { CaseControls, CoverageBanner, QueueFilters, filterItems, type QueueFilter } from "./case-controls";
+import { ActivityPanel, ClinicSettingsPanel, IntegrationsPanel } from "./clinic-admin";
 import { SectionHeading, StatusBadge } from "@/components/ui";
 import { useWorkspaceNavigation } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
@@ -24,6 +26,8 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
   const defaultAdmin = roles.includes("CLINIC_ADMIN") && !nurse && !doctor;
   const manager = roles.includes("DOCTOR") || roles.includes("CLINIC_ADMIN");
   const [callList, setCallList] = useState<CallList | null>(null);
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
+  const [filter, setFilter] = useState<QueueFilter>("ALL");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [staff, setStaff] = useState<ClinicStaff[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,11 +40,12 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
   const loadQueue = useCallback(async () => {
     setLoading(true); setLoadError("");
     try {
-      const [nextCalls, nextPatients] = await Promise.all([
+      const [nextCalls, nextPatients, nextAssignees] = await Promise.all([
         apiRequest<CallList>("/api/clinic/call-list"),
         apiRequest<Patient[]>("/api/clinic/patients"),
+        apiRequest<Assignee[]>("/api/clinic/cases/assignees").catch(() => [] as Assignee[]),
       ]);
-      setCallList(nextCalls); setPatients(nextPatients);
+      setCallList(nextCalls); setPatients(nextPatients); setAssignees(nextAssignees);
     } catch (error) {
       const message = error instanceof Error ? error.message : "The follow-up workspace could not be loaded.";
       setLoadError(message); notify({ tone: "error", text: message });
@@ -64,17 +69,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
     });
   }, [section, manager, nurse, defaultAdmin, loadQueue, loadStaff, notify]);
 
-  async function markCalled(patientId: string) {
-    if (!callList) return;
-    if (!window.confirm("Record successful contact? This closes follow-up items present in the last refreshed list. Review concerns and follow your clinic's escalation protocol first.")) return;
-    setBusy(patientId);
-    try {
-      await apiRequest(`/api/clinic/call-list/${patientId}/called`, { method: "POST", body: JSON.stringify({ observedThrough: callList.snapshotAt }) });
-      notify({ tone: "success", text: "Contact recorded. Newer follow-up items remain open." });
-      await loadQueue();
-    } catch (error) { notify({ tone: "error", text: error instanceof Error ? error.message : "Contact could not be recorded." }); }
-    finally { setBusy(null); }
-  }
+
 
   async function inviteStaff(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy("invite"); setInviteCode("");
@@ -128,10 +123,13 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
         <section className={styles.priorityCard} id="care-panel"><SectionHeading eyebrow="Clinic workflow" title="Today's follow-up" action={callList ? `Updated ${new Date(callList.snapshotAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : undefined} />
           {loading && <p role="status">Loading the follow-up queue…</p>}
           {!loading && callList?.items.length === 0 && <p>No open follow-up items in this snapshot.</p>}
-          <div className={styles.staffRows}>{callList?.items.map((item) => <article className={styles.staffRow} key={item.patientId}>
+          <CoverageBanner coverage={callList?.coverage} />
+          {callList && callList.items.length > 0 && <QueueFilters value={filter} onChange={setFilter} items={callList.items} me={me} />}
+          <div className={styles.staffRows}>{callList && filterItems(callList.items, filter, me).map((item) => <article className={styles.staffRow} key={item.patientId}>
             <div><strong>{item.fullName}</strong><span>{item.reason.replaceAll("_", " ")} · {item.preferredLanguage.toUpperCase()}{item.followUpDay ? ` · Day ${item.followUpDay}` : ""}</span>
-              {item.urgentReply && <p>{item.urgentReply}</p>}</div>
-            <StatusBadge level={item.level}>{item.level.toLowerCase()}</StatusBadge><button className="button-secondary" disabled={busy === item.patientId} onClick={() => void markCalled(item.patientId)}>{busy === item.patientId ? "Saving…" : "Record contact"}</button>
+              {item.urgentReply && <p>{item.urgentReply}</p>}
+              <CaseControls item={item} snapshotAt={callList.snapshotAt} me={me} assignees={assignees} onChanged={loadQueue} notify={notify} /></div>
+            <StatusBadge level={item.level}>{item.level.toLowerCase()}</StatusBadge>
           </article>)}</div>
           <p className={styles.staffCaution}><ShieldCheck size={15} /> This queue supports follow-up; it does not diagnose or replace clinic escalation procedures.</p>
         </section>
@@ -150,6 +148,9 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           <div className={styles.staffRows}>{staff.map((grant) => <article className={styles.staffRow} key={grant.grantId}><div><strong>{grant.displayName}</strong><span>{roleNames[grant.role]} · Added {new Date(grant.grantedAt).toLocaleDateString()}</span></div><button className="button-secondary" disabled={busy === grant.grantId || (grant.role === "DOCTOR" && !roles.includes("DOCTOR"))} onClick={() => void revoke(grant)}>Revoke access</button></article>)}</div>
           {staff.length === 0 && <p>{loading ? "Loading staff…" : "No active grants."}</p>}
         </section>
+        <ClinicSettingsPanel notify={notify} />
+        <IntegrationsPanel />
+        <ActivityPanel />
       </>}
       {!nurse && !manager && <section className={styles.peopleCard}><SectionHeading eyebrow="Clinic workspace" title="Access not assigned" /><p>Ask your clinic administrator to assign a clinic role.</p></section>}
     </Region>

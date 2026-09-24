@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class CallListController {
 
     private static final java.time.Duration NO_REPLY_AFTER = java.time.Duration.ofHours(48);
-    private static final List<String> REASON_ORDER = List.of("REPLY", "READING", "MISSED_DOSE", "NO_REPLY");
+    private static final List<String> REASON_ORDER = List.of("REPLY", "READING", "MISSED_DOSE", "NO_REPLY", "OPEN_CASE");
 
     private final CurrentUser currentUser;
     private final PatientRepository patients;
@@ -46,9 +46,12 @@ public class CallListController {
     private final CheckInRepository checkIns;
     private final ReadingRepository readings;
     private final ClinicStaffAccess staffAccess;
+    private final FollowUpCases cases;
+    private final com.khabar.api.clinicops.ClinicOps clinicOps;
 
     public CallListController(CurrentUser currentUser, PatientRepository patients, PatientReplyRepository replies, AuditLog auditLog,
-                              AdjustableClock clock, CheckInRepository checkIns, ReadingRepository readings, ClinicStaffAccess staffAccess) {
+                              AdjustableClock clock, CheckInRepository checkIns, ReadingRepository readings, ClinicStaffAccess staffAccess,
+                              FollowUpCases cases, com.khabar.api.clinicops.ClinicOps clinicOps) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.replies = replies;
@@ -57,6 +60,8 @@ public class CallListController {
         this.checkIns = checkIns;
         this.readings = readings;
         this.staffAccess = staffAccess;
+        this.cases = cases;
+        this.clinicOps = clinicOps;
     }
 
     /**
@@ -66,21 +71,31 @@ public class CallListController {
      */
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
                                String urgentReply, String latestReply, Instant latestAt, Integer followUpDay,
-                               int unhandledReplies, String reason) {
+                               int unhandledReplies, String reason, FollowUpCases.CaseView followUpCase) {
+
+        CallListItem withCase(FollowUpCases.CaseView view) {
+            return new CallListItem(patientId, fullName, preferredLanguage, view.level().compareTo(level) < 0 ? view.level() : level,
+                    urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason, view);
+        }
     }
 
     public record Counts(long red, long watch, long review) {
     }
 
     /** Server timestamp for the exact queue snapshot rendered to the clinician. */
-    public record CallList(List<CallListItem> items, Counts counts, long patientsInFollowUp, Instant snapshotAt) {
+    public record CallList(List<CallListItem> items, Counts counts, long patientsInFollowUp, Instant snapshotAt,
+                           com.khabar.api.clinicops.ClinicOps.Coverage coverage) {
     }
 
     public record ContactRequest(Instant observedThrough) {
     }
 
+    /**
+     * Listing a patient opens their follow-up case if they have none. A case stays on the list until someone
+     * closes it, even when what put the patient there has since cleared.
+     */
     @GetMapping
-    @Transactional(readOnly = true)
+    @Transactional
     public CallList callList(@AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = requireFollowUpStaff(jwt);
         UUID clinicId = doctor.getClinic().getId();
@@ -113,10 +128,29 @@ public class CallListController {
                 .collect(Collectors.toMap(c -> c.getPatient().getId(), c -> c, (a, b) -> a.getSentAt().isBefore(b.getSentAt()) ? a : b))
                 .values().stream()
                 .map(c -> new CallListItem(c.getPatient().getId(), c.getPatient().getFullName(), c.getPatient().getPreferredLanguage(),
-                        TriageLevel.REVIEW, null, null, c.getSentAt(), c.getPatient().followUpDay(today), 0, "NO_REPLY"))
+                        TriageLevel.REVIEW, null, null, c.getSentAt(), c.getPatient().followUpDay(today), 0, "NO_REPLY", null))
                 .toList();
 
-        List<CallListItem> items = java.util.stream.Stream.concat(fromReplies.stream(), silent.stream())
+        com.khabar.api.clinicops.ClinicSettings settings = clinicOps.settingsFor(clinicId);
+        Map<UUID, Patient> patientsById = new java.util.HashMap<>();
+        byPatient.keySet().forEach(p -> patientsById.put(p.getId(), p));
+        readings.findByPatientClinicIdAndHandledAtIsNullAndLevelNot(clinicId, TriageLevel.OK)
+                .forEach(r -> patientsById.putIfAbsent(r.getPatient().getId(), r.getPatient()));
+        checkIns.findByPatientClinicIdAndStatusAndSentAtBefore(clinicId, CheckIn.Status.SENT, cutoff)
+                .forEach(c -> patientsById.putIfAbsent(c.getPatient().getId(), c.getPatient()));
+        List<CallListItem> withCases = new java.util.ArrayList<>();
+        for (CallListItem item : java.util.stream.Stream.concat(fromReplies.stream(), silent.stream()).toList()) {
+            FollowUpCase open = cases.ensureOpen(patientsById.get(item.patientId()), item.level(), item.reason(), snapshotAt);
+            withCases.add(item.withCase(cases.view(open, settings, snapshotAt)));
+        }
+        java.util.Set<UUID> shown = withCases.stream().map(CallListItem::patientId).collect(Collectors.toSet());
+        cases.openCases(clinicId).stream()
+                .filter(open -> !shown.contains(open.getPatient().getId()))
+                .forEach(open -> withCases.add(new CallListItem(open.getPatient().getId(), open.getPatient().getFullName(),
+                        open.getPatient().getPreferredLanguage(), open.getLevel(), null, null, open.getOpenedAt(),
+                        open.getPatient().followUpDay(today), 0, "OPEN_CASE", cases.view(open, settings, snapshotAt))));
+
+        List<CallListItem> items = withCases.stream()
                 .sorted(Comparator.comparing(CallListItem::level)
                         .thenComparing(i -> REASON_ORDER.indexOf(i.reason()))
                         .thenComparing(CallListItem::latestAt, Comparator.reverseOrder()))
@@ -126,7 +160,8 @@ public class CallListController {
                 items.stream().filter(i -> i.level() == TriageLevel.RED).count(),
                 items.stream().filter(i -> i.level() == TriageLevel.WATCH).count(),
                 items.stream().filter(i -> i.level() == TriageLevel.REVIEW).count());
-        return new CallList(items, counts, patients.countByClinicIdAndFollowUpStartIsNotNull(clinicId), snapshotAt);
+        return new CallList(items, counts, patients.countByClinicIdAndFollowUpStartIsNotNull(clinicId), snapshotAt,
+                clinicOps.coverageToday(clinicId));
     }
 
     @PostMapping("/{patientId}/called")
@@ -141,21 +176,9 @@ public class CallListController {
         if (!patient.getClinic().getId().equals(doctor.getClinic().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        Instant observedThrough = request.observedThrough();
-        List<PatientReply> open = replies.findByPatientIdAndHandledAtIsNull(patientId).stream()
-                .filter(reply -> !reply.getReceivedAt().isAfter(observedThrough)).toList();
-        Instant now = clock.instant();
-        open.forEach(r -> r.markHandled(doctor.getId(), now));
-        List<Reading> openReadings = readings.findByPatientIdAndHandledAtIsNull(patientId).stream()
-                .filter(reading -> !reading.getWorkflowReceivedAt().isAfter(observedThrough)).toList();
-        openReadings.forEach(r -> r.markHandled(doctor.getId(), now));
-        List<CheckIn> unanswered = checkIns.findByPatientIdAndStatus(patientId, CheckIn.Status.SENT).stream()
-                .filter(checkIn -> checkIn.getSentAt() != null && !checkIn.getSentAt().isAfter(observedThrough)).toList();
-        unanswered.forEach(CheckIn::markAnswered);
-        if (!open.isEmpty() || !unanswered.isEmpty() || !openReadings.isEmpty()) {
-            auditLog.record(doctor, patientId, AuditAction.CALLED_ABOUT_REPLY);
-        }
-        return Map.of("handledReplies", open.size(), "handledReadings", openReadings.size(), "handledCheckIns", unanswered.size());
+        FollowUpCases.Resolved resolved = cases.resolveSources(doctor, patientId, request.observedThrough(), clock.instant());
+        cases.recordContact(doctor, patient, request.observedThrough());
+        return Map.of("handledReplies", resolved.replies(), "handledReadings", resolved.readings(), "handledCheckIns", resolved.checkIns());
     }
 
     private AppUser requireFollowUpStaff(Jwt jwt) {
@@ -173,7 +196,7 @@ public class CallListController {
                 .orElseThrow();
         Patient patient = urgent.getPatient();
         return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), urgent.getLevel(),
-                urgent.getDescription(), latest.getDescription(), latest.getMeasuredAt(), patient.followUpDay(today), open.size(), "READING");
+                urgent.getDescription(), latest.getDescription(), latest.getMeasuredAt(), patient.followUpDay(today), open.size(), "READING", null);
     }
 
     private static CallListItem toItem(Patient patient, List<PatientReply> open, LocalDate today) {
@@ -186,6 +209,6 @@ public class CallListController {
         boolean onlyMissedDoses = open.stream().allMatch(r -> r.isMissedDose() && r.getLevel().compareTo(TriageLevel.REVIEW) >= 0);
         return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), level,
                 urgent.getText(), latest.getText(), latest.getReceivedAt(), patient.followUpDay(today), open.size(),
-                onlyMissedDoses ? "MISSED_DOSE" : "REPLY");
+                onlyMissedDoses ? "MISSED_DOSE" : "REPLY", null);
     }
 }

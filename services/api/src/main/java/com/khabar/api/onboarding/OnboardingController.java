@@ -55,12 +55,13 @@ public class OnboardingController {
     private final AdjustableClock clock;
     private final String bootstrapToken;
     private final PatientGraphSync graphSync;
+    private final com.khabar.api.clinicops.ClinicOps clinicOps;
     private final ClinicStaffAccess staffAccess;
 
     public OnboardingController(CurrentUser currentUser, AppUserRepository users, ClinicRepository clinics, PatientRepository patients,
                                 CaregiverLinkRepository caregiverLinks, InviteRepository invites, AdjustableClock clock,
                                 @Value("${khabar.onboarding.bootstrap-token:}") String bootstrapToken, PatientGraphSync graphSync,
-                                ClinicStaffAccess staffAccess) {
+                                ClinicStaffAccess staffAccess, com.khabar.api.clinicops.ClinicOps clinicOps) {
         this.currentUser = currentUser;
         this.users = users;
         this.clinics = clinics;
@@ -70,6 +71,7 @@ public class OnboardingController {
         this.clock = clock;
         this.bootstrapToken = bootstrapToken;
         this.graphSync = graphSync;
+        this.clinicOps = clinicOps;
         this.staffAccess = staffAccess;
     }
 
@@ -149,6 +151,8 @@ public class OnboardingController {
         Instant expires = clock.instant().plus(INVITE_LIFETIME);
         invites.save(new Invite(InviteCodes.hash(code), Invite.Kind.STAFF, actor.getClinic(), null, null,
                 request.role(), actor.getId(), expires));
+        clinicOps.record(actor, com.khabar.api.clinicops.ClinicActivity.Action.STAFF_INVITED,
+                "Invitation for a " + request.role().name().toLowerCase().replace('_', ' '));
         return new InviteCode(code, expires);
     }
 

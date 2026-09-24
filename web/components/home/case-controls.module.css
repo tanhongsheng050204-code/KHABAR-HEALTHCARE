@@ -1,0 +1,155 @@
+.caseBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #4f6264;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-weight: 700;
+  color: #134f4c;
+  background: #e3f1ee;
+  border: 1px solid #b7d6d0;
+  border-radius: 999px;
+}
+
+.overdue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-weight: 700;
+  color: #8a2a22;
+  background: #fdecea;
+  border: 1px solid #e8b4ae;
+  border-radius: 999px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.actions button {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+}
+
+.dialog {
+  width: min(480px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid #d5e0de;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgb(7 31 36 / 20%);
+}
+
+.dialog::backdrop {
+  background: rgb(7 31 36 / 40%);
+}
+
+.dialog h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.dialog p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: #4f6264;
+}
+
+.dialog label {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.dialog select,
+.dialog textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  border: 1px solid #9fb3b0;
+  border-radius: 8px;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialogError {
+  margin: 0 0 12px;
+  color: #a3261e;
+  font-weight: 600;
+}
+
+.history {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  list-style: none;
+  font-size: 0.78rem;
+  color: #4f6264;
+  background: #f5f9f8;
+  border-radius: 10px;
+}
+
+.history li + li {
+  margin-top: 4px;
+}
+
+.coverage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: center;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #1f3a3c;
+  background: #eef6f4;
+  border: 1px solid #cfe2de;
+  border-radius: 12px;
+}
+
+.coverageWarning {
+  color: #7a2f10;
+  background: #fff4e5;
+  border-color: #f0cf9f;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.filters button {
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #134f4c;
+  background: white;
+  border: 1px solid #b7d6d0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.filters button[aria-pressed="true"] {
+  color: white;
+  background: #0c6662;
+  border-color: #0c6662;
+}

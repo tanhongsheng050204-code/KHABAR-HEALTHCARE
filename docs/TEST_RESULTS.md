@@ -6,7 +6,7 @@ What has been checked, when, and how. Update this when a number changes. Command
 
 | Suite | Command | Result |
 |---|---|---|
-| Clinical API (`services/api`) | `./mvnw -q test` | **213 passed**, 0 failures/errors, 1 optional PostgreSQL smoke test skipped locally. Embedded Neo4j tests ran outside the restricted sandbox. |
+| Clinical API (`services/api`) | `./mvnw -q test` | **225 passed**, 0 failures/errors, 1 optional PostgreSQL smoke test skipped locally (it runs in CI, where it passed). Embedded Neo4j tests ran outside the restricted sandbox. |
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **204 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass.** The production build was run outside the restricted sandbox because Next.js could not spawn its worker there (`EPERM`). |
 | Web deploy workflow | GitHub Actions on push to `main` | lint and type check pass on GitHub, then deploys |
@@ -46,6 +46,7 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 | 23 Sep | Rehearsal: pre-visit → draft → safety review → finalise → summary → reply → call list, demo sign-in | live URLs | passed ([report](BUG_BASH_2026-09-23.md)) |
 | 23 Sep | Patient graph written and read by graph ID only | local Neo4j | passed |
 | 24 Sep | Patient graph on AuraDB: 31 patients, Aminah's context read back through the live agents | live | passed; no names, IC or phone numbers in AuraDB |
+| 24 Sep (night) | Follow-up cases and clinic settings in the browser: assign, "No answer", closing an urgent case as unreachable refused until escalated (message shown in the dialog, focus returned), escalate then close; the rota shows today's cover on the call list; activity log lists every step by case reference with no patient names; integration health lists five services; axe clean on the doctor home, staff settings, the case dialog and a 390 px phone | local, fictional data | passed |
 | 24 Sep (night) | Clinic staff grants in the browser: the doctor home renders once, "Staff & access" invites a nurse, "Record contact" asks for confirmation and closes only the items in the displayed snapshot; duplicate check, safety gate and patient home unchanged; axe finds no violations on these screens | local, fictional data | passed |
 | 24 Sep | Duplicate metformin caught across two clinics; safety gate blocks finalising; BM chest-pain reply gets 999 advice | local, fictional data | passed (screenshots in the README) |
 
