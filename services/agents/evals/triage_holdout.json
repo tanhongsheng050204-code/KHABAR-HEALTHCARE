@@ -1,0 +1,29 @@
+{
+  "_note": "Held-out fictional replies, written after the word lists were widened on 24 Sep 2026 and never used to tune them. Measure with --set holdout; do not add words just to pass these. Replace or extend with replies written by a clinician.",
+  "cases": [
+    {"text": "Rasa macam ada benda berat hempap dada", "lang": "ms", "expect": "red"},
+    {"text": "Suami saya tiba-tiba tak boleh bercakap dengan betul", "lang": "ms", "expect": "red"},
+    {"text": "Saya jatuh pengsan pagi tadi dekat dapur", "lang": "ms", "expect": "red"},
+    {"text": "Tercungap-cungap walaupun baring", "lang": "ms", "expect": "red"},
+    {"text": "Ada darah dalam muntah", "lang": "ms", "expect": "red"},
+    {"text": "There is crushing pain in my chest going to my left arm", "lang": "en", "expect": "red"},
+    {"text": "I can hardly breathe lying down", "lang": "en", "expect": "red"},
+    {"text": "My father collapsed and is not responding properly", "lang": "en", "expect": "red"},
+    {"text": "glucose meter says 2.4", "lang": "en", "expect": "red"},
+    {"text": "心口好痛，痛到背后", "lang": "zh", "expect": "red"},
+    {"text": "妈妈突然说话含糊，嘴巴歪了", "lang": "zh", "expect": "red"},
+    {"text": "மயக்கம் போட்டு விழுந்துட்டேன்", "lang": "ta", "expect": "red"},
+
+    {"text": "Kepala berpusing bila berdiri", "lang": "ms", "expect": "watch"},
+    {"text": "Lepas ubat baru ni kulit naik bintik merah", "lang": "ms", "expect": "watch"},
+    {"text": "Feeling lightheaded since the new tablet", "lang": "en", "expect": "watch"},
+    {"text": "I have a dry cough that won't go away", "lang": "en", "expect": "watch"},
+    {"text": "My legs are puffy by evening", "lang": "en", "expect": "watch"},
+    {"text": "这几天一直想吐", "lang": "zh", "expect": "watch"},
+    {"text": "தலை சுத்துது", "lang": "ta", "expect": "watch"},
+
+    {"text": "Semua ok, ubat dah habis makan ikut jadual", "lang": "ms", "expect": "ok"},
+    {"text": "Doing well, no problems", "lang": "en", "expect": "ok"},
+    {"text": "一切都好", "lang": "zh", "expect": "ok"}
+  ]
+}

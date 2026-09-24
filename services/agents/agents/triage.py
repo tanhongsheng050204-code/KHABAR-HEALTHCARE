@@ -69,14 +69,35 @@ def _contains(text: str, word: str) -> bool:
     return word in text  # Chinese and Tamil have no spaces to rely on
 
 
+# A blood sugar the patient typed, e.g. "gula 2.8", "sugar was 18.2", "血糖只有2.8". Readings over 35 are
+# taken as mg/dL. Levels match the API's home readings: below 3.0 red, below 3.9 or above 16.7 watch.
+_SUGAR = re.compile(r"(?:gula|sugar|glucose|血糖|சர்க்கரை)\D{0,20}?(\d{1,3}(?:[.,]\d+)?)", re.IGNORECASE)
+
+
+def _sugar_level(text: str) -> Optional[TriageResult]:
+    worst = None
+    for m in _SUGAR.finditer(text):
+        value = float(m.group(1).replace(",", "."))
+        mmol = value / 18 if value > 35 else value
+        level = "red" if mmol < 3.0 else "watch" if mmol < 3.9 or mmol > 16.7 else None
+        if level and (worst is None or URGENCY[level] > URGENCY[worst.level]):
+            worst = TriageResult(level=level, matched=m.group(0).strip())
+    return worst
+
+
 def classify_reply(text: str) -> TriageResult:
     lowered = text.lower()
     missed = any(_contains(lowered, w) for w in _missed_dose_words())
-    for level, words in _rules():
-        for word in words:
-            if _contains(lowered, word):
-                return TriageResult(level=level, matched=word, missed_dose=missed)
-    return TriageResult(level="review", missed_dose=missed)
+    words = TriageResult(level="review", missed_dose=missed)
+    for level, listed in _rules():
+        match = next((w for w in listed if _contains(lowered, w)), None)
+        if match:
+            words = TriageResult(level=level, matched=match, missed_dose=missed)
+            break
+    sugar = _sugar_level(lowered)
+    if sugar and URGENCY[sugar.level] > URGENCY[words.level]:
+        return replace(sugar, missed_dose=missed)
+    return words
 
 
 def _about_patient(context: Optional[dict]) -> str:

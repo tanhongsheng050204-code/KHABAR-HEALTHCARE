@@ -159,10 +159,20 @@ class ApprovedAnswersTest {
 
         // The app shows the patient the same acknowledgement their phone gets, never a blank message
         reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist())
-                .andExpect(jsonPath("$.message").value(com.khabar.api.messaging.PatientMessages.acknowledgementText("ms", TriageLevel.REVIEW)));
+                .andExpect(jsonPath("$.message").value(com.khabar.api.messaging.PatientMessages.acknowledgementText("ms", TriageLevel.REVIEW)))
+                // Nobody has read it yet, and the word lists miss many ways of describing an emergency
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
 
         assertThat(sentToAminah()).singleElement().satisfies(m -> assertThat(m.getKind()).isEqualTo("NOTICE"));
         callList().andExpect(jsonPath("$.items[0].level").value("REVIEW"));
+    }
+
+    @Test
+    void aReassuringReplyGetsAPlainThankYou() throws Exception {
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "ok", "matched", "sihat"));
+
+        reply("Sihat, dah makan ubat").andExpect(jsonPath("$.level").value("OK"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("999"))));
     }
 
     @Test

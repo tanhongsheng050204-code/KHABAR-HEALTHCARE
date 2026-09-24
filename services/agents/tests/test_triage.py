@@ -51,3 +51,33 @@ def test_taking_the_medicine_is_not_a_missed_dose():
 def test_a_missed_dose_does_not_change_the_level():
     assert classify_reply("Semalam lupa makan ubat").level == "review"
     assert classify_reply("Lupa makan ubat, sekarang pening").level == "watch"
+
+
+@pytest.mark.parametrize("reply,level", [
+    ("Gula saya 2.8 tadi", "red"),
+    ("sugar was 2.5 this morning", "red"),
+    ("血糖只有2.8", "red"),
+    ("glucose 45", "red"),          # mg/dL, read as 2.5 mmol/L
+    ("Gula saya 3.5 pagi tadi", "watch"),
+    ("sugar reading 18.2 after dinner", "watch"),
+    ("gula 6.1, rasa sihat", "ok"),  # a normal number leaves the words to decide
+])
+def test_a_typed_blood_sugar_is_judged_like_a_home_reading(reply, level):
+    assert classify_reply(reply).level == level
+
+
+def test_a_low_sugar_outranks_a_reassuring_word():
+    result = classify_reply("okay je, sugar 2.9")
+    assert result.level == "red"
+    assert "2.9" in result.matched
+
+
+def test_every_red_reply_in_the_labelled_set_is_raised():
+    """A regression guard only: the word lists were widened against these cases. See evals/triage_holdout.json
+    and docs/evals for replies they were not tuned on, which they mostly miss without a model."""
+    import json
+    from pathlib import Path
+
+    cases = json.loads((Path(__file__).resolve().parents[1] / "evals" / "triage_cases.json").read_text(encoding="utf-8"))["cases"]
+    missed = [c["text"] for c in cases if c["expect"] == "red" and classify_reply(c["text"]).level != "red"]
+    assert missed == []

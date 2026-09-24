@@ -78,9 +78,16 @@ public class PatientMessages {
         return WILL_READ.getOrDefault(language, WILL_READ.get("en")) + " " + EMERGENCY_ADVICE.getOrDefault(language, EMERGENCY_ADVICE.get("en"));
     }
 
+    /**
+     * Only a reply the word lists read as well gets a plain thank-you. Anything a person still has to read
+     * also carries the emergency sentence: the word lists miss many ways of describing an emergency (see
+     * docs/evals), so a reply they could not place may still be one.
+     */
     public static String acknowledgementText(String language, TriageLevel level) {
-        Map<String, String> texts = level == TriageLevel.OK ? THANKS : WILL_READ;
-        return texts.getOrDefault(language, texts.get("en"));
+        if (level == TriageLevel.OK) {
+            return THANKS.getOrDefault(language, THANKS.get("en"));
+        }
+        return uncheckedText(language);
     }
 
     public Messenger.Result send(Patient patient, String text, Messenger.Kind kind) {
