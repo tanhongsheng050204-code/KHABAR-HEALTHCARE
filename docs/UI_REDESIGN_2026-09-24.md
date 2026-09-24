@@ -93,13 +93,18 @@ These checks do not constitute full accessibility conformance, performance certi
 - [x] Patient homepage on desktop and mobile, including all navigation sections and preservation of unsent drafts.
 - [x] Completed intake → new intake, including a failed-send/retry case using fictional data.
 - [x] Doctor add-patient error and successful clipboard feedback inside the dialog after the final fix.
-- [ ] Clipboard rejection feedback if browser clipboard permission is denied.
+- [x] Clipboard rejection feedback if browser clipboard permission is denied: with the clipboard refused, the add-patient dialog says "The code could not be copied. Select the code and copy it manually." and announces it as an alert.
 - [x] Cross-route links from patient records to doctor Patients/Schedule after asynchronous loading.
 - [x] Patient sidebar and sign-out at a short desktop viewport, e.g. 1280 × 720.
 - [x] Manual pause/resume across landing, login, and doctor home.
-- [ ] Device reduced-motion setting across those screens.
+- [x] Device reduced-motion setting across those screens: with `prefers-reduced-motion: reduce` the care story stays on its chapter, no long or looping animation runs on landing, login or doctor home, and the control reads "Reduced motion". Without it, the story advances and four animations run.
 - [x] Browser check of the appointment day selector, time selection and mobile layout after the production build.
-- [ ] Keyboard-only navigation, screen-reader announcements, zoom, contrast, and narrow-device regression checks.
+- [x] Keyboard, contrast, landmarks, zoom and narrow screens (24 Sep, automated with axe-core 4.10 plus a keyboard walk):
+  - axe (WCAG 2.1 A/AA and best practice) finds no violations on landing, login, doctor home, patient record, visit (with safety findings showing) or the patient home and its four sections on a phone. Before the fixes it found 60+ text colours under 4.5:1, a sidebar landmark without a name, a skip link with no target on the record and visit pages, and side panels marked as nested landmarks. Text over gradients cannot be measured automatically and was checked by eye only.
+  - Keyboard: the first Tab reaches "Skip to workspace", which jumps past the sidebar; focus order follows the page and every stop shows a focus ring. The patient search and the sign-in email field had no visible ring; both now do. Each patient row's link is named "Open <name>'s record" instead of "Open".
+  - No sideways page scrolling on any screen at 320 px, or at 640 px (a 1280 px window at 200% zoom).
+  - Toasts are announced (errors as alerts, others as status).
+- [ ] A pass with a real screen reader (NVDA or VoiceOver) and a check of the caregiver home, which has no demo button.
 - [ ] Real Supabase password/OTP/invitation flows with authorized test accounts and email delivery configured.
 - [ ] Production performance and public-deployment smoke checks after an explicitly requested release.
 

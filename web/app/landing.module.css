@@ -150,7 +150,7 @@
   align-items: center;
   height: 46px;
   padding: 0 16px;
-  color: #718386;
+  color: #647477;
   background: #f7faf9;
   border-bottom: 1px solid #e2ebea;
   font-size: 0.68rem;
@@ -235,7 +235,7 @@
   gap: 5px;
 }
 .previewHeading small {
-  color: #708386;
+  color: #617174;
   font-size: 0.68rem;
 }
 .previewHeading strong {
@@ -277,7 +277,7 @@
   gap: 4px;
   min-height: 86px;
   padding: 13px;
-  color: #687d80;
+  color: #63787a;
   background: white;
   border: 1px solid #e0ebe8;
   border-radius: 12px;
@@ -323,7 +323,7 @@
   font-weight: 730;
 }
 .listTitle small {
-  color: #789090;
+  color: #647979;
   font-size: 0.62rem;
   font-weight: 600;
 }
@@ -357,7 +357,7 @@
   font-size: 0.68rem;
 }
 .previewPerson small {
-  color: #718688;
+  color: #65787a;
   font-size: 0.57rem;
 }
 .previewPerson > i {
@@ -426,7 +426,7 @@
   flex: 1;
 }
 .nextStep small {
-  color: #738789;
+  color: #607173;
   font-size: 0.6rem;
 }
 .nextStep strong {
@@ -752,7 +752,7 @@
   border-top: 1px solid var(--line);
 }
 .footer p {
-  color: #76898b;
+  color: #647576;
   font-size: 0.72rem;
 }
 .footer > span {
@@ -760,7 +760,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #647b7d;
+  color: #5f7577;
   font-size: 0.72rem;
 }
 @media (max-width: 1120px) {
@@ -1213,7 +1213,7 @@
   gap: 10px;
   padding: 12px 16px;
   border-top: 1px solid #e2eeea;
-  color: #6f8684;
+  color: #657978;
   background: white;
   font-size: 0.6rem;
 }
@@ -1261,7 +1261,7 @@
 }
 .floatingNote small {
   font-size: 0.65rem;
-  color: #83948b;
+  color: #66766e;
 }
 .sceneSteps {
   display: grid;
@@ -1352,7 +1352,7 @@
   border: 1px solid #c6ddd3;
   border-radius: 50%;
   background: #eff6f2;
-  color: #789188;
+  color: #5e736b;
   font-size: 0.77rem;
   font-weight: 750;
   transition:
@@ -1361,7 +1361,7 @@
     box-shadow 0.25s;
 }
 .dayPicker small {
-  color: #6b857b;
+  color: #5c736a;
   font-size: 0.76rem;
 }
 .dayPicker .dayReached > span {
@@ -1402,7 +1402,7 @@
   min-width: 0;
 }
 .storyChapter {
-  color: #6c8b7e;
+  color: #5a7469;
   font-size: 0.65rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -1419,7 +1419,7 @@
 .storyCopy p {
   max-width: 430px;
   min-height: 82px;
-  color: #60766e;
+  color: #5e736b;
   font-size: 0.96rem;
   line-height: 1.75;
 }
@@ -1458,7 +1458,7 @@
   font-size: 0.82rem;
 }
 .conversationTop small {
-  color: #7d9286;
+  color: #65796e;
   font-size: 0.65rem;
 }
 .conversationTop > i {
@@ -1483,7 +1483,7 @@
   border-radius: 2px 16px 16px;
 }
 .clinicBubble small {
-  color: #6a8876;
+  color: #597363;
   font-size: 0.61rem;
   font-weight: 700;
 }
@@ -1530,7 +1530,7 @@
   font-size: 0.7rem;
 }
 .storyStatus small {
-  color: #7c9283;
+  color: #65796b;
   font-size: 0.62rem;
 }
 .safetyRules article {

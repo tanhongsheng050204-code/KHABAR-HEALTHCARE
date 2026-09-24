@@ -10,7 +10,7 @@
 .heading { display: flex; align-items: center; gap: 11px; }
 .heading > span { display: grid; place-items: center; width: 34px; height: 34px; color: #176e68; background: #e4f2ef; border-radius: 10px; }
 .heading h3 { margin: 0; color: #1b3738; font-size: .85rem; }
-.heading p { margin: 4px 0 0; color: #6d8384; font-size: .69rem; line-height: 1.45; }
+.heading p { margin: 4px 0 0; color: #617576; font-size: .69rem; line-height: 1.45; }
 .form { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; }
 .fileLabel { display: flex; align-items: center; gap: 8px; min-height: 39px; padding: 0 12px; color: #275b59; background: #fff; border: 1px solid #cddedb; border-radius: 9px; font-size: .72rem; font-weight: 680; cursor: pointer; }
 .fileLabel input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
@@ -23,7 +23,7 @@
 .candidate { display: grid; gap: 7px; padding: 12px; background: #fff; border: 1px solid #dae8e5; border-radius: 10px; }
 .candidate > div { display: grid; gap: 3px; }
 .candidate strong { color: #263f40; font-size: .77rem; }
-.candidate span, .candidate small, .candidate p, .empty { margin: 0; color: #6c8182; font-size: .67rem; line-height: 1.5; }
+.candidate span, .candidate small, .candidate p, .empty { margin: 0; color: #5f7273; font-size: .67rem; line-height: 1.5; }
 .candidate > p { color: #465f61; }
 .kindChoice { display: grid; gap: 4px; max-width: 270px; color: #526d6e; font-size: .66rem; font-weight: 700; }
 .kindChoice select { min-height: 35px; padding: 0 9px; color: #30494a; background: #fff; border: 1px solid #d3e1de; border-radius: 8px; font: inherit; }

@@ -99,7 +99,7 @@ export function AppShell({
         <a className={styles.skipLink} href="#overview">
           Skip to workspace
         </a>
-        <aside className={styles.rail}>
+        <aside className={styles.rail} aria-label="Your care space">
           <Link
             href="/"
             className={styles.railBrand}

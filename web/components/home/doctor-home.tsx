@@ -430,8 +430,11 @@ export function DoctorHome({
               <StatusBadge level={patient.hasAccount ? "ok" : "review"}>
                 {patient.hasAccount ? "Linked" : "Invite pending"}
               </StatusBadge>
-              <Link href={`/home/patients/${patient.id}`}>
-                Open <ArrowRight size={14} />
+              <Link
+                href={`/home/patients/${patient.id}`}
+                aria-label={`Open ${patient.fullName}'s record`}
+              >
+                Open <ArrowRight size={14} aria-hidden="true" />
               </Link>
             </div>
           ))}

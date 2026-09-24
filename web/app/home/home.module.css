@@ -228,7 +228,7 @@
   line-height: 1;
 }
 .metricStrip small {
-  color: #859799;
+  color: #5f7072;
   font-size: 0.65rem;
 }
 .metricStrip .urgentMetric {
@@ -304,7 +304,7 @@
 }
 .personCell span,
 .reasonCell p {
-  color: #718789;
+  color: #607274;
   font-size: 0.66rem;
 }
 .reasonCell p {
@@ -356,7 +356,7 @@
   font-size: 0.74rem;
 }
 .scheduleList small {
-  color: #809294;
+  color: #617173;
   font-size: 0.63rem;
 }
 .scheduleList .empty-state {
@@ -405,6 +405,10 @@
   border: 1px solid var(--line);
   border-radius: 10px;
 }
+.search:focus-within {
+  border-color: var(--tidal);
+  box-shadow: 0 0 0 3px rgb(12 102 98 / 30%);
+}
 .search svg {
   color: #819492;
 }
@@ -428,7 +432,7 @@
   border-top: 1px solid #e9f0ef;
 }
 .tableHead {
-  color: #829496;
+  color: #66787a;
   font-size: 0.63rem;
   font-weight: 720;
 }
@@ -461,7 +465,7 @@
   font-size: 0.74rem;
 }
 .tableRow small {
-  color: #839496;
+  color: #617173;
   font-size: 0.62rem;
 }
 .tableRow > a {
@@ -578,7 +582,7 @@
 .inviteSuccess p {
   max-width: 340px;
   margin: 0;
-  color: #6d8284;
+  color: #5f7173;
   font-size: 0.78rem;
   line-height: 1.5;
 }
@@ -617,7 +621,7 @@
 .careStatus > span {
   display: grid;
   gap: 2px;
-  color: #738789;
+  color: #607173;
   font-size: 0.63rem;
 }
 .patientHero .careStatus > span {
@@ -736,7 +740,7 @@
 }
 .nextCard > small {
   margin-top: 32px;
-  color: #768a8c;
+  color: #607072;
   font-size: 0.67rem;
 }
 .nextCard h2 {
@@ -748,7 +752,7 @@
 }
 .nextCard p {
   margin: 0 0 22px;
-  color: #667d7f;
+  color: #5e7375;
   font-size: 0.73rem;
   line-height: 1.5;
 }
@@ -799,7 +803,7 @@
   font-size: 0.72rem;
 }
 .quickRow small {
-  color: #809294;
+  color: #617173;
   font-size: 0.61rem;
 }
 .quickRow > button > svg {
@@ -814,7 +818,7 @@
 .patientTabs button {
   position: relative;
   padding: 11px 2px;
-  color: #718688;
+  color: #65787a;
   background: transparent;
   border: 0;
   font-size: 0.75rem;
@@ -849,7 +853,7 @@
 .panelIntro {
   max-width: 650px;
   margin: -7px 0 20px;
-  color: #647b7d;
+  color: #5f7577;
   font-size: 0.78rem;
   line-height: 1.6;
 }
@@ -893,7 +897,7 @@
 .medList small,
 .readingList small,
 .caregiverList small {
-  color: #7a8e90;
+  color: #637577;
   font-size: 0.63rem;
 }
 .medList > div > button {
@@ -1070,7 +1074,7 @@
 .intakeStart p {
   max-width: 480px;
   margin: 0 0 20px;
-  color: #677e80;
+  color: #5d7173;
   font-size: 0.8rem;
   line-height: 1.55;
 }
@@ -1098,7 +1102,7 @@
   display: grid;
   gap: 12px;
   padding-left: 18px;
-  color: #637b7d;
+  color: #596e70;
   font-size: 0.74rem;
   line-height: 1.55;
 }
@@ -1111,7 +1115,7 @@
 }
 .segmented button {
   padding: 8px;
-  color: #6f8587;
+  color: #5c6e6f;
   background: transparent;
   border: 0;
   border-radius: 8px;
@@ -1152,7 +1156,7 @@
   border-radius: 10px;
 }
 .codeBox small {
-  color: #75898b;
+  color: #607072;
 }
 .codeBox > strong {
   margin: 0;
@@ -1190,7 +1194,7 @@
 }
 .accessList small,
 .compactList small {
-  color: #7a8e90;
+  color: #637577;
   font-size: 0.6rem;
 }
 .caregiverList :global(.button-danger) {
@@ -1234,7 +1238,7 @@
 .permissionCard p:last-child {
   max-width: 580px;
   margin: 0;
-  color: #637b7d;
+  color: #596e70;
   font-size: 0.8rem;
   line-height: 1.6;
 }
@@ -1261,7 +1265,7 @@
 }
 .caregiverHero p {
   margin: 0;
-  color: #74898b;
+  color: #607273;
   font-size: 0.65rem;
 }
 .caregiverHero h2 {
@@ -1271,7 +1275,7 @@
   font-weight: 520;
 }
 .caregiverHero > div > div > span {
-  color: #718587;
+  color: #657779;
   font-size: 0.68rem;
 }
 .caregiverHero > div:last-child {
@@ -1279,7 +1283,7 @@
 }
 .caregiverHero > div:last-child > span {
   display: grid;
-  color: #6e8385;
+  color: #5f7173;
   font-size: 0.63rem;
 }
 .caregiverHero > div:last-child strong {
@@ -1324,7 +1328,7 @@
 }
 .noVisits p {
   margin: 0;
-  color: #7b8f91;
+  color: #657779;
   font-size: 0.64rem;
   line-height: 1.4;
 }
@@ -1367,7 +1371,7 @@
   min-height: 100svh;
   background:
     radial-gradient(circle, #e2f1ee, transparent 30%), var(--porcelain);
-  color: #657b7d;
+  color: #5d7173;
 }
 .loading > span {
   display: grid;
@@ -1570,7 +1574,7 @@
     justify-items: center;
     gap: 3px;
     padding: 5px;
-    color: #657d7f;
+    color: #62797b;
     background: transparent;
     border: 0;
     font-size: 0.58rem;

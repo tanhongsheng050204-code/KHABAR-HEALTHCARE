@@ -226,7 +226,7 @@ export function PatientHome({
             </button>
           </div>
         )}
-        <aside className={styles.nextCard}>
+        <div className={styles.nextCard}>
           <span>
             <CalendarDays size={19} />
           </span>
@@ -268,7 +268,7 @@ export function PatientHome({
               </button>
             </>
           )}
-        </aside>
+        </div>
       </section>
       <section className={styles.quickRow}>
         <button onClick={() => setActive("checkin")}>
@@ -625,7 +625,7 @@ function PlanPanel({
           </button>
         </form>
       </div>
-      <aside className={styles.panelSide}>
+      <div className={styles.panelSide}>
         <SectionHeading
           eyebrow="Appointment"
           title={appointment ? "You are booked" : "Choose a time"}
@@ -708,7 +708,7 @@ function PlanPanel({
             </button>
           </>
         )}
-      </aside>
+      </div>
     </section>
   );
 }
@@ -882,7 +882,7 @@ function CheckInPanel({
           </form>
         )}
       </div>
-      <aside className={styles.panelSide}>
+      <div className={styles.panelSide}>
         <ShieldCheck size={26} />
         <h3>Send a recovery update</h3>
         <p className={styles.panelIntro}>
@@ -911,7 +911,7 @@ function CheckInPanel({
           <li>Your identifying details are removed before triage.</li>
           <li>Warning symptoms are always escalated to people.</li>
         </ul>
-      </aside>
+      </div>
     </section>
   );
 }
@@ -1004,7 +1004,7 @@ function ReadingsPanel({
           )}
         </div>
       </div>
-      <aside className={styles.panelSide}>
+      <div className={styles.panelSide}>
         <SectionHeading eyebrow="Add a reading" title="How are you today?" />
         <div className={styles.segmented}>
           <button
@@ -1061,7 +1061,7 @@ function ReadingsPanel({
             Save and check
           </button>
         </form>
-      </aside>
+      </div>
     </section>
   );
 }
@@ -1204,7 +1204,7 @@ function PeoplePanel({
           )}
         </div>
       </div>
-      <aside className={styles.panelSide}>
+      <div className={styles.panelSide}>
         <SectionHeading eyebrow="Access history" title="Who opened my record" />
         <div className={styles.accessList}>
           {accessLog.slice(0, 8).map((entry, index) => (
@@ -1229,7 +1229,7 @@ function PeoplePanel({
             </p>
           )}
         </div>
-      </aside>
+      </div>
     </section>
   );
 }
