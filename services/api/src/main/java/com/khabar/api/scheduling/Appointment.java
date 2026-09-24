@@ -72,7 +72,7 @@ public class Appointment {
         this.slotKey = slotKey(clinic.getId(), startsAt);
     }
 
-    static String slotKey(UUID clinicId, Instant startsAt) {
+    public static String slotKey(UUID clinicId, Instant startsAt) {
         return clinicId + "|" + startsAt;
     }
 

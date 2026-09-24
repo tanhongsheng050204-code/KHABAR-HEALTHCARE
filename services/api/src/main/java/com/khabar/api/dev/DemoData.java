@@ -23,6 +23,9 @@ import com.khabar.api.patients.CaregiverScope;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.readings.ReadingRepository;
+import com.khabar.api.scheduling.Appointment;
+import com.khabar.api.scheduling.AppointmentRepository;
+import com.khabar.api.scheduling.ClinicHours;
 import com.khabar.api.service.AgentDtos.IntakeAnswer;
 import com.khabar.api.service.AgentDtos.IntakeFlag;
 import com.khabar.api.service.AgentDtos.MedicineMention;
@@ -39,6 +42,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -65,14 +69,15 @@ public class DemoData implements ApplicationRunner {
     private final IntakeRecords intakeRecords;
     private final ApprovedAnswerRepository answers;
     private final ReadingRepository readings;
+    private final AppointmentRepository appointments;
     private final AdjustableClock clock;
     private final PatientGraphSync graphSync;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
                     MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
-                    ApprovedAnswerRepository answers, ReadingRepository readings, AdjustableClock clock,
-                    PatientGraphSync graphSync) {
+                    ApprovedAnswerRepository answers, ReadingRepository readings, AppointmentRepository appointments,
+                    AdjustableClock clock, PatientGraphSync graphSync) {
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -83,6 +88,7 @@ public class DemoData implements ApplicationRunner {
         this.intakeRecords = intakeRecords;
         this.answers = answers;
         this.readings = readings;
+        this.appointments = appointments;
         this.clock = clock;
         this.graphSync = graphSync;
     }
@@ -96,19 +102,17 @@ public class DemoData implements ApplicationRunner {
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya (demo)"));
         AppUser doctor = users.save(new AppUser(DOCTOR_ID, Role.DOCTOR, "Dr Priya", clinic));
         AppUser aminahAccount = users.save(new AppUser(AMINAH_ACCOUNT_ID, Role.PATIENT, "Aminah", null));
-        AppUser nurul = users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
+        users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 
         FollowUpStory story = new FollowUpStory(
                 patients.save(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "03-0000 0001", "ms")),
                 patients.save(new Patient(clinic, null, "Rosnah binti Ahmad", "620505-14-2222", "03-0000 0002", "ms")),
                 patients.save(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "03-0000 0003", "zh")),
                 patients.save(new Patient(clinic, null, "Muthu a/l Rajan", "610815-08-4321", "03-0000 0004", "ta")));
-        Patient aminah = story.aminah();
-        caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
         followUp(story);
+        restoreAminahsStory(story.aminah());
 
         Instant now = Instant.now();
-        aminahsIntake(aminah, aminahAccount, now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2)));
         approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
         generatedPatients(clinic, doctor, now.minus(Duration.ofDays(60)));
         patients.findByClinicId(clinic.getId()).forEach(p -> graphSync.changed(p.getId()));
@@ -155,13 +159,65 @@ public class DemoData implements ApplicationRunner {
                 doctor, when.plusSeconds(2)));
     }
 
+    /** What Aminah takes from other places: metformin from two clinics under two names, and bitter gourd juice. */
+    private static final List<Object[]> AMINAHS_LIST = List.of(
+            new Object[]{"Metformin 500mg", MedicationItem.Kind.MEDICINE, "Klinik Kesihatan"},
+            new Object[]{"Brand A 500mg", MedicationItem.Kind.MEDICINE, "GP clinic"},
+            new Object[]{"Jus peria (bitter gourd)", MedicationItem.Kind.HERB, "Her sister"});
+
     /**
-     * Aminah's pre-visit chat, and what she takes from other places: metformin from two clinics under
-     * two names, and bitter gourd juice. Prescribing metformin to her shows the duplicate and herb checks.
+     * Makes Aminah's side of the demo whole: her pre-visit chat with her conditions, exactly the three
+     * things she takes, her daughter Nurul's consent, and a booked appointment. Only what is missing or
+     * changed is put back, so it also repairs a database seeded by an older version (whose intake had no
+     * conditions, which left the live graph without any).
      */
-    private void aminahsIntake(Patient aminah, AppUser aminahAccount, Instant when) {
+    private void restoreAminahsStory(Patient aminah) {
+        Instant now = clock.instant();
+        AppUser account = users.findById(AMINAH_ACCOUNT_ID).orElseThrow();
+        Instant intakeDone = now.minus(Duration.ofDays(3)).minus(Duration.ofHours(2));
+        Optional<IntakeSession> latest = intakeRecords.latestCompleted(aminah.getId());
+        PreVisitReport report = latest.map(intakeRecords::report).orElse(null);
+        if (report == null || !AMINAHS_REASON.equals(report.reason()) || report.conditions() == null || report.conditions().isEmpty()) {
+            // A newer intake from an earlier run must not stay "latest": this one goes just after it.
+            Instant when = latest.map(IntakeSession::getCompletedAt).filter(t -> !t.isBefore(intakeDone)).map(t -> t.plusSeconds(1)).orElse(intakeDone);
+            aminahsIntake(aminah, when);
+        }
+
+        List<MedicationItem> current = medications.findByPatientIdAndStoppedAtIsNullOrderByAddedAt(aminah.getId());
+        List<String> seeded = AMINAHS_LIST.stream().map(item -> (String) item[0]).toList();
+        current.stream().filter(item -> !seeded.contains(item.getName())).forEach(item -> {
+            item.stop(now);
+            medications.save(item);
+        });
+        List<String> listed = current.stream().map(MedicationItem::getName).toList();
+        for (int i = 0; i < AMINAHS_LIST.size(); i++) {
+            Object[] item = AMINAHS_LIST.get(i);
+            if (!listed.contains((String) item[0])) {
+                medications.save(new MedicationItem(aminah, (String) item[0], (MedicationItem.Kind) item[1], (String) item[2],
+                        Role.PATIENT, account.getId(), intakeDone.plusSeconds(i)));
+            }
+        }
+
+        if (caregiverLinks.findByPatientIdAndRevokedAtIsNull(aminah.getId()).isEmpty()) {
+            caregiverLinks.save(new CaregiverLink(aminah, users.findById(NURUL_ID).orElseThrow(), CaregiverScope.SUMMARY_AND_ALERTS));
+        }
+
+        if (appointments.findFirstByPatientIdAndStatusAndStartsAtAfterOrderByStartsAt(aminah.getId(), Appointment.Status.BOOKED, now).isEmpty()) {
+            UUID clinicId = aminah.getClinic().getId();
+            ClinicHours.slots(now, clock.getZone()).stream()
+                    .filter(start -> !appointments.existsBySlotKey(Appointment.slotKey(clinicId, start)))
+                    .findFirst()
+                    .ifPresent(start -> appointments.save(new Appointment(aminah.getClinic(), aminah, start, AMINAHS_REASON, account.getId(), now)));
+        }
+        graphSync.changed(aminah.getId());
+    }
+
+    private static final String AMINAHS_REASON = "Pening sejak 3 hari, kadang-kadang berpeluh.";
+
+    /** Aminah's pre-visit chat. Prescribing metformin to her then shows the duplicate and herb checks. */
+    private void aminahsIntake(Patient aminah, Instant when) {
         List<String[]> chat = List.of(
-                new String[]{"reason", "Apa sebab Mak Cik / Pak Cik datang ke klinik hari ini?", "Pening sejak 3 hari, kadang-kadang berpeluh."},
+                new String[]{"reason", "Apa sebab Mak Cik / Pak Cik datang ke klinik hari ini?", AMINAHS_REASON},
                 new String[]{"conditions", "Ada penyakit jangka panjang, contohnya kencing manis atau darah tinggi?", "Kencing manis dan darah tinggi."},
                 new String[]{"medicines", "Apa ubat yang sedang diambil? Termasuk ubat dari klinik lain, supplemen, jamu atau ubat tradisional.",
                         "Metformin dari klinik kesihatan, Brand A 500mg dari GP, dan jus peria yang kakak buat."},
@@ -182,16 +238,13 @@ public class DemoData implements ApplicationRunner {
         session.update(intakeRecords.toJson(transcript), when);
         session.complete(intakeRecords.toJson(report), when);
         intakes.save(session);
-
-        medications.save(new MedicationItem(aminah, "Metformin 500mg", MedicationItem.Kind.MEDICINE, "Klinik Kesihatan", Role.PATIENT, aminahAccount.getId(), when));
-        medications.save(new MedicationItem(aminah, "Brand A 500mg", MedicationItem.Kind.MEDICINE, "GP clinic", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(1)));
-        medications.save(new MedicationItem(aminah, "Jus peria (bitter gourd)", MedicationItem.Kind.HERB, "Her sister", Role.PATIENT, aminahAccount.getId(), when.plusSeconds(2)));
     }
 
     /**
-     * Puts the follow-up part of the demo back as it was seeded, so the next run starts from the same call
-     * list: the clock back to today, every reply and home reading in the demo clinic removed, the four
-     * story patients back on their follow-up day, and their four replies again. Returns the replies seeded.
+     * Puts the demo back as it was seeded, so the next run starts from the same story: the clock back to
+     * today, every reply and home reading in the demo clinic removed, the four story patients back on their
+     * follow-up day with their four replies, and Aminah's intake, list, caregiver and appointment restored.
+     * Returns the replies seeded.
      */
     @Transactional
     public int resetFollowUp() {
@@ -211,7 +264,9 @@ public class DemoData implements ApplicationRunner {
                 byNameAndPhone.get("Rosnah binti Ahmad|03-0000 0002"),
                 byNameAndPhone.get("Tan Kok Hoe|03-0000 0003"),
                 byNameAndPhone.get("Muthu a/l Rajan|03-0000 0004"));
-        return followUp(story);
+        int seeded = followUp(story);
+        restoreAminahsStory(story.aminah());
+        return seeded;
     }
 
     private record FollowUpStory(Patient aminah, Patient rosnah, Patient tan, Patient muthu) {

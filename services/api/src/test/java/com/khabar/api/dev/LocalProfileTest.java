@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,6 +23,8 @@ class LocalProfileTest {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired com.khabar.api.patients.PatientRepository patients;
+    @Autowired com.khabar.api.intake.IntakeSessionRepository intakes;
 
     private String tokenFor(String who) throws Exception {
         String body = mvc.perform(post("/dev/token").param("as", who))
@@ -116,6 +119,77 @@ class LocalProfileTest {
         mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
                 .andExpect(jsonPath("$.items.length()").value(3))
                 .andExpect(jsonPath("$.items[0].level").value("RED"));
+    }
+
+    @Test
+    void aminahArrivesWithHerConditionsAndABookedAppointment() throws Exception {
+        String patientId = aminahsId();
+
+        mvc.perform(get("/api/patients/{id}/intake", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(jsonPath("$.report.conditions[0]").value("diabetes"))
+                .andExpect(jsonPath("$.report.conditions[1]").value("hypertension"));
+        mvc.perform(get("/api/appointments/mine").header("Authorization", tokenFor("patient")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists());
+    }
+
+    @Test
+    void resettingTheDemoPutsAminahsWholeStoryBack() throws Exception {
+        String patient = tokenFor("patient");
+        String patientId = aminahsId();
+        String path = "/api/patients/" + patientId + "/medications";
+
+        // A demo run changes her side of the story: an item stopped and one added, her daughter's consent
+        // withdrawn, her appointment cancelled.
+        String list = mvc.perform(get(path).header("Authorization", patient)).andReturn().getResponse().getContentAsString();
+        mvc.perform(delete(path + "/{item}", json.readTree(list).get(0).get("id").asText()).header("Authorization", patient))
+                .andExpect(status().isOk());
+        mvc.perform(post(path).header("Authorization", patient).contentType("application/json")
+                        .content("{\"name\":\"Panadol\",\"kind\":\"MEDICINE\",\"source\":\"Pharmacy\"}"))
+                .andExpect(status().isCreated());
+        String caregivers = mvc.perform(get("/api/patients/me/caregivers").header("Authorization", patient))
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(delete("/api/patients/me/caregivers/{id}", json.readTree(caregivers).get(0).get("linkId").asText()).header("Authorization", patient))
+                .andExpect(status().isOk());
+        String booking = mvc.perform(get("/api/appointments/mine").header("Authorization", patient)).andReturn().getResponse().getContentAsString();
+        mvc.perform(delete("/api/appointments/{id}", json.readTree(booking).get("id").asText()).header("Authorization", patient))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/dev/demo/reset")).andExpect(status().isOk());
+
+        mvc.perform(get(path).header("Authorization", tokenFor("doctor")))
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[?(@.name == 'Panadol')]").isEmpty());
+        mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", tokenFor("caregiver")))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/appointments/mine").header("Authorization", patient))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/patients/{id}/intake", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(jsonPath("$.report.conditions.length()").value(2));
+    }
+
+    @Test
+    void resettingRepairsAnIntakeSavedBeforeConditionsWereRecorded() throws Exception {
+        String patientId = aminahsId();
+        // What the live database held: an intake report written by an older version, with no conditions.
+        var aminah = patients.findById(java.util.UUID.fromString(patientId)).orElseThrow();
+        var old = new com.khabar.api.intake.IntakeSession(aminah, java.time.Instant.now().minusSeconds(60));
+        old.complete("{\"reason\":\"Pening sejak 3 hari, kadang-kadang berpeluh.\",\"answers\":[],\"medicines\":[],\"herbs\":[]}",
+                java.time.Instant.now());
+        intakes.save(old);
+        mvc.perform(get("/api/patients/{id}/intake", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(jsonPath("$.report.conditions").doesNotExist());
+
+        mvc.perform(post("/dev/demo/reset")).andExpect(status().isOk());
+
+        mvc.perform(get("/api/patients/{id}/intake", patientId).header("Authorization", tokenFor("doctor")))
+                .andExpect(jsonPath("$.report.conditions[0]").value("diabetes"));
+    }
+
+    private String aminahsId() throws Exception {
+        String me = mvc.perform(get("/api/me").header("Authorization", tokenFor("patient")))
+                .andReturn().getResponse().getContentAsString();
+        return json.readTree(me).get("patientId").asText();
     }
 
     @Test

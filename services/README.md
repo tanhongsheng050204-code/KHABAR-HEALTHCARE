@@ -87,7 +87,7 @@ Without `GEMINI_API_KEY` the intake agent runs a scripted four-question intervie
 | POST | `/dev/clock/reset` | Back to the real date |
 | POST | `/dev/check-ins/run` | Send every check-in that is due now |
 | GET | `/dev/outbox` | Messages that would have gone out on WhatsApp |
-| POST | `/dev/demo/reset` | Puts the follow-up demo back as seeded: clock to today, the four story patients back on their follow-up day with their four replies, readings cleared |
+| POST | `/dev/demo/reset` | Puts the demo back as seeded: clock to today, the four story patients back on their follow-up day with their four replies, readings cleared, and Aminah's story restored (intake with her conditions, exactly her three items, her daughter's consent, a booked appointment). Also repairs data seeded by an older version |
 | POST | `/dev/graph/sync` | Writes every patient to the patient graph (after emptying it, or if it was down) |
 | GET | `/dev/graph/patients/{patientId}` | That patient's graph context, fetched through the agents service exactly as the agents read it |
 

@@ -15,7 +15,7 @@ import java.util.List;
  * Sunday, from an hour from now up to two weeks ahead. The same for every clinic for now; public
  * holidays are not known yet.
  */
-final class ClinicHours {
+public final class ClinicHours {
 
     static final Duration SLOT = Duration.ofMinutes(15);
     static final Duration LEAD_TIME = Duration.ofHours(1);
@@ -30,7 +30,7 @@ final class ClinicHours {
     }
 
     /** Every slot start in the booking window, whether booked or not. */
-    static List<Instant> slots(Instant now, ZoneId zone) {
+    public static List<Instant> slots(Instant now, ZoneId zone) {
         Instant earliest = now.plus(LEAD_TIME);
         Instant latest = now.plus(WINDOW);
         LocalDate today = now.atZone(zone).toLocalDate();
