@@ -225,3 +225,6 @@ docs/*_preview.html
 docs/landing_page_v2.html
 docs/stitch_landing_page.html
 docs/triage_desk.html
+
+# Browser-testing tool logs
+.playwright-mcp/
