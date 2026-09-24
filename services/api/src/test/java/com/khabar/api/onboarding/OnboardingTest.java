@@ -80,6 +80,13 @@ class OnboardingTest {
     }
 
     @Test
+    void patientRegistrationRejectsMalformedIcNumbers() throws Exception {
+        postJson("/api/clinic/patients", doctor.getId(), """
+                {"fullName":"Fictional Test Patient","icNumber":"invalid","preferredLanguage":"en"}""")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void anInviteCodeWorksOnlyOnce() throws Exception {
         String code = registerAminah().get("inviteCode").asText();
         accept(code, UUID.randomUUID(), "Aminah").andExpect(status().isOk());

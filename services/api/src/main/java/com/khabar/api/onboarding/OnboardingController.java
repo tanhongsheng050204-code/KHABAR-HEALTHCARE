@@ -101,8 +101,12 @@ public class OnboardingController {
         if (blank(request.fullName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The patient's full name is required.");
         }
+        String icNumber = blank(request.icNumber()) ? null : request.icNumber().trim();
+        if (icNumber != null && !icNumber.matches("\\d{12}|\\d{6}-\\d{2}-\\d{4}")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IC number must have 12 digits, with or without hyphens.");
+        }
         String language = List.of("ms", "en", "zh", "ta").contains(request.preferredLanguage()) ? request.preferredLanguage() : "en";
-        Patient patient = new Patient(doctor.getClinic(), null, request.fullName().trim(), request.icNumber(), request.phone(), language);
+        Patient patient = new Patient(doctor.getClinic(), null, request.fullName().trim(), icNumber, request.phone(), language);
         patient.recordAllergies(request.allergies());
         patient.setPregnant(Boolean.TRUE.equals(request.pregnant()));
         patients.save(patient);

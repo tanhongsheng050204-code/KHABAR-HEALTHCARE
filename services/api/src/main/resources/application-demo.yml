@@ -24,6 +24,9 @@ spring:
 khabar:
   security:
     internal-service-key: ${INTERNAL_SERVICE_KEY}
+    # Real Supabase sign-ins (ES256, checked against the project's public keys)
+    supabase-jwks-url: ${SUPABASE_JWKS_URL:}
+    # The demo buttons' tokens from POST /dev/token (HS256)
     supabase-jwt-secret: ${SUPABASE_JWT_SECRET}
     field-encryption-key: ${FIELD_ENCRYPTION_KEY}
   services:
