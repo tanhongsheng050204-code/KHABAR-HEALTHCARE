@@ -96,3 +96,8 @@ def test_reconcile_endpoint_checks_the_patients_own_list():
     response = client.post("/agents/evaluator/reconcile", json=body, headers=KEY)
     assert response.status_code == 200
     assert [f["check"] for f in response.json()["findings"]] == ["duplicate", "herb"]
+
+
+def test_a_wrong_service_key_is_refused():
+    wrong = {"X-Internal-Service-Key": "dev-internal-secreT"}
+    assert client.post("/agents/followup/triage", json={"text": "pening"}, headers=wrong).status_code == 401

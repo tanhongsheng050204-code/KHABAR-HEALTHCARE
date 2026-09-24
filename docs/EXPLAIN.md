@@ -184,3 +184,44 @@ provider loops, and full demo rehearsal remain unverified; use
 The first 3-, 5-, and 7-minute pitch drafts are in `docs/PITCH_SCRIPTS.md`. They are explicitly framed as a
 prototype and avoid clinical-outcome claims; the presenter still needs to tailor and time them against the
 actual demo setup.
+
+## 24 Sep 2026: Safer follow-up replies, a whole demo story, and accessible screens
+
+### 1. Triage, measured
+
+Follow-up replies are sorted by word lists first, then by a model if one is configured. I wrote 44
+fictional replies in BM, English, Chinese, Tamil and Manglish, each labelled with the level a clinician
+would expect, and measured the word lists alone (`services/agents/scripts/compare_triage_models.py`).
+They raised only 6 of 22 emergencies. After widening the lists and adding a rule that reads a typed blood
+sugar the way a home reading is read (below 3.0 red, below 3.9 or above 16.7 watch), they catch all 22,
+but those are the very replies they were tuned on. On 12 held-out emergencies written afterwards they catch
+only 2. So the lists can't be the safety net on their own: every reply a person has not read yet now gets
+the 999 sentence (`PatientMessages.acknowledgementText`), and a model should be configured and compared
+with the same script before follow-up is relied on. Details in `docs/evals/README.md`.
+
+### 2. The demo story stays whole
+
+`POST /dev/demo/reset` now also restores Aminah's side: her intake with diabetes and hypertension, exactly
+the three things she takes, her daughter's consent and a booked appointment. It only puts back what is
+missing or changed, so it also repairs the live database, whose intake was saved before conditions were
+recorded and left the patient graph without any `Condition` nodes.
+
+### 3. Tests waiting for keys
+
+The packet-photo test (seven fictional packets drawn by a script, from clear to unreadable) and the
+transcription test (five fictional Manglish scripts to record; it counts medicines missed or misheard)
+are ready and run with one command once a Gemini or Groq key is in `services/agents/.env`.
+
+### 4. Accessibility
+
+An automated checker (axe-core) found over 60 text colours too faint to read comfortably, a sidebar with
+no name for screen readers, a "skip to workspace" link that led nowhere on two pages, and two inputs
+with no visible focus. All fixed; every screen now passes at desktop and phone widths. Reduced motion,
+a refused clipboard, keyboard order, 320 px screens and 200% zoom were checked too.
+
+### 5. Verification performed
+
+API 197 tests and agents 204 tests pass; the web app's lint, type check and build pass, and the web
+deploy workflow deployed the accessibility fixes by itself. The agents service now compares its internal
+key in constant time. New docs: `SETUP_INTEGRATIONS.md` (provider setup without secrets), `DECISIONS.md`,
+`TEST_RESULTS.md` and `CODE_TO_EXPLAIN.md` (what to be able to explain to SDC judges).
