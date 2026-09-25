@@ -14,7 +14,7 @@ This record captures checks run while implementing the remaining-work items. It 
 
 The current `pilot-foundations` branch has not been redeployed or smoke-checked at the public URLs during this verification. The real-role sign-in, provider, screen-reader/caregiver accessibility, human comprehension, and clinical/privacy/security checks remain open in [`UNDONE_WORK.md`](../UNDONE_WORK.md).
 
-GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `a503ce6d2267174bc63d72a50c852954d26d2a61` on 25 Sep 2026 ([run 36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, the point-in-time PostgreSQL backup/restore check, and web lint/typecheck/production build all passed. Application code is unchanged since `954b5c9`; this run does not deploy the public services.
+GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `dd29a762faed1605d71a810b9ddd428e5ada9476` on 25 Sep 2026 ([run 36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, the point-in-time PostgreSQL backup/restore check, and web lint/typecheck/production build all passed. Application code is unchanged since `954b5c9`; this run does not deploy the public services.
 
 Fresh read-only checks on 25 Sep returned HTTP 200 for the public web home and `https://khabar-api.vercel.app/api/health`; an earlier API health request had timed out. `https://khabar-api.vercel.app/agents/health` returned 404 consistently. These simple GETs do not validate auth, roles, or the full clinical workflow; investigate the deployed agent route.
 

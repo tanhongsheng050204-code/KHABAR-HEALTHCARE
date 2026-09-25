@@ -10,7 +10,7 @@ What has been checked, when, and how. Update this when a number changes. Command
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
 | Hosted verification workflow | GitHub Actions, `pilot-foundations`, commit `da5658a`, 25 Sep ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)) | **All jobs passed**, including API, agents, web lint/typecheck/production build, and PostgreSQL 16 migration/schema smoke. This is CI evidence, not proof that the current branch has been deployed to the public demo. |
-| Latest hosted verification | GitHub Actions, `pilot-foundations` head `a503ce6`, 25 Sep ([run 36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and the point-in-time backup/restore check. Application code is unchanged since `954b5c9`; this does not deploy the feature branch. |
+| Hosted verification of current code/content | GitHub Actions, `pilot-foundations` head `dd29a76`, 25 Sep ([run 36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and the point-in-time backup/restore check. Application code is unchanged since `954b5c9`; this does not deploy the feature branch. |
 | Review-message wording | API `ApprovedAnswersTest` + `CallListTest` | **21 passed**. Verified 999 guidance, clinic-queue wording, no promise of staff review/callback, and the triage-down fallback in all four configured languages. |
 
 Highlights of what the tests prove:
@@ -26,7 +26,7 @@ Highlights of what the tests prove:
 - **Follow-up:** red flags get the 999 advice and top the call list; any reply a person has yet to read
   also gets the 999 advice; only a reassuring reply gets a plain thank-you.
 - **Migrations:** Flyway V1 creates the initial clinical schema, V2 adds and backfills `reading.received_at`; tests verify fresh schema creation, one-time execution, legacy-row backfill, and Hibernate validation under the `pilot` profile using H2 PostgreSQL mode. A separate smoke test targets PostgreSQL 16 in CI and is not enabled in local runs.
-- **Recovery:** hosted run [36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612) passed the PostgreSQL 16 custom-format dump/restore rehearsal. The restored copy contains the marker and Flyway history from backup time and excludes a row written afterward. This verifies the recovery point on disposable CI data; production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
+- **Recovery:** hosted run [36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075) passed the PostgreSQL 16 custom-format dump/restore rehearsal. The restored copy contains the marker and Flyway history from backup time and excludes a row written afterward. This verifies the recovery point on disposable CI data; production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
 
 ## Evaluations
 
