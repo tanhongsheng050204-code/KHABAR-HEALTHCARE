@@ -160,8 +160,10 @@ class PatientGraphSyncTest {
         read("MATCH (n) RETURN properties(n) AS p UNION ALL MATCH ()-[r]->() RETURN properties(r) AS p")
                 .forEach(r -> r.get("p").asMap().values().forEach(v -> everything.add(String.valueOf(v))));
         assertThat(everything).isNotEmpty();
+        String icDigits = IC.replaceAll("\\D", "");
+        String phoneDigits = PHONE.replaceAll("\\D", "");
         assertThat(everything).noneMatch(v -> v.contains("Siti") || v.contains("Aminah") || v.contains("Kassim")
-                || v.contains("850101") || v.contains("5678") || v.contains("777") || v.contains("8899"));
+                || v.replaceAll("\\D", "").contains(icDigits) || v.replaceAll("\\D", "").contains(phoneDigits));
         assertThat(read("MATCH (p:Patient {graph_id: $g}) RETURN keys(p) AS keys").get(0).get("keys").asList())
                 .containsExactlyInAnyOrder("graph_id", "pregnant");
     }
