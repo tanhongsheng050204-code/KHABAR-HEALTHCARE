@@ -217,6 +217,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [ ] Record and review a demo video.
 - [ ] Rehearse the demo with poor-network and provider-failure fallbacks.
 - [x] Create a repeatable rehearsal checklist with core workflow, role/access checks, failure fallbacks, and a result template (`docs/DEMO_RUN_CHECKLIST.md`). This is preparation only; no rehearsal result is implied.
+- [x] Run a local fictional-data rehearsal on 25 Sep, including visit safety gate, final summary/outbox, patient follow-up reply, linked/unlinked caregiver access and immediate revocation, and the agent-down reply fallback ([record](docs/DEMO_RUN_2026-09-25_LOCAL.md)). Guided intake submission, graph-backed context, network/retry tests and deployed rehearsal remain open.
 
 ### 4.3 Documentation habit
 
