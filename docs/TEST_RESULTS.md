@@ -2,14 +2,14 @@
 
 What has been checked, when, and how. Update this when a number changes. Commands run from the folder named.
 
-## Automated tests (24 Sep 2026)
+## Automated tests (25 Sep 2026)
 
 | Suite | Command | Result |
 |---|---|---|
-| Clinical API (`services/api`) | `./mvnw -q test` | **225 passed**, 0 failures/errors, 1 optional PostgreSQL smoke test skipped locally (it runs in CI, where it passed). Embedded Neo4j tests ran outside the restricted sandbox. |
-| Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **204 passed**, 0 failed; one third-party deprecation warning |
-| Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass.** The production build was run outside the restricted sandbox because Next.js could not spawn its worker there (`EPERM`). |
-| Web deploy workflow | GitHub Actions on push to `main` | lint and type check pass on GitHub, then deploys |
+| Clinical API (`services/api`) | `./mvnw -q test` | **226 passed**, 0 failures/errors, 1 optional PostgreSQL smoke test skipped locally (hosted PostgreSQL 16 job passed on 24 Sep). Embedded Neo4j tests passed locally on 25 Sep. |
+| Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
+| Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
+| Hosted verification workflow | GitHub Actions, `pilot-foundations`, 24 Sep | **Passed**, including the PostgreSQL 16 migration/schema smoke job. This is CI evidence for that commit, not proof that the current branch has been deployed to the public demo. |
 
 Highlights of what the tests prove:
 - **Safety checks:** the ten planted mistakes (allergy, double dose, duplicate from another clinic, herb
@@ -41,7 +41,7 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 
 | Date | What | Where | Result |
 |---|---|---|---|
-| 24 Sep | Call-list contact only resolves items in the clinician's server-timestamped queue snapshot; later replies and readings remain open. API errors include a safe code/message/status/request reference/retryability contract. Pilot schema migrations and validation added. | API + doctor workspace | All locally enabled API tests passed (213 after the clinic staff grants were added), including embedded Neo4j tests, migration creation/backfill, pilot Hibernate validation, preservation of replies/readings submitted after the displayed snapshot, authorization errors, generated request references, hidden exception details, and missing-route behavior. The real-PostgreSQL smoke test is configured for CI but was not run locally. Web lint, typecheck, and production build passed. |
+| 24 Sep | Call-list contact only resolves items in the clinician's server-timestamped queue snapshot; later replies and readings remain open. API errors include a safe code/message/status/request reference/retryability contract. Pilot schema migrations and validation added. | API + doctor workspace | At this checkpoint, 213 locally enabled API tests passed after clinic staff grants were added. The later full-suite summary above reports 226 API tests. H2 migration and pilot-profile checks passed locally. The hosted PostgreSQL 16 smoke job passed in the first `pilot-foundations` verification run. |
 | 23 Sep | Bug bash of the core workflow | local | 11 defects found and fixed, one safety-related ([report](BUG_BASH_2026-09-23.md)) |
 | 23 Sep | Rehearsal: pre-visit → draft → safety review → finalise → summary → reply → call list, demo sign-in | live URLs | passed ([report](BUG_BASH_2026-09-23.md)) |
 | 23 Sep | Patient graph written and read by graph ID only | local Neo4j | passed |
@@ -52,7 +52,7 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 
 ## Not tested yet
 
-Automated local service checks are complete. The first hosted run of the new verification workflow (including its PostgreSQL 16 migration smoke test), current-change deployment verification, role-based real sign-in, provider tests, and the human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
+Automated local service checks on 25 Sep and the first hosted verification run (including its PostgreSQL 16 migration smoke test) are documented as passing. Current-branch public deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
 
 Real sign-in per role on the live site · WhatsApp with a real phone · a Favoriot device · Gemini on
 packet photos · transcription on recordings · the 5-person understanding pilot. Tracked in

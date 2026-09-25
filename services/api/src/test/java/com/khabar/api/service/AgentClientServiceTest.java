@@ -41,6 +41,14 @@ class AgentClientServiceTest {
             exchange.getResponseBody().write(reply);
             exchange.close();
         });
+        server.createContext("/agents/health", exchange -> {
+            serviceKey.set(exchange.getRequestHeaders().getFirst("X-Internal-Service-Key"));
+            byte[] reply = "{\"status\":\"healthy\",\"service\":\"Khabar Agents\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, reply.length);
+            exchange.getResponseBody().write(reply);
+            exchange.close();
+        });
         server.createContext("/agents/intake/report", exchange -> {
             byte[] reply = ("""
                     {"reason": "Pening", "answers": [], "medicines": [{"as_written": "Brand A 500mg", "generic": "metformin"}],
@@ -102,6 +110,16 @@ class AgentClientServiceTest {
         assertThat(report.medicines().get(0).asWritten()).isEqualTo("Brand A 500mg");
         assertThat(report.askAbout()).containsExactly("jamu");
         assertThat(report.redFlags().get(0).matched()).isEqualTo("pening");
+    }
+
+    @Test
+    void checksAgentHealthThroughTheVercelServicePrefix() {
+        AgentClientService client = new AgentClientService("http://127.0.0.1:" + server.getAddress().getPort(), "secret-key");
+
+        Map<String, Object> health = client.checkAgentHealth();
+
+        assertThat(health).containsEntry("status", "healthy");
+        assertThat(serviceKey.get()).isEqualTo("secret-key");
     }
 
     @Test

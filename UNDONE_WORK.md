@@ -1,6 +1,6 @@
 # Khabar — Remaining Work
 
-**Reviewed:** 24 September 2026
+**Reviewed:** 25 September 2026
 **Source of truth:** [`plan.md`](plan.md), checked against the current codebase and project documentation.  
 **Scope:** This is an implementation and readiness backlog. It does not replace the SDC planning decisions in `plan.md`.
 
@@ -8,9 +8,9 @@
 
 The local core product is largely implemented and tested:
 
-- API: **225 automated tests passing**, including embedded Neo4j graph tests; one optional PostgreSQL-only smoke test is skipped locally and runs in CI. The graph suite required a run outside the restricted sandbox; see [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
-- Agents: **204 automated tests passing** (project virtual environment, 24 Sep; one third-party deprecation warning).
-- Next.js web app: lint, TypeScript, and the production build pass. The build needed to run outside the restricted sandbox because its worker could not spawn there (`EPERM`); hosted CI/deployment confirmation remains open.
+- API: **226 automated tests passing** in the 25 Sep run, including embedded Neo4j graph tests; one optional PostgreSQL-only smoke test is skipped locally and passed in hosted CI on 24 Sep. See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
+- Agents: **205 automated tests passing** in the 25 Sep run; one third-party deprecation warning. This includes a regression check for the Vercel-prefixed health endpoint.
+- Next.js web app: lint, TypeScript, and the production build pass. The build needed to run outside the restricted sandbox because its worker could not spawn there (`EPERM`). Hosted verification passed on the `pilot-foundations` branch (24 Sep); deployment of the latest `pilot-foundations` work to the public demo remains open.
 - Local bug bash done (23 Sep): [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md), 11 defects found and fixed, including one safety issue.
 - The main clinical workflow, access rules, encryption, de-identification, follow-up logic, and demo data are implemented locally.
 
@@ -21,9 +21,9 @@ The remaining work is primarily real-provider integration, missing stretch featu
 - [x] Call-list snapshots are server-timestamped. Recording successful contact closes only replies, readings, and unanswered check-ins that existed in that snapshot; later items remain open. The doctor UI confirms the effect before submission.
 - [x] Controller errors return a safe, consistent code/message/status/request-reference/retryability shape. `X-Request-ID` is server-generated and exposed to the web app through CORS.
 - [x] A separate Spring `pilot` profile refuses to run with `local` or `demo`, excludes local demo controllers/seeding, validates (rather than updates) the database schema, and leaves scheduled check-ins off by default.
-- [x] Added `.github/workflows/verify.yml` to run API tests, agent tests, and frontend lint/typecheck/build on pushes and pull requests. First hosted run passed on 24 Sep (branch `pilot-foundations`), including the PostgreSQL 16 job.
+- [x] Added `.github/workflows/verify.yml` to run API tests, agent tests, and frontend lint/typecheck/build on pushes and pull requests. Hosted run for `pilot-foundations` commit `bb37fbc` passed on 24 Sep, including the PostgreSQL 16 job. New local changes made after that commit still need a hosted run.
 - [x] Added V1 initial schema and V2 reading receive-time/backfill migrations. H2 PostgreSQL-mode tests verify clean creation, one-time migration, legacy timestamp backfill, and `pilot` profile startup with Hibernate schema validation.
-- [x] Added an isolated PostgreSQL 16 migration/schema-validation smoke job to CI. The job has not run until the workflow is triggered on GitHub.
+- [x] Added an isolated PostgreSQL 16 migration/schema-validation smoke job to CI. The first hosted verification run passed on 24 Sep, including this PostgreSQL 16 job.
 - [x] Follow-up cases (24 Sep): each listed patient gets one open case (New → Assigned → Acknowledged → In progress / Unable to contact / Escalated → Resolved) with owner, acknowledgement deadline, call attempts, escalation and a structured closure reason, plus an append-only history. Cases stay listed until closed; urgent cases need a note and, to close as unreachable, an escalation first. Assign/acknowledge/close are idempotent. Doctor and nurse queues show status, owner and overdue flags, with filters (mine, unassigned, overdue, urgent). V4 migration and 12 tests.
 - [x] Clinic settings (24 Sep): hours, escalation contact, per-level acknowledgement times and a weekly rota with backup, set by doctors or clinic admins. The call list shows today's cover and says plainly when nobody is rostered. Admins also see a clinic activity log (cases by reference, never patient names) and integration health (agents, messages, scheduler, graph, sign-in).
 - [ ] Still open for the alert lifecycle: notifying the on-duty person (push, SMS or WhatsApp to staff), automatic escalation when a case goes overdue, and a clinician review of the closure reasons and default times.
@@ -222,9 +222,9 @@ These are not implementation tasks, but they are still open in `plan.md`.
 
 - [ ] Get organisers’ answers on SDGs, declaration changes, pitch length, and judging weights.
 - [ ] Decide available working hours for the SDC week alongside classes.
-- [ ] Create a **separate repository** containing only the declared generic skeleton.
-- [ ] Remove all Khabar-specific prompts, data, screens, names, and features from that skeleton repository.
-- [ ] Write and submit the declaration before registration.
+- [x] Create a separate local Git repository at `../starter-skeleton/` containing the generic skeleton. It currently has no remote configured; publish/configure the intended repository and confirm its contents before registration.
+- [x] The tracked starter-skeleton files contain the generic example flow rather than Khabar clinical features, screens, patient data, or prompts. Review the full tracked history again before publication.
+- [ ] Submit the declaration before registration. A draft is in `../starter-skeleton/DECLARATION_DRAFT.md`; insert the public repository link, verify the event wording, and submit through the organiser's process.
 
 ---
 

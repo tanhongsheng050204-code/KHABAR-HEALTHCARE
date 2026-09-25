@@ -41,7 +41,7 @@ public class AgentClientService {
     public Map<String, Object> checkAgentHealth() {
         try {
             return restClient.get()
-                    .uri("/health")
+                    .uri("/agents/health")
                     .retrieve()
                     .body(Map.class);
         } catch (Exception e) {

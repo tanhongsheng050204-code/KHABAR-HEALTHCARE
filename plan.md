@@ -343,7 +343,7 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 
 **Stays out:** every Khabar feature, prompt, data file, screen and name.
 
-**Declaration draft:** *"We will build on a personal starter template created before the event: a multi-service project skeleton (Next.js, Spring Boot, FastAPI with LangGraph, Supabase, Neo4j) providing authentication, service wiring, deployment configuration and generic security utilities. It contains no domain-specific features. Repository: <link>."*
+**Declaration draft:** See [`starter-skeleton/DECLARATION_DRAFT.md`](../starter-skeleton/DECLARATION_DRAFT.md). Insert the public repository URL and confirm the wording against the event rules before submission.
 
 ---
 

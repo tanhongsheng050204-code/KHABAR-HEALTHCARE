@@ -13,7 +13,7 @@
 
 [![Khabar landing page](artifacts/readme/01-landing.png)](https://khabar-landing-six.vercel.app)
 
-> ⚠️ **Status (24 Sep 2026):** working prototype, deployed. 381 automated tests pass (193 API, 188 agents). All patient data is **fictional**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md). Open work: [UNDONE_WORK.md](UNDONE_WORK.md).
+> ⚠️ **Status (25 Sep 2026):** working prototype, deployed. Local verification on 25 Sep reported 226 API tests passing (1 optional PostgreSQL smoke test skipped locally) and 205 agent tests passing; frontend lint, TypeScript, and production build also passed. The public demo has not been redeployed and rechecked against this branch. All patient data is **fictional**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md). Open work: [UNDONE_WORK.md](UNDONE_WORK.md).
 
 ---
 
@@ -336,7 +336,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 ## 6. Evidence it works
 
-- **381 automated tests pass:** 193 in the API (including access rules, encryption, the safety gate, token checks and a real in-process Neo4j) and 188 in the agents service (including the planted-error set and triage in four languages).
+- **Local verification (25 Sep):** 226 API tests passed (including access rules, encryption, the safety gate, token checks and a real in-process Neo4j), with one optional PostgreSQL test skipped locally; 205 agent tests passed (including the planted-error set, triage in four languages, and Vercel-prefixed health route); frontend lint, TypeScript and production build passed. This branch has not been redeployed and rechecked on the public demo.
 - **Bug bash (23 Sep):** 11 defects found and fixed, including one patient-safety issue: a reply confirmation that could be empty when triage was down now always includes 999 advice. See [docs/BUG_BASH_2026-09-23.md](docs/BUG_BASH_2026-09-23.md).
 - **Deployed rehearsal (23 Sep):** pre-visit → draft → safety review → finalise → summary → follow-up reply → call list, run on the public URLs with demo sign-in.
 - **Privacy test:** a test proves that no name, IC number or phone number can reach the Neo4j graph, and the live AuraDB instance was checked directly.
