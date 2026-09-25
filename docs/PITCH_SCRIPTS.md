@@ -4,7 +4,7 @@ These are speaking drafts for the Khabar practice prototype, not an SDC submissi
 team details, and demo before presenting. Do not claim clinical benefit, validated OCR, patient outcomes, or
 production readiness without evidence. Keep the patient fictional and use demo data only.
 
-Slide-ready content is in [PITCH_DECK_DRAFT.md](PITCH_DECK_DRAFT.md). It remains a local draft pending team/event details, the verified demo environment, and public-deck review.
+The slide content is in [PITCH_DECK_DRAFT.md](PITCH_DECK_DRAFT.md), with a [browser-viewable local deck](PITCH_DECK_DRAFT.html). Both remain drafts pending team/event details, the verified demo environment, and public-deck export/review.
 
 ## 3 minutes — the short version
 

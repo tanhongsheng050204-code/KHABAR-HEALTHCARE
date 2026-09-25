@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073a3b">
+  <title>Khabar — presentation draft</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #102f33;
+      --muted: #536d70;
+      --deep: #073a3b;
+      --teal: #0d7770;
+      --mint: #dceee6;
+      --lavender: #ece6f5;
+      --paper: #f5f8f4;
+      --white: #fffefa;
+      --line: #d8e5df;
+      --amber: #f3dfa9;
+      --red: #c7584d;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      background: #dfe8e3;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    button { font: inherit; }
+    .stage { width: 100%; height: 100%; display: grid; place-items: center; padding: 26px; }
+    .deck {
+      position: relative;
+      width: min(100%, calc((100vh - 52px) * 16 / 9));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(7, 58, 59, .14);
+      border-radius: 18px;
+      box-shadow: 0 24px 80px rgba(20, 48, 47, .18);
+    }
+    .slide { position: absolute; inset: 0; padding: 6.2% 7.2% 8%; }
+    .slide[hidden] { display: none; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 4.2%; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--deep); font-size: clamp(14px, 1.4vw, 20px); font-weight: 760; letter-spacing: -.03em; }
+    .brand-mark { display: grid; width: 34px; aspect-ratio: 1; place-items: center; border-radius: 11px; background: var(--mint); color: var(--teal); font-size: 17px; }
+    .draft { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e5cf8f; border-radius: 999px; padding: 7px 13px; color: #775b1f; background: #fff8e7; font-size: clamp(10px, .82vw, 13px); font-weight: 700; letter-spacing: .035em; text-transform: uppercase; }
+    .eyebrow { margin: 0 0 15px; color: var(--teal); font-size: clamp(11px, .95vw, 14px); font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2 { max-width: 960px; margin-bottom: 19px; font-family: Georgia, "Times New Roman", serif; font-weight: 500; letter-spacing: -.045em; line-height: .99; }
+    h1 { font-size: clamp(42px, 5.8vw, 82px); }
+    h2 { font-size: clamp(34px, 4.3vw, 62px); }
+    h3 { margin-bottom: 10px; font-size: clamp(16px, 1.55vw, 23px); letter-spacing: -.025em; }
+    p, li { color: var(--muted); font-size: clamp(15px, 1.55vw, 22px); line-height: 1.42; }
+    .lede { max-width: 720px; font-size: clamp(18px, 2vw, 29px); }
+    .rule { width: 66px; height: 4px; margin: 27px 0; border-radius: 4px; background: var(--teal); }
+    .cover { display: grid; grid-template-columns: 1fr .92fr; align-items: center; gap: 4%; padding-top: 7%; }
+    .cover h1 em { color: var(--teal); font-weight: 400; }
+    .cover-art { position: relative; align-self: stretch; display: flex; align-items: center; }
+    .cover-art img { width: 100%; max-height: 77%; object-fit: cover; object-position: 74% center; border: 8px solid var(--white); border-radius: 22px; box-shadow: 0 22px 45px rgba(10, 52, 51, .17); }
+    .fictional-tag { position: absolute; top: 16%; right: -12px; border-radius: 99px; padding: 10px 16px; background: var(--deep); color: white; font-size: clamp(11px, 1vw, 14px); font-weight: 700; box-shadow: 0 7px 20px rgba(0,0,0,.14); }
+    .small-footer { position: absolute; right: 7.2%; bottom: 10%; left: 7.2%; display: flex; justify-content: space-between; gap: 20px; color: #6c8281; font-size: clamp(10px, .9vw, 13px); }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 5%; }
+    .card { min-height: 190px; padding: 22px 23px; border: 1px solid var(--line); border-radius: 17px; background: var(--white); }
+    .card p { margin-bottom: 0; font-size: clamp(14px, 1.25vw, 18px); }
+    .gap-slide .three { gap: 14px; margin-top: 3%; }
+    .gap-slide .card { min-height: 132px; padding: 14px 17px; }
+    .gap-slide .card-icon { width: 28px; margin-bottom: 8px; }
+    .gap-slide .card p { font-size: clamp(12px, 1.1vw, 16px); }
+    .gap-note { margin: 13px 0 0; font-size: clamp(11px, .98vw, 14px); }
+    .card-icon { display: grid; width: 38px; aspect-ratio: 1; place-items: center; margin-bottom: 20px; border-radius: 12px; background: var(--lavender); color: var(--deep); font-weight: 800; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: start; margin-top: 5%; }
+    .timeline div { position: relative; padding-top: 20px; border-top: 3px solid #a9cfc2; }
+    .timeline div::before { position: absolute; top: -9px; left: 0; width: 15px; height: 15px; border: 3px solid var(--paper); border-radius: 50%; background: var(--teal); content: ""; }
+    .timeline strong { display: block; margin-bottom: 7px; color: var(--ink); font-size: clamp(13px, 1.2vw, 18px); }
+    .timeline span { color: var(--muted); font-size: clamp(11px, 1vw, 14px); line-height: 1.35; }
+    .split { display: grid; grid-template-columns: 1fr .9fr; gap: 5%; align-items: center; }
+    .work-slide h2 { font-size: clamp(32px, 3.5vw, 50px); }
+    .work-slide .steps { display: grid; gap: 8px; margin-top: 16px; }
+    .work-slide .step { padding: 10px 12px; gap: 10px; }
+    .work-slide .step p { font-size: clamp(12px, 1vw, 15px); }
+    .step { display: grid; grid-template-columns: 35px 1fr; gap: 13px; align-items: start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
+    .step b { display: grid; width: 29px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--mint); color: var(--deep); font-size: 14px; }
+    .step p { margin: 0; font-size: clamp(13px, 1.15vw, 17px); }
+    .step.approval { border-color: #b6a5d1; background: var(--lavender); }
+    .step.approval b { background: var(--deep); color: white; }
+    .screen { overflow: hidden; border: 7px solid white; border-radius: 18px; box-shadow: 0 18px 45px rgba(21, 60, 54, .15); }
+    .screen img { display: block; width: 100%; max-height: 475px; object-fit: cover; object-position: top; }
+    .safety-slide h2 { margin-bottom: 10px; font-size: clamp(32px, 3.8vw, 54px); }
+    .safety-slide .safety-grid { gap: 11px; margin-top: 2.5%; }
+    .safety-slide .safety-item { padding: 11px 14px; gap: 10px; }
+    .safety-slide .small-footer { display: none; }
+    .safety-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 4%; }
+    .safety-item { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 17px 19px; border: 1px solid var(--line); border-radius: 15px; background: var(--white); }
+    .safety-item .tick { display: grid; width: 28px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--mint); color: var(--teal); font-weight: 800; }
+    .safety-item p { margin: 0; font-size: clamp(13px, 1.14vw, 17px); }
+    .limit { grid-column: span 2; border-color: #edc3bc; background: #fff0ed; }
+    .limit .tick { background: #f7d9d4; color: var(--red); }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 4% 0; }
+    .evidence-slide h2 { margin-bottom: 12px; font-size: clamp(32px, 3.8vw, 54px); }
+    .evidence-slide .metric-row { margin: 2.5% 0; }
+    .evidence-slide .metric { padding: 15px 17px; }
+    .evidence-slide .status-strip { gap: 12px; margin-top: 12px; }
+    .evidence-slide .status-strip p { padding: 12px 14px; font-size: clamp(12px, 1vw, 15px); }
+    .evidence-slide .source-note { margin: 10px 0 0; font-size: clamp(11px, .92vw, 13px); }
+    .evidence-slide .small-footer { display: none; }
+    .metric { padding: 18px 20px; border-radius: 15px; background: var(--white); border: 1px solid var(--line); }
+    .metric strong { display: block; color: var(--deep); font: 500 clamp(32px, 4vw, 56px)/1 Georgia, serif; letter-spacing: -.05em; }
+    .metric span { display: block; margin-top: 8px; color: var(--muted); font-size: clamp(12px, 1.1vw, 16px); }
+    .status-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 19px; }
+    .status-strip p { margin: 0; padding: 15px 18px; border-radius: 13px; background: var(--mint); font-size: clamp(12px, 1.1vw, 16px); }
+    .status-strip p:last-child { background: var(--lavender); }
+    .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4%; }
+    .next-item { position: relative; padding: 16px 18px 16px 48px; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
+    .next-item::before { position: absolute; left: 19px; top: 21px; width: 12px; height: 12px; border: 2px solid var(--teal); border-radius: 4px; content: ""; }
+    .next-item p { margin: 0; font-size: clamp(13px, 1.12vw, 16px); }
+    .closing { display: grid; min-height: 100%; align-content: center; justify-items: start; }
+    .closing blockquote { max-width: 890px; margin: 18px 0 36px; color: var(--deep); font: 500 clamp(35px, 5.1vw, 72px)/1.05 Georgia, serif; letter-spacing: -.045em; }
+    .placeholders { display: flex; flex-wrap: wrap; gap: 11px; }
+    .placeholder { border: 1px dashed #829f98; border-radius: 99px; padding: 10px 15px; color: var(--muted); background: rgba(255,255,255,.55); font-size: clamp(12px, 1vw, 15px); }
+    .controls { position: absolute; right: 7.2%; bottom: 2.3%; display: flex; align-items: center; gap: 10px; }
+    .controls button { min-width: 42px; min-height: 38px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--deep); cursor: pointer; }
+    .controls button:hover, .controls button:focus-visible { outline: 3px solid #97c9b9; outline-offset: 2px; }
+    .count { min-width: 55px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; font-size: 13px; }
+    .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; appearance: none; border: 0; }
+    .progress::-webkit-progress-bar { background: #e6eee9; }
+    .progress::-webkit-progress-value { background: var(--teal); transition: width .2s ease; }
+    .progress::-moz-progress-bar { background: var(--teal); }
+    .notes { position: absolute; right: 7.2%; bottom: 10%; left: 7.2%; z-index: 5; max-height: 30%; overflow: auto; padding: 15px 18px; border: 1px solid #bdd3ca; border-radius: 13px; background: #fffefa; box-shadow: 0 10px 28px rgba(10,40,37,.15); color: var(--muted); font-size: clamp(12px, 1.05vw, 15px); line-height: 1.45; }
+    .notes[hidden] { display: none; }
+    .notes strong { color: var(--deep); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 760px) {
+      .stage { padding: 0; }
+      .deck { width: 100vw; height: 100dvh; aspect-ratio: auto; border: 0; border-radius: 0; }
+      .slide { overflow-y: auto; padding: 7% 7% 90px; }
+      .cover { grid-template-columns: 1fr; align-content: start; gap: 8px; }
+      .cover-art img { max-height: 34vh; object-position: center; }
+      .fictional-tag { top: 5px; right: 5px; }
+      .three, .safety-grid, .metric-row, .status-strip, .next-grid, .split { grid-template-columns: 1fr; }
+      .card { min-height: 0; }
+      .limit { grid-column: auto; }
+      .timeline { grid-template-columns: 1fr 1fr; row-gap: 20px; }
+      .small-footer { position: static; margin-top: 26px; }
+      .controls { position: fixed; right: 14px; bottom: 10px; border-radius: 14px; padding: 6px; background: rgba(245,248,244,.94); }
+      .notes { position: fixed; right: 12px; bottom: 66px; left: 12px; max-height: 34vh; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="Khabar presentation draft">
+    <div class="deck" id="deck">
+      <section class="slide cover" data-notes="We’re [team name]. Khabar explores how a clinic can help a patient understand the plan after leaving an appointment, while keeping the clinician in control.">
+        <div>
+          <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">Draft · fictional data only</span></div>
+          <p class="eyebrow">Clinic-led continuity</p>
+          <h1>Care continues <em>after</em> the visit.</h1>
+          <div class="rule"></div>
+          <p class="lede">A follow-up prototype for clearer care plans and organized clinic review.</p>
+          <p>Practice build · Not for clinical use</p>
+        </div>
+        <div class="cover-art">
+          <img src="../artifacts/readme/01-landing.png" alt="Khabar landing page prototype, shown with illustrative demo content" loading="eager">
+          <span class="fictional-tag">Illustrative demo</span>
+        </div>
+        <div class="small-footer"><span>[team name] · [members]</span><span>Prototype, not a medical device</span></div>
+      </section>
+
+      <section class="slide gap-slide" data-notes="Frame these as workflow assumptions, not measured patient outcomes. Do not cite prevalence or adherence statistics unless you verify a source first.">
+        <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">01 · The gap</span></div>
+        <p class="eyebrow">A problem hypothesis</p>
+        <h2>The visit ends.<br>Care continues at home.</h2>
+        <p class="lede">Medicines, instructions, and warning signs still need attention after a patient leaves the clinic.</p>
+        <div class="three">
+          <article class="card"><span class="card-icon" aria-hidden="true">01</span><h3>Remember the plan</h3><p>Medicines, timing, and warning signs matter after the appointment.</p></article>
+          <article class="card"><span class="card-icon" aria-hidden="true">02</span><h3>Join up context</h3><p>Medicines and remedies may come from more than one place.</p></article>
+          <article class="card"><span class="card-icon" aria-hidden="true">03</span><h3>Know what needs review</h3><p>A clinic needs an owned process for following up on replies.</p></article>
+        </div>
+        <p class="gap-note">Design assumption · Not a finding from a completed patient study</p>
+      </section>
+
+      <section class="slide split work-slide" data-notes="A language model does not prescribe or set a dose. Summaries are built from the clinician-approved prescription. A queue entry does not notify staff or guarantee it has been seen.">
+        <div>
+          <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">02 · The workflow</span></div>
+          <p class="eyebrow">One clinician-led loop</p>
+          <h2>A clear follow-up loop.</h2>
+          <div class="steps">
+            <div class="step"><b>1</b><p>Patient shares visit context and current medicines.</p></div>
+            <div class="step"><b>2</b><p>Khabar prepares a draft and flags items for review.</p></div>
+            <div class="step approval"><b>3</b><p><strong>Clinician resolves findings and approves the plan.</strong></p></div>
+            <div class="step"><b>4</b><p>Patient sees a plain-language summary; replies needing review enter a clinic queue.</p></div>
+          </div>
+        </div>
+        <figure class="screen"><img src="../artifacts/readme/05-safety-gate.png" alt="Fictional doctor workflow displaying a critical duplicate finding and a required written decision" loading="eager"></figure>
+      </section>
+
+      <section class="slide safety-slide" data-notes="The tuned set scored 22 of 22, while a held-out set scored 2 of 12. Neither result shows reliable emergency detection. The queue is not a notification system.">
+        <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">03 · Safety boundaries</span></div>
+        <p class="eyebrow">Designed to make limits visible</p>
+        <h2>Safety is a workflow,<br>not a model score.</h2>
+        <div class="safety-grid">
+          <div class="safety-item"><span class="tick" aria-hidden="true">✓</span><p>Critical findings block finalization until resolved or explicitly overridden with a reason.</p></div>
+          <div class="safety-item"><span class="tick" aria-hidden="true">✓</span><p>Role and consent rules scope record access; identity is removed before agent processing.</p></div>
+          <div class="safety-item"><span class="tick" aria-hidden="true">✓</span><p>Patient summaries use clinician-approved data and fixed templates.</p></div>
+          <div class="safety-item"><span class="tick" aria-hidden="true">✓</span><p>Replies needing review receive fixed precautionary 999 wording.</p></div>
+          <div class="safety-item limit"><span class="tick" aria-hidden="true">!</span><p><strong>Measured limit:</strong> word lists scored 22/22 on tuned examples and 2/12 on held-out replies. This is not a reliable emergency screen; staff alerting is not implemented.</p></div>
+        </div>
+        <div class="small-footer"><span>Fictional-data prototype · Not a medical device · Not for clinical use</span><span>04 / 07</span></div>
+      </section>
+
+      <section class="slide evidence-slide" data-notes="These numbers refer to local verification recorded in the test results: 226 API tests passed, with one optional local PostgreSQL smoke test skipped; 205 agent tests passed. Hosted CI ran the PostgreSQL smoke separately. Hosted CI covers software checks; it does not mean the branch is deployed or ready for clinical use.">
+        <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">04 · What we checked</span></div>
+        <p class="eyebrow">Software evidence</p>
+        <h2>A tested prototype.<br>Not a validated care service.</h2>
+        <div class="metric-row">
+          <div class="metric"><strong>226</strong><span>API tests passed¹</span></div>
+          <div class="metric"><strong>205</strong><span>Agent tests passed</span></div>
+          <div class="metric"><strong>CI ✓</strong><span>API · agents · web · PostgreSQL migration and recovery checks</span></div>
+        </div>
+        <div class="status-strip">
+          <p><strong>Architecture:</strong> API owns records and access; agents receive de-identified task context.</p>
+          <p><strong>Recovery rehearsal:</strong> disposable PostgreSQL restore returned data to the pre-backup point.</p>
+        </div>
+        <p class="source-note">Hosted CI runs the optional PostgreSQL smoke separately. See <a href="TEST_RESULTS.md">test results</a>.</p>
+      </section>
+
+      <section class="slide" data-notes="The current branch needs an approved deployment and a complete fictional-data rehearsal. No real sign-in, provider, human comprehension, or clinician-review results should be presented as complete.">
+        <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">05 · What remains</span></div>
+        <p class="eyebrow">Evidence still needed</p>
+        <h2>What we need to prove next</h2>
+        <div class="next-grid">
+          <div class="next-item"><p>Deploy and rehearse the current branch; the public agent health route still returns 404.</p></div>
+          <div class="next-item"><p>Verify real sign-in, role boundaries, and caregiver revocation.</p></div>
+          <div class="next-item"><p>Test provider integrations and obtain qualified clinical and pharmacy review.</p></div>
+          <div class="next-item"><p>Check accessibility and patient understanding with representative people.</p></div>
+          <div class="next-item"><p>Define and test a clinic-owned notification and escalation process.</p></div>
+          <div class="next-item"><p>Rehearse failure fallbacks and confirm hosting is stable enough for a live demo.</p></div>
+        </div>
+        <div class="small-footer"><span>A queue entry does not notify staff or guarantee anyone has seen it.</span><span>06 / 07</span></div>
+      </section>
+
+      <section class="slide closing" data-notes="Adapt this close after the official challenge brief is known. Insert a verified demo URL and team contact only after confirming them. Do not present this as an SDC entry or claim impact without evidence.">
+        <div class="topline" style="width:100%"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">Draft close</span></div>
+        <p class="eyebrow">The next step is validation</p>
+        <blockquote>Make the approved plan easier to follow—and prove it with the people it is meant to support.</blockquote>
+        <div class="placeholders"><span class="placeholder">[team name / members]</span><span class="placeholder">[verified demo URL]</span><span class="placeholder">Fictional data only</span></div>
+        <div class="small-footer"><span>Adapt to the final event brief · Not a clinical-use claim</span><span>07 / 07</span></div>
+      </section>
+
+      <aside id="notes" class="notes" aria-live="polite" hidden><strong>Speaker notes:</strong> <span id="note-text"></span></aside>
+      <div class="controls" aria-label="Slide controls">
+        <button id="notes-btn" type="button" aria-expanded="false" aria-controls="notes" title="Toggle speaker notes (N)">Notes</button>
+        <button id="prev" type="button" aria-label="Previous slide" title="Previous (left arrow)">←</button>
+        <span id="count" class="count" aria-live="polite">1 / 7</span>
+        <button id="next" type="button" aria-label="Next slide" title="Next (right arrow)">→</button>
+      </div>
+      <progress class="progress" id="progress" max="7" value="1" aria-label="Presentation progress"></progress>
+    </div>
+    <p id="announce" class="sr-only" aria-live="polite"></p>
+  </main>
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll(".slide")];
+      const count = document.getElementById("count");
+      const progress = document.getElementById("progress");
+      const notes = document.getElementById("notes");
+      const noteText = document.getElementById("note-text");
+      const notesButton = document.getElementById("notes-btn");
+      const announce = document.getElementById("announce");
+      let index = 0;
+
+      function show(next) {
+        index = Math.max(0, Math.min(slides.length - 1, next));
+        slides.forEach((slide, i) => { slide.hidden = i !== index; });
+        count.textContent = `${index + 1} / ${slides.length}`;
+        progress.value = index + 1;
+        noteText.textContent = slides[index].dataset.notes || "No notes for this slide.";
+        announce.textContent = `Slide ${index + 1} of ${slides.length}`;
+        if (window.location.hash !== `#slide-${index + 1}`) history.replaceState(null, "", `#slide-${index + 1}`);
+      }
+
+      function toggleNotes() {
+        const opening = notes.hidden;
+        notes.hidden = !opening;
+        notesButton.setAttribute("aria-expanded", String(opening));
+        if (opening) noteText.focus?.();
+      }
+
+      document.getElementById("prev").addEventListener("click", () => show(index - 1));
+      document.getElementById("next").addEventListener("click", () => show(index + 1));
+      notesButton.addEventListener("click", toggleNotes);
+      document.addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") { event.preventDefault(); show(index + 1); }
+        else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); show(index - 1); }
+        else if (event.key === "Home") show(0);
+        else if (event.key === "End") show(slides.length - 1);
+        else if (event.key.toLowerCase() === "n") toggleNotes();
+      });
+
+      const initial = Number((location.hash.match(/slide-(\d+)/) || [])[1]);
+      show(Number.isInteger(initial) && initial > 0 ? initial - 1 : 0);
+    })();
+  </script>
+</body>
+</html>

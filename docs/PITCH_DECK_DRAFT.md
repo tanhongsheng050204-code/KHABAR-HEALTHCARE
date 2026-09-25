@@ -1,6 +1,8 @@
 # Khabar presentation deck draft
 
-**Status:** Local content draft only. Not a public deck, event submission, or clinical-readiness claim. Adapt it to the official challenge brief and the verified demo environment before presenting.
+**Status:** Browser-viewable local draft. Not a public deck, event submission, or clinical-readiness claim. Adapt it to the official challenge brief and the verified demo environment before presenting.
+
+**Visual preview:** [Open the local browser deck](PITCH_DECK_DRAFT.html).
 
 **Audience:** Hackathon judges / prototype reviewers  
 **Target:** 5 minutes plus a live demo  
@@ -113,7 +115,7 @@
 ## Presentation checks still required
 
 - Replace placeholders with the actual team details and event-specific framing.
-- Build and visually inspect the public slide deck.
+- Export or rebuild it in the required public format and inspect that version after team/event personalization.
 - Verify every demo screen against the exact deployed branch and environment.
 - State whether messaging is simulated or has passed a real provider test.
 - Rehearse aloud, time the talk, and adjust after the official challenge brief is known.
