@@ -14,9 +14,9 @@ This record captures checks run while implementing the remaining-work items. It 
 
 The current `pilot-foundations` branch has not been redeployed or smoke-checked at the public URLs during this verification. The real-role sign-in, provider, screen-reader/caregiver accessibility, human comprehension, and clinical/privacy/security checks remain open in [`UNDONE_WORK.md`](../UNDONE_WORK.md).
 
-GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `978b222d3010864ece4e5aef2966058649bf1b43` on 25 Sep 2026 ([run 36105151286](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36105151286)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, PostgreSQL backup/restore, and web lint/typecheck/production build all passed. This latest commit reconciles verification notes; it does not change the prior statement that the public deployment has not picked up the branch changes.
+GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `954b5c9be10c059a2066bde24220ff7175e8fdb6` on 25 Sep 2026 ([run 36105880641](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36105880641)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, PostgreSQL backup/restore, and web lint/typecheck/production build all passed. This commit updates policy/status documentation; it does not deploy the public services.
 
-The public app returned HTTP 200 and `https://khabar-api.vercel.app/api/health` returned HTTP 200 on 25 Sep. A request to `https://khabar-api.vercel.app/agents/health` returned 404 after the fix was pushed, so the public deployment has not picked up the branch change yet. These simple GETs do not validate auth, roles, or the full clinical workflow.
+Fresh read-only checks on 25 Sep returned HTTP 200 for the public web home, timed out on `https://khabar-api.vercel.app/api/health`, and returned 404 for `https://khabar-api.vercel.app/agents/health`. These simple GETs do not validate auth, roles, or the full clinical workflow; the API timeout and route 404 require a deployed-service investigation.
 
 ## Starter skeleton (`starter-skeleton`)
 

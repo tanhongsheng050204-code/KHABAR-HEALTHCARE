@@ -336,7 +336,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 ## 6. Evidence it works
 
-- **Local verification (25 Sep):** 226 API tests passed (including access rules, encryption, the safety gate, token checks and a real in-process Neo4j), with one optional PostgreSQL test skipped locally; 205 agent tests passed (including the planted-error set, triage in four languages, and Vercel-prefixed health route); frontend lint, TypeScript and production build passed. This branch has not been redeployed and rechecked on the public demo.
+- **Verification (25 Sep):** local checks passed: 226 API tests (one optional PostgreSQL test skipped locally), 205 agent tests, and frontend lint, TypeScript and production build. Hosted CI also passed all jobs for branch head `954b5c9` ([run 36105880641](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36105880641)), including PostgreSQL migration/schema and disposable backup/restore checks. These checks do not deploy the branch. A fresh read-only public check returned web 200, API `/api/health` timed out, and `/agents/health` returned 404; live deployment verification remains open.
 - **Bug bash (23 Sep):** 11 defects found and fixed, including one patient-safety issue: a reply confirmation that could be empty when triage was down now always includes 999 advice. See [docs/BUG_BASH_2026-09-23.md](docs/BUG_BASH_2026-09-23.md).
 - **Deployed rehearsal (23 Sep):** pre-visit → draft → safety review → finalise → summary → follow-up reply → call list, run on the public URLs with demo sign-in.
 - **Privacy test:** a test proves that no name, IC number or phone number can reach the Neo4j graph, and the live AuraDB instance was checked directly.
