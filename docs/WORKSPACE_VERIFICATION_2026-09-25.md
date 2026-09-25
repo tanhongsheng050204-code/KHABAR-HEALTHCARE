@@ -14,7 +14,7 @@ This record captures checks run while implementing the remaining-work items. It 
 
 The current `pilot-foundations` branch has not been redeployed or smoke-checked at the public URLs during this verification. The real-role sign-in, provider, screen-reader/caregiver accessibility, human comprehension, and clinical/privacy/security checks remain open in [`UNDONE_WORK.md`](../UNDONE_WORK.md).
 
-GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `3b3ef032a6cb81e402e0e7049ff4d862b3eb6c74` on 25 Sep 2026 ([run 36104133960](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36104133960)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, PostgreSQL backup/restore, and web lint/typecheck/production build all passed.
+GitHub Actions recorded a successful `Verify Khabar` run for branch code head commit `bd94862d55c7106a08a90fd80684e2b7a4514ad1` on 25 Sep 2026 ([run 36104853590](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36104853590)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, PostgreSQL backup/restore, and web lint/typecheck/production build all passed.
 
 The public app returned HTTP 200 and `https://khabar-api.vercel.app/api/health` returned HTTP 200 on 25 Sep. A request to `https://khabar-api.vercel.app/agents/health` returned 404 after the fix was pushed, so the public deployment has not picked up the branch change yet. These simple GETs do not validate auth, roles, or the full clinical workflow.
 
