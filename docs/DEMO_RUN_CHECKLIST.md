@@ -1,7 +1,8 @@
 # Khabar demo run checklist
 
-Use fictional records only. This checklist is a rehearsal aid, not evidence that a run
-has passed. Record the date, commit, environment, and outcome in the result section.
+Use fictional records only. This checklist is a reusable rehearsal aid. A historical partial
+deployed run is recorded in [DEMO_RUN_2026-09-23.md](DEMO_RUN_2026-09-23.md); it does not
+verify the current branch or deployment. Record each new run's date, commit, environment, and outcome below.
 
 ## Before the run
 

@@ -232,7 +232,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 ### 7. A reply that raises a red flag
 <img src="artifacts/readme/07-red-flag-reply-mobile.png" alt="Red-flag reply with 999 advice" width="320">
 
-*She writes "Sakit dada sejak pagi, susah nak bernafas" (chest pain since morning, hard to breathe). Khabar does not improvise: it answers with fixed, pre-approved BM wording (the clinic has been told; call 999 or go to the nearest emergency department) and puts her at the top of the clinic's call list.*
+*This scripted example uses a phrase in the current word list. Khabar replies with fixed BM wording (call 999 or go to the nearest emergency department) and adds it to the clinic's list. This is an illustration of the flow, not evidence that Khabar reliably detects emergencies; the recorded word-list score on held-out replies was 2/12.*
 
 ---
 
@@ -241,9 +241,9 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | Feature | What's new, or the twist |
 |---|---|
 | **After the visit is the product** | Most clinic AI ends when the patient leaves. Khabar's value is days 1–30. |
-| **Four languages, Malaysian style** | Summaries and triage in BM, English, Chinese and Tamil, including Manglish replies like *"pening sikit"*. |
-| **Red-flag triage that errs towards alerting** | A reply is urgent if **either** a doctor-approved keyword list **or** the AI says so. The AI can raise urgency, never lower it. |
-| **Patients only hear approved words** | Replies to patients come from three fixed sources: 999 advice for red flags, answers the doctor approved, or a plain acknowledgement. The AI never invents advice. |
+| **Four-language follow-up** | Summaries and reply handling support BM, English, Chinese and Tamil, including Manglish replies like *"pening sikit"*. The prototype classifier has not been validated for emergency detection. |
+| **Cautious reply routing** | Word lists route replies for clinic attention; an optional model can only raise the level. Word lists scored 22/22 on tuned examples but 2/12 on held-out replies, so these labels are not a reliable emergency screen. Human review and the fixed precautionary 999 message remain essential. |
+| **Patients only hear approved words** | Replies come from fixed sources: precautionary 999 wording, answers the clinic approved, or an acknowledgement. The AI does not generate patient advice. |
 | **"Everything I take," across clinics and cultures** | Cross-checks medicines from *other* clinics, local brand names, and **traditional remedies** (jamu, herbs, TCM) that patients rarely mention. |
 | **Safety checks from data, not AI opinion** | Interactions come from **DDInter 2.0**, with written rules for allergies, doses, duplicates and herbs. The AI structures notes; it does not judge safety. |
 | **A gate enforced three times** | A critical finding is blocked in the UI, the API **and** a database rule, so a bug in one layer can't let it through. |
@@ -318,7 +318,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 | Tier | Scope | Status (24 Sep) |
 |---|---|---|
-| **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · AI report drafting · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · two-way red-flag triage · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built, tested and deployed |
+| **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · AI report drafting · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · prototype reply routing · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built and locally/hosted-CI verified; current branch deployment remains open |
 | **Tier 2: planned** | Packet photo · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking · Neo4j graph | ✅ Built. Packet photos still need a real Gemini test. |
 | **Tier 3: stretch** | Speaking instead of typing in the visit · Favoriot readings · voice-note summaries · learning each doctor's writing style | Speech-to-text and Favoriot are built (Favoriot with simulated readings). Voice notes and writing style are **not built** and are first to drop. |
 
@@ -328,7 +328,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 |---|---|---|
 | Sign-in and access | Doctor, patient and caregiver access rules; revoking caregiver consent blocks access at once; the API verifies real Supabase sign-ins and demo tokens | A real sign-in for each role on the live site; a custom SMTP sender for patient codes |
 | Visit and safety | Notes or speech → structured draft; the ten-mistake planted-error set is a test, and all ten are caught | Pharmacist review of dose limits and herb evidence |
-| Follow-up | Check-ins, four-language triage, approved-words-only replies, missed doses, home readings, the ranked call list | A live WhatsApp loop with approved templates; a real Favoriot device |
+| Follow-up | Check-ins, prototype four-language reply routing, approved-words-only replies, missed doses, home readings, the ranked call list | Validate triage on clinician-authored held-out replies; live WhatsApp loop with approved templates; a real Favoriot device |
 | Patient graph | Live on AuraDB with 31 fictional patients, read back by random ID only | Conditions appear once the live intake is run |
 | Evidence | Automated tests and bug bash (below) | The planted-error comparison across LLMs; the transcription test; the 5-person understanding pilot |
 

@@ -129,6 +129,15 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [ ] Count clinically important drug-name errors, not only general transcription quality.
 - [ ] Record the selected LLM, transcription model, results, date, and rationale in `plan.md` or `docs/EXPLAIN.md`.
 
+### 2.4 Triage limitations and clinician-authored evaluation
+
+**Status:** Open. The documented word-list fallback scored 22/22 on examples it was tuned against and 2/12 on held-out replies. A configured model may raise urgency but cannot reduce a word-list result; neither path is validated for detecting emergencies. Patient replies needing a person receive precautionary 999 wording, and the clinic queue explicitly says it does not replace clinic escalation procedures.
+
+- [x] Align the README and demo description with the measured limitation; do not claim reliable emergency detection.
+- [ ] Keep the held-out evaluation independent of tuning and replace or extend it with clinician-authored replies.
+- [ ] Run the model comparison on the clinician-authored set and document critical misses, false alarms, and limitations before making any performance claim.
+- [ ] Have a qualified clinician review patient-facing emergency wording, queue labels, and the operational response process.
+
 ---
 
 ## 3. Missing or intentionally deferred product features
