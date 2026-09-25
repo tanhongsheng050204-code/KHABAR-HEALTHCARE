@@ -8,6 +8,8 @@
 **Status:** practice build ahead of SDC Hackathon 2026. **Not** the competition entry. See §1.
 **Builder:** solo · **Build window:** Tue 22 Sep – Mon 28 Sep 2026 (~12 h/day) · **Feature freeze:** Sun 11 Oct 2026
 
+**Current verification (25 Sep):** implementation tests and hosted CI pass, but this branch has not been deployed. The public agent health route still returns 404; real-role, provider, accessibility, clinical, and pilot-readiness checks remain open. See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md) and [`UNDONE_WORK.md`](UNDONE_WORK.md) for evidence and tasks.
+
 ---
 
 ## 1. Context and ground rules
