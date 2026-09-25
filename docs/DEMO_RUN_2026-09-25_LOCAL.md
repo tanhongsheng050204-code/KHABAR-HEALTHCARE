@@ -7,7 +7,7 @@ verify the public deployment. Fictional demo records and the in-memory H2 databa
 ## Run details
 
 - **Date:** 25 September 2026 (Asia/Singapore)
-- **Branch / application code tested:** `pilot-foundations`, application-code commit `1bbdd10`; later commits through `6141adf` changed documentation only. The final intake → visit → reply chain was rerun from a clean H2 seed after restarting the local API.
+- **Branch / application code tested:** `pilot-foundations`, application-code commit `1bbdd10`; later commits through `40188c1` changed documentation only. The final intake → visit → reply chain was rerun from a clean H2 seed after restarting the local API.
 - **Environment:** Next.js on `localhost:3000`, Spring `local` profile on `localhost:8080`, FastAPI agents on `localhost:8000`.
 - **Data / integrations:** fresh seeded fictional records; H2 in-memory database; no Neo4j URI, Gemini key, Supabase sign-in, or WhatsApp provider configured. Messaging used the local outbox.
 - **Startup checks:** agent `/health` returned `healthy`, API `/api/health` returned `UP`, and the web home returned HTTP 200.
