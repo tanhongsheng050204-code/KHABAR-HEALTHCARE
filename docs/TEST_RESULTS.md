@@ -10,8 +10,9 @@ What has been checked, when, and how. Update this when a number changes. Command
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
 | Hosted verification workflow | GitHub Actions, `pilot-foundations`, commit `da5658a`, 25 Sep ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)) | **All jobs passed**, including API, agents, web lint/typecheck/production build, and PostgreSQL 16 migration/schema smoke. This is CI evidence, not proof that the current branch has been deployed to the public demo. |
-| Latest hosted verification | GitHub Actions, branch head `5dc92ed`, 25 Sep ([run 36103667074](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36103667074)) | **All jobs passed** after the urgent-message correction, including PostgreSQL 16 migration/schema validation. This does not deploy the feature branch. |
+| Latest hosted verification | GitHub Actions, branch head `3b3ef03`, 25 Sep ([run 36104133960](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36104133960)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and disposable PostgreSQL backup/restore. This does not deploy the feature branch. |
 | Urgent reply wording | API `ApprovedAnswersTest` | **9 passed**. Verified 999 guidance and no promise that staff have seen the reply or will call in all four configured languages. |
+| Latest hosted verification | GitHub Actions, branch head `3b3ef03`, 25 Sep ([run 36104133960](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36104133960)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and disposable PostgreSQL backup/restore. This does not deploy the feature branch. |
 
 Highlights of what the tests prove:
 - **Safety checks:** the ten planted mistakes (allergy, double dose, duplicate from another clinic, herb
@@ -26,6 +27,7 @@ Highlights of what the tests prove:
 - **Follow-up:** red flags get the 999 advice and top the call list; any reply a person has yet to read
   also gets the 999 advice; only a reassuring reply gets a plain thank-you.
 - **Migrations:** Flyway V1 creates the initial clinical schema, V2 adds and backfills `reading.received_at`; tests verify fresh schema creation, one-time execution, legacy-row backfill, and Hibernate validation under the `pilot` profile using H2 PostgreSQL mode. A separate smoke test targets PostgreSQL 16 in CI and is not enabled in local runs.
+- **Recovery:** hosted PostgreSQL CI dumps the migrated disposable database, restores it to a second database, and verifies a marker row plus Flyway history. Production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
 
 ## Evaluations
 
@@ -55,7 +57,7 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 
 ## Not tested yet
 
-Automated local checks on 25 Sep and hosted verification for branch head `fe880c6` (including its PostgreSQL 16 migration smoke test) are documented as passing. The public site and API health endpoint returned 200, but the agent health route returned 404 before deployment of the fix. Current-branch public deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
+Automated local checks on 25 Sep and hosted verification for branch head `3b3ef03` (including its PostgreSQL 16 migration smoke and backup/restore rehearsal) are documented as passing. The public site and API health endpoint returned 200, but the agent health route returned 404 before deployment of the fix. Current-branch public deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
 
 Real sign-in per role on the live site · WhatsApp with a real phone · a Favoriot device · Gemini on
 packet photos · transcription on recordings · the 5-person understanding pilot. Tracked in
