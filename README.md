@@ -71,7 +71,7 @@ Khabar is an AI platform for Malaysian clinics that follows the patient home. It
 | **Before the visit** | Self-booking from the clinic's calendar · a guided intake chat in the patient's language that already knows their history · a pre-visit page for the doctor · a shared **"everything I take"** list (medicines from every clinic, supplements, jamu, herbs) · reading a **medicine-packet photo**, with consent, into that list |
 | **During the visit** | The doctor types shorthand or speaks, and the AI structures it into a draft report · a **safety check** (allergy, interaction, duplicate across clinics and brands, herb clash, dose, pregnancy, invented drugs or symptoms, missing fields) · a **critical finding cannot be finalised** without a written reason, enforced in the screen, the API **and** the database |
 | **After the visit** | A summary in **BM, English, Chinese or Tamil**, sent on WhatsApp · **Ramadan fasting mode** (sahur and berbuka timings) · **caregiver access** that the patient grants and can revoke |
-| **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · two-way replies with **red-flag triage** in four languages · fixed 999 advice for emergencies · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
+| **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · prototype reply routing in four languages · precautionary 999 wording for replies needing review · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
 | **Privacy** | Access rules per role · encrypted sensitive fields · names and IC numbers removed before anything reaches the AI · a **"who viewed my record"** audit trail |
 
 ---
@@ -85,7 +85,7 @@ Chosen ideas are listed first.
 |---|---|
 | **A (Chosen)** Clinic workflow with "after the visit" as the main story | Market research found the spaces before and during the visit crowded (scribes, booking, telemedicine), but almost nobody follows the patient home in Malaysia. |
 | **B (Chosen)** Summaries in BM, English, Chinese and Tamil | Plain-language rewrites improve understanding, and Malaysia is multilingual. AI translation still lags for non-English languages, so wording is constrained to what the doctor approved. |
-| **C (Chosen)** Two-way follow-up with red-flag alerts | Adherence is about 50%. WhatsApp is where Malaysian patients already are. Memora proved the model in the US. |
+| **C (Chosen)** Two-way follow-up with clinic review routing | Adherence is about 50%. WhatsApp is where Malaysian patients already are. Memora proved the model in the US. Reply routing is a prototype and does not provide staff alerts or validated emergency detection. |
 | **D (Chosen)** "Who needs you first" call list for the clinic | Gives the paying customer, the clinic, a daily reason to open the product. |
 | **E (Chosen)** "Everything I take" list and packet photo | Fragmented records plus 69.4% traditional-medicine use means duplicates and herb clashes go unseen. |
 | **F (Chosen)** Family caregiver access, with consent | 79.6% of older Malaysians rely on their children. |
@@ -258,7 +258,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | Clinic workflow (intake → report → safety) | ✅ | — | — | ✅ |
 | Follow-up after the visit | One WhatsApp message | ✅ SMS, US | Medication reminders | ✅ 30 days, two-way |
 | BM / Chinese / Tamil | — | — | — | ✅ |
-| Red-flag alerts to the clinic | — | ✅ | — | ✅ |
+| Prototype reply routing to a clinic queue | — | ✅ | — | ✅; emergency detection and staff alerts are not validated/implemented |
 | Traditional-medicine and other-clinic check | — | — | — | ✅ |
 | Ramadan mode | — | — | — | ✅ |
 | Patient-visible access log | — | — | — | ✅ |

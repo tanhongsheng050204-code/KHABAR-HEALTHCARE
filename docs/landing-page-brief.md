@@ -61,7 +61,7 @@ Each "act" is pinned while its clip advances with the scroll. Typical length: 15
 | **2 · Everything she takes** | C3 | **Three clinics. One kitchen table. One hidden duplicate.** · Sub: *Khabar reads every packet, including jamu and supplements, and flags what clashes.* | Hovering a packet (tapping on mobile) draws a line to its duplicate |
 | **3 · Apa khabar?** | C4 → C5 | **Asked every day, for 30 days.** · A vertical 30-day thread fills as you scroll: day 1, 3, 7, 14, 30 | The day markers light up as the time-lapse passes |
 | **4 · In every language** | C6a / C6b / C6c (three panels side by side) | **Apa khabar? · 你好吗? · நலமா?** · *Summaries and check-ins in BM, English, Chinese and Tamil.* | Hovering a panel plays it and shows a sample summary in that language |
-| **5 · The red flag** | C7 → C8 | Quote: ***"Pening dan berpeluh."*** · **Khabar hears it. The clinic calls.** | **Try-it demo:** "Type how you feel." The visitor types a reply and sees the triage result (§4.4) |
+| **5 · The red flag** | C7 → C8 | Quote: ***"Pening dan berpeluh."*** · **Khabar adds it to the clinic's review list.** Do not imply a clinician has seen it or will call. | **Try-it demo:** "Type how you feel." The visitor sees an illustrative keyword result (§4.4), not a reliable emergency screen. |
 | **6 · Family knows too** | C9 | **Her daughter knows too, with her consent.** · Sub: *And Aminah can see exactly who viewed her record.* | A mini "who viewed my record" timeline slides in |
 | **7 · Ramadan** | C10 | **Sahur. Berbuka. Reminders that fast with her.** | The sky colour of the page shifts with the clip |
 | **8 · Finale** | C11 | **Know who needs a call today.** · A preview of the clinic's call list animates in · Buttons: **See the demo** / **Read the plan** | The call-list rows are clickable (they expand) |
@@ -166,8 +166,8 @@ Every clip uses **one camera move**. Append the **style block** and the **negati
 
 ---
 
-**C8 · The clinic calls (K9 → K9b, 5 s)** · Camera: *slow dolly in*
-> @DrPriya notices a soft amber glow on her monitor, which is not readable. She picks up her phone, raises it to her ear and speaks calmly and reassuringly. Late-afternoon window light and a quiet clinic room.
+**C8 · Added to the clinic queue (K9 → K9b, 5 s)** · Camera: *slow dolly in*
+> @DrPriya reviews an unread follow-up item in the clinic queue on her monitor, which is not readable. The scene is clearly illustrative and does not imply an instant notification or that staff have already seen or called the patient. Late-afternoon window light and a quiet clinic room.
 
 (**K9b:** the same shot, with @DrPriya mid-sentence and a gentle reassuring expression.)
 
@@ -222,8 +222,8 @@ Every clip uses **one camera move**. Append the **style block** and the **negati
 A client-side keyword demo that shows the triage logic without calling any AI. Label it *"Illustrative demo, not medical advice."*
 | Result | Example words (BM / EN / 中文 / தமிழ்) | What appears |
 |---|---|---|
-| 🔴 Red flag | *sakit dada, sesak nafas, pengsan* / chest pain, can't breathe, fainted / 胸痛, 呼吸困难 / நெஞ்சு வலி | "The clinic has been alerted and will call you now." The thread turns `cili`. |
-| 🟠 Watch | *pening, berpeluh, menggeletar* / dizzy, sweating, shaky / 头晕, 冒汗 / மயக்கம் | "Your clinic will check on you today." The thread turns `sunset-amber`. |
+| 🔴 Red flag | *sakit dada, sesak nafas, pengsan* / chest pain, can't breathe, fainted / 胸痛, 呼吸困难 / நெஞ்சு வலி | Show fixed precautionary 999 wording and say the reply is on the clinic's list but may not have been seen. The thread turns `cili`. |
+| 🟠 Watch | *pening, berpeluh, menggeletar* / dizzy, sweating, shaky / 头晕, 冒汗 / மயக்கம் | Say the reply is on the clinic's review list; do not promise when it will be checked. The thread turns `sunset-amber`. |
 | 🟢 OK | *okay, sihat, dah makan ubat* / fine, took my medicine / 很好 / நலம் | "Glad to hear it. Next check-in: tomorrow." The thread stays `pandan`. |
 
 Ask a native speaker to check the Chinese and Tamil words before launch.

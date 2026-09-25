@@ -10,6 +10,7 @@ What has been checked, when, and how. Update this when a number changes. Command
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
 | Hosted verification workflow | GitHub Actions, `pilot-foundations`, commit `da5658a`, 25 Sep ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)) | **All jobs passed**, including API, agents, web lint/typecheck/production build, and PostgreSQL 16 migration/schema smoke. This is CI evidence, not proof that the current branch has been deployed to the public demo. |
+| Urgent reply wording | API `ApprovedAnswersTest` | **9 passed**. Verified 999 guidance and no promise that staff have seen the reply or will call in all four configured languages. |
 
 Highlights of what the tests prove:
 - **Safety checks:** the ten planted mistakes (allergy, double dose, duplicate from another clinic, herb

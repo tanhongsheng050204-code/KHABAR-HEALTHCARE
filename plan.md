@@ -85,7 +85,7 @@ Priority: **P0** = never drop · **P1** = build this week · **P2** = first to d
 | ID | Feature | Priority |
 |---|---|---|
 | F1 ★ | **30-day check-in plan** (day 1, 3, 7, 14, 30) over WhatsApp | P0 |
-| F2 ★ | **Two-way replies with red-flag alerts.** Patient replies are triaged, red flags alert the clinic, and everything else gets doctor-approved answers only. | P0 |
+| F2 ★ | **Two-way replies with clinic review routing.** Prototype rules classify patient replies; items needing review appear in the clinic queue and patients receive fixed, precautionary 999 wording where appropriate. Reliable emergency detection and staff notifications are not implemented. | P0 |
 | F3 ★ | **"Call these patients today" list** for the clinic, ranked by red flags, missed doses and no reply | P0 |
 | F4 ★ | Blood-pressure and glucose readings via **Favoriot** (SDC sponsor), from a simulated device | P2 |
 
@@ -175,7 +175,7 @@ flowchart LR
 | **Intake** | Runs the pre-visit chat, asks about traditional medicine and supplements, accepts photos, decides when intake is complete, writes the pre-visit report | graph query, photo reader, brand-to-generic lookup |
 | **Report** | Drafts the visit report from notes or transcript, handles doctor edits, writes the patient summary in the chosen language, produces voice-note text | graph query, transcription, text-to-speech |
 | **Evaluator** | Runs the 8 checks on every draft and returns findings with a severity | interaction lookup, brand table, herb list, graph query |
-| **Follow-up** | Schedules check-ins, interprets replies, triages red flags, answers only from the doctor-approved library, adjusts for Ramadan, reads Favoriot readings | red-flag lists, answer library, graph query |
+| **Follow-up** | Schedules check-ins, routes prototype reply labels to the clinic queue, answers only from the doctor-approved library, adjusts for Ramadan, reads Favoriot readings | reply keyword lists, answer library, graph query; staff alerts remain an open operational dependency |
 
 ---
 
@@ -221,8 +221,8 @@ flowchart LR
 Every override is audited per finding.
 
 ### Follow-up safety
-- **Triage errs towards alerting.** A reply is a red flag if **either** the keyword list **or** the AI classifier says so.
-- **The AI never gives new medical advice.** Non-urgent replies get a doctor-approved answer, or "the clinic will contact you".
+- **Reply labels are a prototype, not an emergency screen.** A reply gets the more urgent of the keyword and optional model labels, but measured word lists scored 2/12 on held-out replies. Replies needing review enter the clinic queue; there is no staff notification or guarantee anyone has seen them yet. The patient receives precautionary 999 wording, and clinic procedures and human review remain essential.
+- **The AI never gives new medical advice.** Some replies receive a doctor-approved answer; replies without one are routed for human review without promising a callback.
 - **Ramadan mode only re-times reminders the doctor set.** Dose changes are the doctor's job.
 
 ### How the checker is tested

@@ -23,12 +23,12 @@ public class PatientMessages {
             "zh", "身体怎么样？开斋前有没有头晕、冒汗或发抖？回复这条信息告诉诊所。",
             "ta", "எப்படி இருக்கிறீர்கள்? நோன்பு திறக்கும் முன் தலைச்சுற்றல், வியர்வை அல்லது நடுக்கம் உள்ளதா? இந்த செய்திக்கு பதில் அனுப்பி கிளினிக்கிற்கு தெரியப்படுத்துங்கள்.");
 
-    /** Sent at once after a red flag. Fixed wording; the clinic still calls. 999 is Malaysia's emergency number. */
+    /** Sent after a reply is routed to the clinic queue. Do not imply a staff notification or callback. */
     private static final Map<String, String> URGENT = Map.of(
-            "ms", "Klinik sudah dimaklumkan dan akan menghubungi anda. Kalau sakit dada, sesak nafas atau pengsan, hubungi 999 atau pergi ke Jabatan Kecemasan yang terdekat sekarang.",
-            "en", "The clinic has been told and will contact you. If you have chest pain, trouble breathing or have fainted, call 999 or go to the nearest emergency department now.",
-            "zh", "诊所已收到通知，会联系您。如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
-            "ta", "கிளினிக்கிற்குத் தெரிவிக்கப்பட்டது, அவர்கள் உங்களைத் தொடர்புகொள்வார்கள். நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
+            "ms", "Mesej anda telah dimasukkan dalam senarai susulan klinik, tetapi klinik mungkin belum membacanya. Jika sakit dada, sesak nafas atau pengsan, hubungi 999 atau pergi ke Jabatan Kecemasan yang terdekat sekarang.",
+            "en", "Your message has been added to the clinic's follow-up list, but the clinic may not have seen it yet. If you have chest pain, trouble breathing or have fainted, call 999 or go to the nearest emergency department now.",
+            "zh", "您的消息已加入诊所的随访列表，但诊所可能还没有看到。如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
+            "ta", "உங்கள் செய்தி கிளினிக்கின் பின்தொடர் பட்டியலில் சேர்க்கப்பட்டுள்ளது; ஆனால் கிளினிக் அதை இன்னும் பார்க்காமல் இருக்கலாம். நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
 
     /** The emergency sentence of the urgent text on its own, for a reply nobody could check automatically. */
     private static final Map<String, String> EMERGENCY_ADVICE = Map.of(

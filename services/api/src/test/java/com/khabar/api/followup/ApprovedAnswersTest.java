@@ -48,6 +48,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class ApprovedAnswersTest {
 
+    @Test
+    void urgentPatientMessagesDoNotPromiseThatStaffHaveSeenTheReplyOrWillCall() {
+        Map<String, String> notSeen = Map.of(
+                "ms", "mungkin belum membacanya",
+                "en", "may not have seen it yet",
+                "zh", "可能还没有看到",
+                "ta", "இன்னும் பார்க்காமல் இருக்கலாம்");
+        Map.of(
+                "ms", new String[]{"akan menghubungi", "sudah dimaklumkan"},
+                "en", new String[]{"will contact you", "has been told"},
+                "zh", new String[]{"会联系您", "已收到通知"},
+                "ta", new String[]{"உங்களைத் தொடர்புகொள்வார்கள்", "தெரிவிக்கப்பட்டது"}
+        ).forEach((language, promises) -> {
+            String text = com.khabar.api.messaging.PatientMessages.urgentText(language);
+            assertThat(text).contains("999");
+            assertThat(text).contains(notSeen.get(language));
+            assertThat(text).doesNotContain(promises);
+        });
+    }
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired ClinicRepository clinics;
@@ -142,12 +162,16 @@ class ApprovedAnswersTest {
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "red", "matched", "sakit dada"));
 
         reply("Sakit dada, lupa makan ubat").andExpect(jsonPath("$.level").value("RED"))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("mungkin belum membacanya")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("will contact you"))));
 
         verify(agents, never()).matchAnswer(anyString(), anyList());
         assertThat(sentToAminah()).singleElement().satisfies(m -> {
             assertThat(m.getKind()).isEqualTo("SAFETY");
             assertThat(m.getText()).contains("999");
+            assertThat(m.getText()).contains("mungkin belum membacanya");
+            assertThat(m.getText()).doesNotContain("will contact you");
         });
         callList().andExpect(jsonPath("$.items[0].level").value("RED"));
     }
