@@ -57,7 +57,7 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 | 24 Sep | Duplicate metformin caught across two clinics; safety gate blocks finalising; BM chest-pain reply gets 999 advice | local, fictional data | passed (screenshots in the README) |
 | 25 Sep | Fresh public GETs: web home returned 200; `/api/health` returned 200 after one earlier timeout; `/agents/health` returned 404 | public demo | API health recovered on retry. Agent health still requires recheck after deployment. No authenticated or clinical workflow was exercised. |
 | 25 Sep | Follow-up public GETs: web home 200, `/api/health` 200, `/agents/health` 404, `/agents/agents/health` 404 | public demo | Two likely agent health paths still fail; route must be checked after deployment. No authenticated or clinical workflow was exercised. |
-| 25 Sep | Local fictional-data rehearsal: doctor visit draft/safety gate/finalisation, patient summary and replies, caregiver scope/revocation, agent-outage fallback | local H2 and demo tokens | Passed for the recorded cases; no real identity, provider delivery, graph context, clinical review, or deployed current-branch workflow was tested. Details in [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md). |
+| 25 Sep | Local fictional-data rehearsal: guided intake through visit, patient summary, urgent reply/call list; caregiver scope/revocation; agent-outage fallback | local H2 and demo tokens | Passed for the recorded cases; no real identity, provider delivery, graph context, clinical review, or deployed current-branch workflow was tested. Details in [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md). |
 
 ## Not tested yet
 
