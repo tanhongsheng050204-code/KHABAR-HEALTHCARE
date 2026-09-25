@@ -10,6 +10,7 @@ What has been checked, when, and how. Update this when a number changes. Command
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
 | Hosted verification workflow | GitHub Actions, `pilot-foundations`, commit `da5658a`, 25 Sep ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)) | **All jobs passed**, including API, agents, web lint/typecheck/production build, and PostgreSQL 16 migration/schema smoke. This is CI evidence, not proof that the current branch has been deployed to the public demo. |
+| Latest hosted verification | GitHub Actions, branch head `fe880c6`, 25 Sep ([run 36103319143](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36103319143)) | **All jobs passed** after the urgent-message correction, including PostgreSQL 16 migration/schema validation. This does not deploy the feature branch. |
 | Urgent reply wording | API `ApprovedAnswersTest` | **9 passed**. Verified 999 guidance and no promise that staff have seen the reply or will call in all four configured languages. |
 
 Highlights of what the tests prove:
@@ -50,10 +51,11 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 | 24 Sep (night) | Follow-up cases and clinic settings in the browser: assign, "No answer", closing an urgent case as unreachable refused until escalated (message shown in the dialog, focus returned), escalate then close; the rota shows today's cover on the call list; activity log lists every step by case reference with no patient names; integration health lists five services; axe clean on the doctor home, staff settings, the case dialog and a 390 px phone | local, fictional data | passed |
 | 24 Sep (night) | Clinic staff grants in the browser: the doctor home renders once, "Staff & access" invites a nurse, "Record contact" asks for confirmation and closes only the items in the displayed snapshot; duplicate check, safety gate and patient home unchanged; axe finds no violations on these screens | local, fictional data | passed |
 | 24 Sep | Duplicate metformin caught across two clinics; safety gate blocks finalising; BM chest-pain reply gets 999 advice | local, fictional data | passed (screenshots in the README) |
+| 25 Sep | Current public routes: web home and `/api/health` returned 200; `/agents/health` returned 404 | public demo | Agent health-route fix is in branch `fe880c6`, but the deployed response confirms it remains undeployed. No authenticated or clinical workflow was exercised. |
 
 ## Not tested yet
 
-Automated local checks on 25 Sep and hosted verification for branch head `da5658a` (including its PostgreSQL 16 migration smoke test) are documented as passing. Current-branch public deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
+Automated local checks on 25 Sep and hosted verification for branch head `fe880c6` (including its PostgreSQL 16 migration smoke test) are documented as passing. The public site and API health endpoint returned 200, but the agent health route returned 404 before deployment of the fix. Current-branch public deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
 
 Real sign-in per role on the live site · WhatsApp with a real phone · a Favoriot device · Gemini on
 packet photos · transcription on recordings · the 5-person understanding pilot. Tracked in

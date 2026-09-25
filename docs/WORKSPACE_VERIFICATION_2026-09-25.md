@@ -14,9 +14,9 @@ This record captures checks run while implementing the remaining-work items. It 
 
 The current `pilot-foundations` branch has not been redeployed or smoke-checked at the public URLs during this verification. The real-role sign-in, provider, screen-reader/caregiver accessibility, human comprehension, and clinical/privacy/security checks remain open in [`UNDONE_WORK.md`](../UNDONE_WORK.md).
 
-GitHub Actions recorded a successful `Verify Khabar` run for the current branch head commit `da5658ad128de298c3a557857e261af7bb1eefc0` on 25 Sep 2026 ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, and web lint/typecheck/production build all passed.
+GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `fe880c6b640517f46a1beb247e9ed77352206b2c` on 25 Sep 2026 ([run 36103319143](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36103319143)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, and web lint/typecheck/production build all passed.
 
-The public app returned HTTP 200 and `https://khabar-api.vercel.app/api/health` returned HTTP 200 on 25 Sep. A request to `https://khabar-api.vercel.app/agents/health` returned 404. The Vercel path-prefix health route is fixed locally and covered by the local tests below, but the public route must be rechecked after a redeploy; these simple GETs do not validate auth, roles, or the full clinical workflow.
+The public app returned HTTP 200 and `https://khabar-api.vercel.app/api/health` returned HTTP 200 on 25 Sep. A request to `https://khabar-api.vercel.app/agents/health` returned 404 after the fix was pushed, so the public deployment has not picked up the branch change yet. These simple GETs do not validate auth, roles, or the full clinical workflow.
 
 ## Starter skeleton (`starter-skeleton`)
 

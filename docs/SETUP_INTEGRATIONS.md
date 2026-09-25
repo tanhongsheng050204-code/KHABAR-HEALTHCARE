@@ -15,10 +15,12 @@ To add a value: `cd services` then `npx vercel env add NAME production`, and pas
 To add a GitHub secret: `gh secret set NAME --body "value"`. Don't pipe it in PowerShell: that added an
 invisible byte-order mark once and broke the deploy.
 
-**What is already set on `khabar-api` (24 Sep 2026):** database, `FIELD_ENCRYPTION_KEY`,
+**Last recorded production-variable presence check (24 Sep 2026):** database, `FIELD_ENCRYPTION_KEY`,
 `INTERNAL_SERVICE_KEY`, `SUPABASE_JWKS_URL`, `SUPABASE_JWT_SECRET`, `NEO4J_*`, `WEB_ALLOWED_ORIGINS`,
 `WEB_APP_URL`, `AGENTS_SERVICE_URL`. **Not set yet:** `GEMINI_API_KEY`, `GROQ_API_KEY`, `WHATSAPP_*`,
 `FAVORIOT_DEVICE_SECRET`.
+
+This is a dated configuration-presence snapshot, not confirmation of the current deployment or variable values. Never record secret contents here. On 25 Sep, `/api/health` returned 200 but `/agents/health` returned 404; see [the verification record](WORKSPACE_VERIFICATION_2026-09-25.md). Recheck service configuration after the branch is deployed.
 
 ---
 
