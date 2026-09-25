@@ -135,7 +135,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 **Status:** Open. The documented word-list fallback scored 22/22 on examples it was tuned against and 2/12 on held-out replies. A configured model may raise urgency but cannot reduce a word-list result; neither path is validated for detecting emergencies. Patient replies needing a person receive precautionary 999 wording, and the clinic queue explicitly says it does not replace clinic escalation procedures.
 
 - [x] Align the README, product plan, integration docs, and demo description with measured limitations; do not claim reliable emergency detection.
-- [x] Change the urgent patient reply so it says the clinic may not have seen the message; regression tests cover all four configured languages and reject the old callback promise.
+- [x] Change both urgent and unclassified/review patient replies so they say the clinic may not have seen the message; regression tests cover all four configured languages and reject the old alert/callback promise.
 - [ ] Have a qualified clinician and fluent readers review the updated emergency wording in all supported languages before external use.
 - [ ] Keep the held-out evaluation independent of tuning and replace or extend it with clinician-authored replies.
 - [ ] Run the model comparison on the clinician-authored set and document critical misses, false alarms, and limitations before making any performance claim.

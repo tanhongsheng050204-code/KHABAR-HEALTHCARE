@@ -61,10 +61,10 @@ class ApprovedAnswersTest {
                 "zh", new String[]{"会联系您", "已收到通知"},
                 "ta", new String[]{"உங்களைத் தொடர்புகொள்வார்கள்", "தெரிவிக்கப்பட்டது"}
         ).forEach((language, promises) -> {
-            String text = com.khabar.api.messaging.PatientMessages.urgentText(language);
-            assertThat(text).contains("999");
-            assertThat(text).contains(notSeen.get(language));
-            assertThat(text).doesNotContain(promises);
+            String urgent = com.khabar.api.messaging.PatientMessages.urgentText(language);
+            String unclassified = com.khabar.api.messaging.PatientMessages.uncheckedText(language);
+            assertThat(urgent).contains("999", notSeen.get(language)).doesNotContain(promises);
+            assertThat(unclassified).contains("999", notSeen.get(language)).doesNotContain(promises);
         });
     }
 
@@ -184,6 +184,7 @@ class ApprovedAnswersTest {
         // The app shows the patient the same acknowledgement their phone gets, never a blank message
         reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist())
                 .andExpect(jsonPath("$.message").value(com.khabar.api.messaging.PatientMessages.acknowledgementText("ms", TriageLevel.REVIEW)))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("mungkin belum membacanya")))
                 // Nobody has read it yet, and the word lists miss many ways of describing an emergency
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
 

@@ -132,7 +132,7 @@ class CallListTest {
         reply(aminahAccount, "Sakit dada").andExpect(status().isOk())
                 .andExpect(jsonPath("$.level").value("REVIEW"))
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.allOf(
-                        org.hamcrest.Matchers.containsString("Klinik akan semak mesej anda"),
+                        org.hamcrest.Matchers.containsString("klinik mungkin belum membacanya"),
                         org.hamcrest.Matchers.containsString("999"))));
     }
 

@@ -37,12 +37,12 @@ public class PatientMessages {
             "zh", "如果胸痛、呼吸困难或昏倒，请立即拨打999或前往最近的急诊部。",
             "ta", "நெஞ்சு வலி, மூச்சுத் திணறல் அல்லது மயக்கம் இருந்தால், உடனே 999 ஐ அழைக்கவும் அல்லது அருகிலுள்ள அவசர சிகிச்சைப் பிரிவுக்குச் செல்லவும்.");
 
-    /** A reply that a person will read. */
-    private static final Map<String, String> WILL_READ = Map.of(
-            "ms", "Terima kasih. Klinik akan semak mesej anda secepat mungkin.",
-            "en", "Thank you. The clinic will look at your message as soon as possible.",
-            "zh", "谢谢。诊所会尽快查看您的信息。",
-            "ta", "நன்றி. கிளினிக் உங்கள் செய்தியை விரைவில் பார்க்கும்.");
+    /** A reply in the clinic queue; no staff notification or review time is promised. */
+    private static final Map<String, String> WAITING_FOR_REVIEW = Map.of(
+            "ms", "Terima kasih. Mesej anda ada dalam senarai susulan klinik, tetapi klinik mungkin belum membacanya.",
+            "en", "Thank you. Your message is in the clinic's follow-up list, but the clinic may not have seen it yet.",
+            "zh", "谢谢。您的消息已加入诊所的随访列表，但诊所可能还没有看到。",
+            "ta", "நன்றி. உங்கள் செய்தி கிளினிக்கின் பின்தொடர் பட்டியலில் சேர்க்கப்பட்டுள்ளது; ஆனால் கிளினிக் அதை இன்னும் பார்க்காமல் இருக்கலாம்.");
 
     /** A reassuring reply that needs no one. */
     private static final Map<String, String> THANKS = Map.of(
@@ -71,16 +71,16 @@ public class PatientMessages {
     }
 
     /**
-     * When triage could not run, nobody knows yet whether the reply is urgent: a person will read it,
-     * and meanwhile the patient gets the same emergency advice a red flag would.
+     * When triage could not run, nobody knows whether the reply is urgent. It remains in the clinic
+     * queue; the patient is told it may not have been seen yet and gets precautionary emergency advice.
      */
     public static String uncheckedText(String language) {
-        return WILL_READ.getOrDefault(language, WILL_READ.get("en")) + " " + EMERGENCY_ADVICE.getOrDefault(language, EMERGENCY_ADVICE.get("en"));
+        return WAITING_FOR_REVIEW.getOrDefault(language, WAITING_FOR_REVIEW.get("en")) + " " + EMERGENCY_ADVICE.getOrDefault(language, EMERGENCY_ADVICE.get("en"));
     }
 
     /**
-     * Only a reply the word lists read as well gets a plain thank-you. Anything a person still has to read
-     * also carries the emergency sentence: the word lists miss many ways of describing an emergency (see
+     * Only a reply the word lists classify as OK gets a plain thank-you. Anything routed for review also
+     * carries the emergency sentence: the word lists miss many ways of describing an emergency (see
      * docs/evals), so a reply they could not place may still be one.
      */
     public static String acknowledgementText(String language, TriageLevel level) {
