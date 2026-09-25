@@ -20,7 +20,7 @@ invisible byte-order mark once and broke the deploy.
 `WEB_APP_URL`, `AGENTS_SERVICE_URL`. **Not set yet:** `GEMINI_API_KEY`, `GROQ_API_KEY`, `WHATSAPP_*`,
 `FAVORIOT_DEVICE_SECRET`.
 
-This is a dated configuration-presence snapshot, not confirmation of the current deployment or variable values. Never record secret contents here. On 25 Sep, `/api/health` returned 200 but `/agents/health` returned 404; see [the verification record](WORKSPACE_VERIFICATION_2026-09-25.md). Recheck service configuration after the branch is deployed.
+This is a dated configuration-presence snapshot, not confirmation of the current deployment or variable values. Never record secret contents here. On 25 Sep, web home and `/api/health` returned 200 (one earlier API request timed out), while `/agents/health` continued to return 404; see [the verification record](WORKSPACE_VERIFICATION_2026-09-25.md). Recheck service configuration after the branch is deployed.
 
 ---
 
