@@ -54,6 +54,30 @@ jobs:
           KHABAR_POSTGRES_TEST_USERNAME: khabar_test
           KHABAR_POSTGRES_TEST_PASSWORD: khabar_test_only
 
+      - name: Rehearse PostgreSQL backup and restore on disposable CI databases
+        env:
+          PGPASSWORD: khabar_test_only
+        run: |
+          set -euo pipefail
+          psql -h localhost -U khabar_test -d khabar_test -v ON_ERROR_STOP=1 \
+            -c "CREATE TABLE recovery_probe (id integer PRIMARY KEY, marker text NOT NULL); INSERT INTO recovery_probe VALUES (1, 'ci-backup-restore');"
+          pg_dump -h localhost -U khabar_test -Fc --no-owner --no-privileges \
+            -f "$RUNNER_TEMP/khabar-test-backup.dump" khabar_test
+          createdb -h localhost -U khabar_test khabar_recovery_test
+          pg_restore -h localhost -U khabar_test --exit-on-error --no-owner --no-privileges \
+            -d khabar_recovery_test "$RUNNER_TEMP/khabar-test-backup.dump"
+          source_marker=$(psql -h localhost -U khabar_test -d khabar_test -tA \
+            -c "SELECT marker FROM recovery_probe WHERE id = 1")
+          restored_marker=$(psql -h localhost -U khabar_test -d khabar_recovery_test -tA \
+            -c "SELECT marker FROM recovery_probe WHERE id = 1")
+          source_migrations=$(psql -h localhost -U khabar_test -d khabar_test -tA \
+            -c "SELECT count(*) FROM flyway_schema_history WHERE success")
+          restored_migrations=$(psql -h localhost -U khabar_test -d khabar_recovery_test -tA \
+            -c "SELECT count(*) FROM flyway_schema_history WHERE success")
+          test "$source_marker" = "ci-backup-restore"
+          test "$restored_marker" = "$source_marker"
+          test "$restored_migrations" = "$source_migrations"
+
   agents:
     name: Agent service tests
     runs-on: ubuntu-latest

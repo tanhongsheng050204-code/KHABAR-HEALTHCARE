@@ -11,6 +11,8 @@ The `pilot` Spring profile is the only profile that enables Flyway. It runs migr
 
 H2 PostgreSQL-mode tests cover empty-database creation, migration idempotency, V2's legacy-row backfill, V3's doctor grant backfill, and Hibernate validation under the `pilot` profile. A separate conditional smoke test is configured to run against PostgreSQL 16 in GitHub Actions. H2 success alone is not proof of PostgreSQL compatibility; run and retain the hosted result before pilot database use.
 
+The hosted verification workflow also rehearses a PostgreSQL 16 custom-format backup and restore using disposable CI databases. It checks a marker row and restored Flyway migration history. This verifies the database toolchain on synthetic CI data; it does not rehearse a production backup, restore writes that occurred after a backup, a failed/forward migration recovery, or Vercel deployment rollback.
+
 ## Database handling
 
 For an empty pilot database, the first start with `SPRING_PROFILES_ACTIVE=pilot` applies V1 to V4. Back up the database before enabling a new migration in any non-empty environment. Review its SQL and expected data transformation, record the backup, then run the migration and confirm Flyway history plus the application schema validation result. V3 preserves access for pre-existing clinic doctors; it does not infer nurse or administrator membership.
