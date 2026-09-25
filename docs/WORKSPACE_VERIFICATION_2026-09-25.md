@@ -16,7 +16,7 @@ The current `pilot-foundations` branch has not been redeployed or smoke-checked 
 
 GitHub Actions recorded a successful `Verify Khabar` run for branch head commit `954b5c9be10c059a2066bde24220ff7175e8fdb6` on 25 Sep 2026 ([run 36105880641](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36105880641)). Agent tests, API tests, PostgreSQL 16 migration/schema validation, PostgreSQL backup/restore, and web lint/typecheck/production build all passed. This commit updates policy/status documentation; it does not deploy the public services.
 
-Fresh read-only checks on 25 Sep returned HTTP 200 for the public web home, timed out on `https://khabar-api.vercel.app/api/health`, and returned 404 for `https://khabar-api.vercel.app/agents/health`. These simple GETs do not validate auth, roles, or the full clinical workflow; the API timeout and route 404 require a deployed-service investigation.
+Fresh read-only checks on 25 Sep returned HTTP 200 for the public web home and `https://khabar-api.vercel.app/api/health`; an earlier API health request had timed out. `https://khabar-api.vercel.app/agents/health` returned 404 consistently. These simple GETs do not validate auth, roles, or the full clinical workflow; investigate the deployed agent route.
 
 ## Starter skeleton (`starter-skeleton`)
 
