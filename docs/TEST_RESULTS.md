@@ -26,7 +26,7 @@ Highlights of what the tests prove:
 - **Follow-up:** red flags get the 999 advice and top the call list; any reply a person has yet to read
   also gets the 999 advice; only a reassuring reply gets a plain thank-you.
 - **Migrations:** Flyway V1 creates the initial clinical schema, V2 adds and backfills `reading.received_at`; tests verify fresh schema creation, one-time execution, legacy-row backfill, and Hibernate validation under the `pilot` profile using H2 PostgreSQL mode. A separate smoke test targets PostgreSQL 16 in CI and is not enabled in local runs.
-- **Recovery:** hosted PostgreSQL CI dumps the migrated disposable database, restores it to a second database, and verifies a marker row plus Flyway history. The workflow now also inserts a second marker after the dump and checks it is absent from the restored snapshot; that enhanced check awaits its first hosted run. Production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
+- **Recovery:** hosted run [36106952266](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36106952266) passed the PostgreSQL 16 custom-format dump/restore rehearsal. The restored copy contains the marker and Flyway history from backup time and excludes a row written afterward. This verifies the recovery point on disposable CI data; production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
 
 ## Evaluations
 
