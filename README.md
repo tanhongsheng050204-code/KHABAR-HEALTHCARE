@@ -180,7 +180,7 @@ flowchart LR
   T -- red flag --> E[999 advice + top of<br/>clinic call list]
   T -- routine --> A[Doctor-approved answer<br/>or acknowledgement]
 ```
-*The AI drafts, structures and sorts. The doctor decides every clinical point, and warning signs always reach a person.*
+*The AI drafts, structures and sorts. The doctor decides every clinical point. Replies needing review enter the clinic queue, but no staff notification is sent and the prototype is not a reliable emergency screen.*
 
 **Design evolution:** the UI went through three rounds before the current one.
 

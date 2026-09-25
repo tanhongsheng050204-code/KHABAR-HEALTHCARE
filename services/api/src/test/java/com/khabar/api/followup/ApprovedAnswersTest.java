@@ -177,7 +177,7 @@ class ApprovedAnswersTest {
     }
 
     @Test
-    void aQuestionWithNoApprovedAnswerGoesToAPersonAndThePatientIsToldSo() throws Exception {
+    void aQuestionWithNoApprovedAnswerStaysInTheClinicQueueAndThePatientIsToldSo() throws Exception {
         approveMissedDose();
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 

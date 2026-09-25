@@ -311,7 +311,7 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 2. **Visit:** the doctor dictates. The checker flags a CRITICAL duplicate. The doctor must type a reason before finalising.
 3. **Going home:** a BM summary and voice note on WhatsApp. Her daughter gets the summary too (consented).
 4. **Ramadan:** reminders shown as *sahur / berbuka*.
-5. **Day 3 (demo clock):** Aminah replies *"pening dan berpeluh"* ("dizzy and sweating"). Red flag for low blood sugar. She jumps to the top of the clinic's call list, and the doctor calls her.
+5. **Day 3 (demo clock):** Aminah replies *"pening dan berpeluh"* ("dizzy and sweating"). The prototype places the labelled reply near the top of the clinic queue; during a manually watched demo the doctor can choose to call her. The system does not notify staff or guarantee anyone sees the item, and its labels are not a reliable emergency screen.
 6. **Trust:** Aminah opens "who viewed my record".
 
 ### Headline number: the patient-understanding test

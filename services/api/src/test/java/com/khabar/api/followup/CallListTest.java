@@ -119,7 +119,7 @@ class CallListTest {
     }
 
     @Test
-    void whenTheAgentsServiceIsDownTheReplyStillGoesToAPerson() throws Exception {
+    void whenTheAgentsServiceIsDownTheReplyStillAppearsInTheClinicQueue() throws Exception {
         when(agents.triageReply(anyString(), any())).thenThrow(new IllegalStateException("agents down"));
         reply(aminahAccount, "Pening").andExpect(status().isOk()).andExpect(jsonPath("$.level").value("REVIEW"));
         callList(doctor).andExpect(jsonPath("$.items[0].patientId").value(aminah.getId().toString()))
