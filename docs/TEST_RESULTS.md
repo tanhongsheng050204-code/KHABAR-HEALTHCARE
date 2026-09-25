@@ -10,7 +10,8 @@ What has been checked, when, and how. Update this when a number changes. Command
 | Agents (`services/agents`) | `.venv/Scripts/python -m pytest -q` | **205 passed**, 0 failed; one third-party deprecation warning |
 | Web app (`web`) | `npm run lint`, `npm run typecheck`, `npm run build` | **All pass** on 25 Sep. |
 | Hosted verification workflow | GitHub Actions, `pilot-foundations`, commit `da5658a`, 25 Sep ([run 36102047887](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36102047887)) | **All jobs passed**, including API, agents, web lint/typecheck/production build, and PostgreSQL 16 migration/schema smoke. This is CI evidence, not proof that the current branch has been deployed to the public demo. |
-| Hosted verification of current code/content | GitHub Actions, `pilot-foundations` head `dd29a76`, 25 Sep ([run 36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and the point-in-time backup/restore check. Application code is unchanged since `954b5c9`; this does not deploy the feature branch. |
+| Earlier hosted verification | GitHub Actions, `pilot-foundations` head `dd29a76`, 25 Sep ([run 36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and the point-in-time backup/restore check. It predates the pitch deck documentation commit; it did not deploy the feature branch. |
+| Latest hosted verification | GitHub Actions, `pilot-foundations` head `d66e873`, 25 Sep ([run 36109309203](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36109309203)) | **All jobs passed**, including API, agents, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and point-in-time backup/restore. This CI run does not deploy the public services. |
 | Review-message wording | API `ApprovedAnswersTest` + `CallListTest` | **21 passed**. Verified 999 guidance, clinic-queue wording, no promise of staff review/callback, and the triage-down fallback in all four configured languages. |
 
 Highlights of what the tests prove:
@@ -26,7 +27,7 @@ Highlights of what the tests prove:
 - **Follow-up:** red flags get the 999 advice and top the call list; any reply a person has yet to read
   also gets the 999 advice; only a reassuring reply gets a plain thank-you.
 - **Migrations:** Flyway V1 creates the initial clinical schema, V2 adds and backfills `reading.received_at`; tests verify fresh schema creation, one-time execution, legacy-row backfill, and Hibernate validation under the `pilot` profile using H2 PostgreSQL mode. A separate smoke test targets PostgreSQL 16 in CI and is not enabled in local runs.
-- **Recovery:** hosted run [36107956075](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107956075) passed the PostgreSQL 16 custom-format dump/restore rehearsal. The restored copy contains the marker and Flyway history from backup time and excludes a row written afterward. This verifies the recovery point on disposable CI data; production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
+- **Recovery:** hosted run [36109309203](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36109309203) passed the PostgreSQL 16 custom-format dump/restore rehearsal. The restored copy contains the marker and Flyway history from backup time and excludes a row written afterward. This verifies the recovery point on disposable CI data; production backup/restore, forward-migration recovery, and deployment rollback are not established by this smoke.
 
 ## Evaluations
 
@@ -53,10 +54,11 @@ a real screen reader, and the caregiver home. Details: [UI_REDESIGN_2026-09-24.m
 | 24 Sep (night) | Clinic staff grants in the browser: the doctor home renders once, "Staff & access" invites a nurse, "Record contact" asks for confirmation and closes only the items in the displayed snapshot; duplicate check, safety gate and patient home unchanged; axe finds no violations on these screens | local, fictional data | passed |
 | 24 Sep | Duplicate metformin caught across two clinics; safety gate blocks finalising; BM chest-pain reply gets 999 advice | local, fictional data | passed (screenshots in the README) |
 | 25 Sep | Fresh public GETs: web home returned 200; `/api/health` returned 200 after one earlier timeout; `/agents/health` returned 404 | public demo | API health recovered on retry. Agent health still requires recheck after deployment. No authenticated or clinical workflow was exercised. |
+| 25 Sep | Follow-up public GETs: web home 200, `/api/health` 200, `/agents/health` 404, `/agents/agents/health` 404 | public demo | Two likely agent health paths still fail; route must be checked after deployment. No authenticated or clinical workflow was exercised. |
 
 ## Not tested yet
 
-Automated local checks on 25 Sep and hosted verification for branch head `954b5c9` (including PostgreSQL 16 migration validation and backup/restore rehearsal) are documented as passing. The latest read-only public checks returned web 200, API health 200 after one transient timeout, and agent health 404. Current-branch deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
+Automated local checks on 25 Sep and hosted verification for branch head `d66e873` (including PostgreSQL 16 migration validation and backup/restore rehearsal) are documented as passing. The latest read-only public checks returned web 200, API health 200, and 404 for both tested agent health paths. Current-branch deployment verification, role-based real sign-in, provider tests, and human/clinical/privacy/security validation gates remain open (tracked in [UNDONE_WORK.md](../UNDONE_WORK.md)).
 
 Real sign-in per role on the live site · WhatsApp with a real phone · a Favoriot device · Gemini on
 packet photos · transcription on recordings · the 5-person understanding pilot. Tracked in
