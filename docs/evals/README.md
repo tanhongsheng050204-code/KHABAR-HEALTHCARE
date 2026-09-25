@@ -43,10 +43,15 @@ The widened lists still need a doctor's review, like the originals.
 
 ## Still to run (needs a provider key)
 
+Provider model IDs are time-sensitive. As checked on 25 Sep 2026, Google's current stable list includes
+`gemini-3.8-flash` and `gemini-3.6-flash`; use those as triage/packet-photo candidates and recheck the
+[official model list](https://ai.google.dev/gemini-api/docs/models) before running. Groq currently lists
+both planned Whisper IDs in its [speech-to-text docs](https://console.groq.com/docs/speech-to-text).
+
 | Test | Command (from `services/agents`) | Needs |
 |---|---|---|
-| Triage model comparison | `python -m scripts.compare_triage_models --set holdout --models gemini-3.6-flash gemini-3.5-flash-lite --out ../../docs/evals/triage-models.md` | `GEMINI_API_KEY` |
-| Packet photos | `python -m scripts.eval_packet_reader --models gemini-3.6-flash --out ../../docs/evals/packets.md` | `GEMINI_API_KEY` |
+| Triage model comparison | `python -m scripts.compare_triage_models --set holdout --models gemini-3.8-flash gemini-3.6-flash --out ../../docs/evals/triage-models.md` | `GEMINI_API_KEY` |
+| Packet photos | `python -m scripts.eval_packet_reader --models gemini-3.8-flash --out ../../docs/evals/packets.md` | `GEMINI_API_KEY` |
 | Transcription | Record the five scripts in `evals/recordings/`, then `python -m scripts.score_transcripts --models whisper-large-v3-turbo whisper-large-v3 --out ../../docs/evals/transcription.md` | `GROQ_API_KEY` |
 
 Keys go in `services/agents/.env`, which git ignores. Free-tier Gemini may use what it's sent to improve
