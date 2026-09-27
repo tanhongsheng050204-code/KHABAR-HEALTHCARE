@@ -1,5 +1,6 @@
 package com.khabar.api.patients;
 
+import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
@@ -33,6 +34,7 @@ class ClinicPatientListTest {
     @Autowired ClinicRepository clinics;
     @Autowired AppUserRepository users;
     @Autowired PatientRepository patients;
+    @Autowired AdjustableClock clock;
 
     AppUser doctor, aminahAccount;
 
@@ -43,7 +45,7 @@ class ClinicPatientListTest {
         doctor = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Priya", clinic));
         aminahAccount = users.save(new AppUser(UUID.randomUUID(), Role.PATIENT, "Aminah", null));
         Patient aminah = new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms");
-        aminah.startFollowUp(LocalDate.now().minusDays(3));
+        aminah.startFollowUp(LocalDate.now(clock).minusDays(3));
         patients.save(aminah);
         patients.save(new Patient(clinic, null, "Tan Kok Hoe", "540101-07-1234", "016-222 3333", "zh"));
         patients.save(new Patient(other, null, "Someone Elsewhere", "600101-01-1111", "017-000 0000", "en"));

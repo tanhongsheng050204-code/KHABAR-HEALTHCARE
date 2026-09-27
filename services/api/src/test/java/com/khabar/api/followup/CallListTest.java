@@ -73,7 +73,7 @@ class CallListTest {
     }
 
     Patient followedUp(Patient p, int daysAgo) {
-        p.startFollowUp(LocalDate.now().minusDays(daysAgo));
+        p.startFollowUp(LocalDate.now(clock).minusDays(daysAgo));
         return patients.save(p);
     }
 

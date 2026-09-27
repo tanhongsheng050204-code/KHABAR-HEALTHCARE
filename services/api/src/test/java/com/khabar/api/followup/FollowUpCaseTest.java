@@ -96,7 +96,7 @@ class FollowUpCaseTest {
     }
 
     Patient followedUp(Patient p) {
-        p.startFollowUp(LocalDate.now().minusDays(3));
+        p.startFollowUp(LocalDate.now(clock).minusDays(3));
         return patients.save(p);
     }
 
