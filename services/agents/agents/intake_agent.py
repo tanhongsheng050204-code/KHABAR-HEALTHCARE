@@ -34,6 +34,9 @@ Collect, in the patient's preferred language, four things before the consultatio
 Ask one short, warm question at a time. Never ask for names, IC numbers or phone numbers.
 Set is_complete to true only when all four are answered, and then thank the patient."""
 
+# The patient has only opened the intake; there is nothing for the model to reply to yet.
+OPENING_TURN = "The patient has opened the intake. Ask your first question."
+
 # Used when no LLM is configured, so the whole flow runs without an API key.
 SCRIPTED_QUESTIONS = {
     "en": [
@@ -112,6 +115,10 @@ def _to_chat_messages(state: IntakeState) -> list:
             chat.append(HumanMessage(content=content))
         elif m.get("role") == "assistant":
             chat.append(AIMessage(content=content))
+    if len(chat) == 1:
+        # Gemini sends the system message separately and rejects a request with no conversation,
+        # so the opening turn needs a patient-side message to answer.
+        chat.append(HumanMessage(content=OPENING_TURN))
     return chat
 
 
