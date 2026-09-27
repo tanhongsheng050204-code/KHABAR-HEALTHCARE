@@ -71,6 +71,11 @@ khabar:
   checkins:
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
     poll-ms: ${CHECKINS_POLL_MS:60000}
+  follow-up:
+    auto-escalation:
+      # Enable only after clinician approval of the clinic's acknowledgement/escalation policy.
+      enabled: ${KHABAR_AUTO_ESCALATION_ENABLED:false}
+      poll-ms: ${KHABAR_AUTO_ESCALATION_POLL_MS:60000}
   # Home readings forwarded by Favoriot: the value of the X-Khabar-Device-Secret header on your forwarding rule.
   # Leave empty to switch device readings off.
   favoriot:

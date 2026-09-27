@@ -90,6 +90,16 @@ public class PatientMessages {
         return uncheckedText(language);
     }
 
+    /** In-app response for an idempotent retry; do not send this as a second outbound message. */
+    public static String duplicateUpdateText(String language) {
+        return Map.of(
+                "ms", "Kemas kini ini telah diterima dan tidak dihantar semula.",
+                "en", "This update was already received and was not sent again.",
+                "zh", "这条更新已收到，没有重复发送。",
+                "ta", "இந்தப் புதுப்பிப்பு ஏற்கனவே பெறப்பட்டது; மீண்டும் அனுப்பப்படவில்லை."
+        ).getOrDefault(language, "This update was already received and was not sent again.");
+    }
+
     public Messenger.Result send(Patient patient, String text, Messenger.Kind kind) {
         Messenger.Result result = messenger.send(patient.getPhone(), text, patient.getPreferredLanguage(), kind);
         outbox.save(new OutboundMessage(patient.getId(), kind, messenger.channel(), text, result, clock.instant()));

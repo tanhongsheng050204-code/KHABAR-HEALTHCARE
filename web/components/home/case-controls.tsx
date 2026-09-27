@@ -182,7 +182,13 @@ export function CaseControls({ item, snapshotAt, me, assignees, onChanged, notif
           </span>
         ) : null}
         {followUpCase.contactAttempts > 0 && <span>{followUpCase.contactAttempts} call attempt{followUpCase.contactAttempts === 1 ? "" : "s"}</span>}
-        {followUpCase.escalatedTo && <span>Escalated to {followUpCase.escalatedTo}</span>}
+        {followUpCase.escalatedTo && <span>Clinician escalated to {followUpCase.escalatedTo}</span>}
+        {followUpCase.autoRoutedTo && <span>Auto-routed to {followUpCase.autoRoutedTo}</span>}
+        {followUpCase.overdue && followUpCase.autoRoutedAt && followUpCase.autoRoutedTo && (
+          <span className={styles.overdue} role="note">
+            Still awaiting acknowledgement. No staff notification was sent; check this queue manually.
+          </span>
+        )}
       </div>
       <div className={styles.actions}>
         {!mine && (

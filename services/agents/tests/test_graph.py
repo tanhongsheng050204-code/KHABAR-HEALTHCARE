@@ -106,6 +106,32 @@ def test_without_a_neo4j_address_there_is_no_graph(monkeypatch):
     assert graph.reader() is None
 
 
+def test_context_status_distinguishes_missing_id_and_unconfigured_graph(monkeypatch):
+    monkeypatch.setattr(graph.settings, "NEO4J_URI", "")
+    graph.reset_reader()
+    assert graph.context_with_status(None) == (None, "missing_graph_id")
+    assert graph.context_with_status(GRAPH_ID) == (None, "not_configured")
+
+
+def test_context_status_reports_unreachable_graph_and_missing_patient(monkeypatch):
+    class UnreachableGraph:
+        def context(self, graph_id):
+            raise OSError("connection refused")
+
+    monkeypatch.setattr(graph, "reader", lambda: UnreachableGraph())
+    assert graph.context_with_status(GRAPH_ID) == (None, "unreachable")
+    monkeypatch.setattr(graph, "reader", lambda: PatientGraphReader(FakeDriver({})))
+    assert graph.context_with_status(GRAPH_ID) == (None, "patient_missing")
+
+
+def test_context_status_reports_initialisation_failure(monkeypatch):
+    def fail_to_create_reader():
+        raise ValueError("invalid Neo4j address")
+
+    monkeypatch.setattr(graph, "reader", fail_to_create_reader)
+    assert graph.context_with_status(GRAPH_ID) == (None, "unreachable")
+
+
 def test_the_context_endpoint_serves_the_graph(monkeypatch):
     monkeypatch.setattr(graph, "reader", lambda: PatientGraphReader(FakeDriver(AMINAH_ROWS)))
     response = client.get(f"/agents/graph/{GRAPH_ID}/context", headers=KEY)

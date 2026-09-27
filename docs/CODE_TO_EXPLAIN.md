@@ -45,6 +45,10 @@ entry in [EXPLAIN.md](EXPLAIN.md).
   (`services/agents/core/security.py`). The agents never touch Postgres.
 - [ ] **Follow-up timing.** `followup/CheckInPlanner.java` (days 1, 3, 7, 14, 30; fasting times),
   `messaging/CheckInScheduler.java`, and the demo clock (`config/AdjustableClock.java`).
+- [ ] **Safe retries and automatic queue routing.** `followup/FollowUpService.java`, `FollowUpCases.java`,
+  `FollowUpCaseAutoEscalationScheduler.java`, V5/V6 migrations and the patient/staff web screens.
+  *Be ready for:* "How does a retry avoid sending twice? Why doesn't an automatic route count as a clinician
+  escalation or a staff notification?"
 - [ ] **WhatsApp.** `messaging/WhatsAppCloudMessenger.java` (templates), `WhatsAppWebhookController.java`
   (signature check). *Be ready for:* "Why templates?" (WhatsApp only allows them outside a 24-hour window).
 - [ ] **Deployment.** `services/vercel.json` (two services, one project), `.github/workflows/deploy-vercel.yml`.

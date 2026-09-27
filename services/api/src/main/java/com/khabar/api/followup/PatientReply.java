@@ -10,13 +10,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
 import java.util.UUID;
 
 /** A message the patient sent during follow-up, with the triage result. The text is stored encrypted. */
 @Entity
-@Table(name = "patient_reply")
+@Table(name = "patient_reply", uniqueConstraints = @UniqueConstraint(name = "uk_patient_reply_client_message", columnNames = {"patient_id", "client_message_id"}))
 public class PatientReply {
 
     @Id
@@ -24,6 +25,10 @@ public class PatientReply {
 
     @ManyToOne(optional = false)
     private Patient patient;
+
+    /** Client-generated id used to make app retries idempotent; null for external replies. */
+    @Column(name = "client_message_id")
+    private UUID clientMessageId;
 
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "text_enc", nullable = false, length = 4096)
@@ -55,8 +60,14 @@ public class PatientReply {
     }
 
     public PatientReply(Patient patient, String text, Instant receivedAt, TriageLevel level, String matched) {
+        this(patient, text, receivedAt, level, matched, null);
+    }
+
+    public PatientReply(Patient patient, String text, Instant receivedAt, TriageLevel level, String matched,
+                        UUID clientMessageId) {
         this.id = UUID.randomUUID();
         this.patient = patient;
+        this.clientMessageId = clientMessageId;
         this.text = text;
         this.receivedAt = receivedAt;
         this.level = level;
@@ -94,6 +105,10 @@ public class PatientReply {
 
     public Patient getPatient() {
         return patient;
+    }
+
+    public UUID getClientMessageId() {
+        return clientMessageId;
     }
 
     public String getText() {

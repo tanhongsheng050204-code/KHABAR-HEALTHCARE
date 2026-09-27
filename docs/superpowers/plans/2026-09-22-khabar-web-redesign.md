@@ -53,5 +53,6 @@
 - [x] Run frontend typecheck, lint, and production build.
 - [x] Run the full API and agent test suites (184 and 188 passing).
 - [x] Review desktop, mobile, reduced-motion, browser console, and primary API requests.
-- [ ] Run `git diff --check` and inspect status without staging, committing, or pushing.
-- [ ] Leave the live prototype running at `http://localhost:3001` and request user approval.
+- [x] Run `git diff --check` and inspect status without staging, committing, or pushing (25 Sep 2026; no staging, commit, or push performed).
+- [x] Confirm the existing Khabar web preview is reachable at `http://localhost:3001` (25 Sep 2026): the listener maps to a Node process whose command contains this repository's `web` path; `/login` returned HTTP 200, the fictional doctor view reached `/home`, and the local API health endpoint returned `UP`. The browser reported no page errors; two console warnings noted a preloaded CSS chunk was not used promptly.
+- [ ] User reviews the live prototype and approves it before any commit or push; that approval is still outstanding.

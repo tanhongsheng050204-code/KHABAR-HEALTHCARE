@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -139,7 +139,7 @@ export function PatientHome({
       <WorkspaceError message={loadError} retry={() => void load()} />
     );
   return (
-    <main className={styles.workspace} id="overview">
+    <main className={styles.workspace} id="overview" tabIndex={-1}>
       {loadError && (
         <div className={styles.refreshError} role="alert">
           The refresh failed. Showing your last loaded information.{" "}
@@ -188,7 +188,7 @@ export function PatientHome({
                 <small>{summary.language.toUpperCase()}</small>
               </p>
             </div>
-            <blockquote>{summary.text}</blockquote>
+            <blockquote lang={summary.language}>{summary.text}</blockquote>
             {summary.needsDoctor && (
               <div className={styles.doctorAttention}>
                 <MessageCircle size={17} />
@@ -723,6 +723,7 @@ function CheckInPanel({
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [reply, setReply] = useState("");
   const [update, setUpdate] = useState("");
+  const pendingUpdate = useRef<{ text: string; id: string } | null>(null);
   const [response, setResponse] = useState<string | null>(null);
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -772,21 +773,59 @@ function CheckInPanel({
   }
   async function followUp(event: React.FormEvent) {
     event.preventDefault();
-    if (!update.trim()) return;
+    const text = update.trim();
+    if (!text) return;
+    if (pendingUpdate.current?.text !== text) {
+      let storedId: string | null = null;
+      if (!pendingUpdate.current) {
+        try {
+          storedId = sessionStorage.getItem("khabar.pending-followup-id");
+        } catch {
+          // If storage is unavailable, this tab still gets in-memory retry protection.
+        }
+      }
+      pendingUpdate.current = { text, id: storedId || crypto.randomUUID() };
+      try {
+        sessionStorage.setItem("khabar.pending-followup-id", pendingUpdate.current.id);
+      } catch {
+        // If storage is unavailable, this tab still gets in-memory retry protection.
+      }
+    }
     setBusy(true);
     try {
-      const result = await apiRequest<{
+      const sendUpdate = (clientMessageId: string) => apiRequest<{
         level: string;
         answer: string | null;
         message: string | null;
       }>("/api/followup/replies", {
         method: "POST",
-        body: JSON.stringify({ text: update.trim() }),
+        body: JSON.stringify({ text, clientMessageId }),
       });
+      let result;
+      try {
+        result = await sendUpdate(pendingUpdate.current.id);
+      } catch (error) {
+        // A saved ID can outlive its original text after a reload. The API's conflict
+        // confirms it was already used; a fresh ID safely submits this edited update.
+        if (!(error instanceof ApiError) || error.status !== 409) throw error;
+        pendingUpdate.current = { text, id: crypto.randomUUID() };
+        try {
+          sessionStorage.setItem("khabar.pending-followup-id", pendingUpdate.current.id);
+        } catch {
+          // The fresh ID remains available to retry in this tab.
+        }
+        result = await sendUpdate(pendingUpdate.current.id);
+      }
       const said =
         result.message || result.answer || "Your clinic has your update.";
       setResponse(said);
       setUpdate("");
+      try {
+        sessionStorage.removeItem("khabar.pending-followup-id");
+      } catch {
+        // A stale ID is harmless: a later different update receives a conflict and new ID.
+      }
+      pendingUpdate.current = null;
       notify({
         tone: result.level === "RED" ? "error" : "success",
         text: said,
@@ -909,7 +948,7 @@ function CheckInPanel({
         )}
         <ul>
           <li>Your identifying details are removed before triage.</li>
-          <li>Warning symptoms are always escalated to people.</li>
+          <li>Messages do not alert clinic staff. If this is an emergency, call 999 or go to the nearest emergency department now.</li>
         </ul>
       </div>
     </section>
@@ -1135,8 +1174,9 @@ function PeoplePanel({
       <div className={styles.panelMain}>
         <SectionHeading eyebrow="Your consent" title="People you trust" />
         <p className={styles.panelIntro}>
-          You decide who can see your care summary. You can remove access at any
-          time.
+          You choose whether a caregiver can see only your care summary or also
+          your patient details, medicines, and home readings. You can remove
+          access at any time.
         </p>
         <div className={styles.caregiverList}>
           {caregivers.length ? (
@@ -1178,7 +1218,7 @@ function PeoplePanel({
               <select value={scope} onChange={(e) => setScope(e.target.value)}>
                 <option value="SUMMARY">Care summary only</option>
                 <option value="SUMMARY_AND_ALERTS">
-                  Summary and important alerts
+                  Summary, details, medicines and home readings
                 </option>
               </select>
             </label>

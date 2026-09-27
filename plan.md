@@ -8,7 +8,7 @@
 **Status:** practice build ahead of SDC Hackathon 2026. **Not** the competition entry. See §1.
 **Builder:** solo · **Build window:** Tue 22 Sep – Mon 28 Sep 2026 (~12 h/day) · **Feature freeze:** Sun 11 Oct 2026
 
-**Current verification (25 Sep):** implementation tests and hosted CI pass, but this branch has not been deployed. The public agent health route still returns 404; real-role, provider, accessibility, clinical, and pilot-readiness checks remain open. See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md) and [`UNDONE_WORK.md`](UNDONE_WORK.md) for evidence and tasks.
+**Current verification (25 Sep):** local API, agents, and web checks pass; hosted CI passed for commit `01be0f6`, but the current uncommitted worktree has not been deployed or run through hosted CI. Repeated public probes returned web HTTP 200, API `/api/health` timeouts, and 404 for both tested agent health routes. The Vercel integration requires authentication, so project settings and logs remain unverified. Real-role, provider, accessibility, clinical, and pilot-readiness checks remain open. See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md) and [`UNDONE_WORK.md`](UNDONE_WORK.md) for evidence and tasks.
 
 ---
 
@@ -166,7 +166,7 @@ flowchart LR
 |---|---|---|
 | `apps/web` | Next.js (App Router), installable web app | Doctor, patient, caregiver and clinic screens; demo clock |
 | `services/api` | Spring Boot, Java 21+, domain-driven modules | Identity & Access, Patients, Scheduling, Encounters, Medications, Follow-up, Audit, Messaging |
-| `services/agents` | Python, FastAPI + LangGraph | Intake, Report, Evaluator and Follow-up agents; photo reading; transcription; voice notes |
+| `services/agents` | Python, FastAPI + LangGraph | Intake, Report, Evaluator and Follow-up agents; photo reading; transcription; voice notes (planned, not implemented) |
 | `infra` | docker-compose, deployment config | Run all five locally with one command; deploy config per service |
 | `data` | Python scripts | Fake-patient generator, DDInter subset, brand-name table, herb list, red-flag lists |
 | `docs` | Markdown | `EXPLAIN.md`, demo script, test protocol |
@@ -211,7 +211,7 @@ flowchart LR
 | 3 | Pregnancy | Patient flag vs drug category list | CRITICAL |
 | 4 | Dose | Range table for the drugs in use | CRITICAL / WARN |
 | 5 | Completeness | Required report fields present (rules) | WARN |
-| 6 | Hallucination | Every claim in the draft must trace back to the transcript, notes or graph; anything untraceable is flagged (LLM-assisted, with evidence attached) | WARN / CRITICAL |
+| 6 | Grounding | Every prescribed drug in the report must be traceable to the doctor's notes or transcript; a drug not mentioned is flagged by a deterministic rule. This is a narrow drug-grounding check, not proof that every report claim is correct. | CRITICAL |
 | 7 ★ | Duplicate medicine | Same generic from another clinic (photo list) | CRITICAL / WARN |
 | 8 ★ | Herb–drug | Curated herb list vs prescription | WARN / CRITICAL |
 
@@ -228,9 +228,10 @@ Every override is audited per finding.
 - **Ramadan mode only re-times reminders the doctor set.** Dose changes are the doctor's job.
 
 ### How the checker is tested
-**Planted-error set:** 10 draft reports with known errors (allergy clash, double dose, duplicate from another clinic, herb clash, invented symptom, and so on).
-- The checker must catch all CRITICAL ones.
-- Run the set on two LLMs and keep whichever catches more. This decides the final LLM choice (§7).
+**Planted-error set:** 10 draft reports with known errors (allergy clash, double dose, duplicate from another clinic, herb clash, invented symptom, and so on). The evaluator is rules-and-data based; the regression suite verifies those rules, and it is not an LLM comparison.
+- The checker must catch every planted finding and keep a clean draft free of findings. The automated regression currently covers all ten errors and the clean draft.
+- Do not select a model using this set. The ten cases do not measure model performance: report drafting and safety checks are deterministic in the current implementation.
+- Evaluate follow-up triage with an independent reply set and clinician-authored examples; evaluate packet reading with fictional packet images; evaluate transcription with five fictional Manglish recordings. Keep provider calls and results separate for each task.
 
 ---
 
@@ -241,7 +242,7 @@ Every override is audited per finding.
 - **Protection by layer:** Supabase encrypts its disks by default; field encryption also covers a leaked database dump.
 - **Before anything goes to the LLM,** names, IC numbers and phone numbers are removed, and the AI sees only the graph ID.
 - **"Who viewed my record":** every read of a patient's record by a doctor, caregiver or the system writes to `audit_log`, and the patient can see it.
-- **Consent:** caregiver access is scoped (summary only, or summary plus alerts), timestamped and revocable.
+- **Consent:** caregiver access is scoped, timestamped and revocable. `SUMMARY` grants the approved take-home summary only; `SUMMARY_AND_ALERTS` additionally grants the patient card, active medication list and home readings.
 - **Data:** fake patients only. Real health data is "sensitive personal data" under Malaysia's PDPA 2010.
 
 ---
@@ -249,12 +250,12 @@ Every override is audited per finding.
 ## 7. Tech choices and accounts
 | Need | Choice | Cost | Note |
 |---|---|---|---|
-| LLM | **Gemini**, free tier to start, swappable through LangChain | Free, then pay per use | Free-tier data may be used by Google. Fine for fake patients. Confirm the choice with the planted-error test. |
-| Transcription | **Groq Whisper large-v3-turbo** | ~US$0.04 per hour of audio | 1-hour test against Gemini Flash-Lite and `gpt-4o-mini-transcribe`, counting drug-name errors in 5 Manglish recordings. Behind one function. |
+| LLM | **Gemini** integration for optional tasks, swappable through LangChain | Free, then pay per use | Current report drafting and medication safety checks are deterministic. Follow-up triage and packet reading may call Gemini. Free-tier inputs may be used to improve provider models: use fictional data only. No model selection claim until task-specific evaluation is complete. |
+| Transcription | **Groq Whisper** integration; evaluation script compares `whisper-large-v3-turbo` and `whisper-large-v3` | Provider pricing varies; verify before use | Score five fictional Manglish recordings for missed/wrong medicine names, dose errors and word error rate. The recordings and provider comparison have not been completed. |
 | Voice notes (text-to-speech) | Decide in the test | Cents | **Test Tamil and Chinese quality first** |
 | WhatsApp | **WhatsApp Cloud API** test number | Free, up to 5 verified phones | Check-ins and summaries start from the business side, so they need **message templates approved by Meta**. Submit them on day 2. |
 | WhatsApp fallback | Telegram Bot API | Free | Switch if Meta's setup blocks you for more than half a day |
-| IoT | Favoriot | Free tier unknown | Check on day 0. If it's paid, simulate the readings and move F4 to the pitch's "what's next" slide. |
+| IoT | Favoriot | Published free plan: RM0 lifetime, 1 device, 500 daily data points, 1 dashboard, 1 rule, 1-month retention (checked 25 Sep 2026) | Pricing page and older free-plan signup page conflict; verify limits in the actual account. Keep readings simulated until the one-device webhook and call-list loop is tested. |
 | Web hosting | Vercel | Free | |
 | Spring Boot and FastAPI hosting | Any container host (Render, Railway or Fly.io) | Free while building, ~US$5–15/month from a week before demos | Singapore region. Free tiers go to sleep, so avoid them for demos. |
 | Database and logins | Supabase | Free | Singapore region |
@@ -274,7 +275,7 @@ Every override is audited per finding.
 | **Thu 24 ✅ CHECKPOINT** | Access rules, field encryption, audit log, name stripping before the AI; fake-patient generator; DDInter subset, brand table, herb list, red-flag lists loaded | **If the thin slice isn't deployed tonight, start the drop order.** |
 | **Fri 25** | Before the visit: B1 booking, B2 intake agent, B3 pre-visit report, B4 photo check | A fake patient completes intake with photos, and the doctor sees the report |
 | **Sat 26 ✅ CHECKPOINT** | During the visit: V1 report agent, V3 all 8 checks, V4 block in 3 places, planted-error test set, V2 transcription | **The core loop works deployed.** Otherwise start the drop order. |
-| **Sun 27** | After the visit: A1 multilingual summary, A2 WhatsApp, A4 caregiver consent, A5 Ramadan mode, P4 "who viewed my record", A3 voice notes | The patient and caregiver phones receive the BM summary |
+| **Sun 27** | After the visit: A1 multilingual summary, A2 WhatsApp, A4 caregiver consent, A5 Ramadan mode, P4 "who viewed my record"; A3 voice notes deferred and not implemented | The text summary is available in the demo flow; no audio is generated or sent |
 | **Mon 28 🎯 TARGET** | Follow-up: F1 check-in plan, F2 two-way triage, F3 call list, D1 demo clock, F4 Favoriot, V5 style learning | The full demo script (§10) runs end to end |
 
 > **Honest note:** this is very tight for a first backend across five services. The checkpoints exist so slipping is a decision, not a surprise.
@@ -292,7 +293,7 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 | **Sun 11** | **Feature freeze. Classes restart.** |
 
 ### Before SDC
-- **By Fri 16 Oct:** register with the skeleton declared. Register earlier if the organisers confirm the declaration can be updated.
+- **By Fri 16 Oct:** submit the standalone starter declaration with the full project tool/resource disclosure and obtain organiser approval. Ask whether any later product code must be added; register earlier if they confirm the declaration can be updated.
 - **Sat 17 – Sun 18 Oct:** rest.
 - **Mon 19 Oct, 8 PM:** SDC brief is released. Write a fresh idea from it.
 
@@ -311,7 +312,7 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 **Mak Cik Aminah, 67.** Type 2 diabetes and hypertension. Prefers BM. Her daughter works in KL.
 1. **Intake (short):** she mentions herbal tea from a relative and photographs her packets. Khabar finds metformin from the klinik kesihatan **and** from the GP under another brand, plus an herb clash.
 2. **Visit:** the doctor dictates. The checker flags a CRITICAL duplicate. The doctor must type a reason before finalising.
-3. **Going home:** a BM summary and voice note on WhatsApp. Her daughter gets the summary too (consented).
+3. **Going home:** a BM summary is prepared and shown in the demo outbox. Voice-note generation and WhatsApp audio delivery are not implemented; caregiver visibility is shown only in the consented fictional demo.
 4. **Ramadan:** reminders shown as *sahur / berbuka*.
 5. **Day 3 (demo clock):** Aminah replies *"pening dan berpeluh"* ("dizzy and sweating"). The prototype places the labelled reply near the top of the clinic queue; during a manually watched demo the doctor can choose to call her. The system does not notify staff or guarantee anyone sees the item, and its labels are not a reliable emergency screen.
 6. **Trust:** Aminah opens "who viewed my record".
@@ -345,17 +346,20 @@ Overflow from week 1 **only, no new features.** If week 1 finishes on time, use 
 
 **Stays out:** every Khabar feature, prompt, data file, screen and name.
 
-**Declaration draft:** See [`starter-skeleton/DECLARATION_DRAFT.md`](../starter-skeleton/DECLARATION_DRAFT.md). Insert the public repository URL and confirm the wording against the event rules before submission.
+**Declaration draft:** See [`starter-skeleton/DECLARATION_DRAFT.md`](../starter-skeleton/DECLARATION_DRAFT.md). Insert the public repository URL, complete the project-wide AI/external-resource disclosure, and obtain organiser approval during registration. The draft has been compared with handbook §§8.2.1, 8.4.1, and 8.5; ask organisers if reuse of any additional pre-existing Khabar code changes the required declaration.
 
 ---
 
 ## 13. Open items
-- [ ] Organisers' answers: which SDGs, whether the declaration can be updated, pitch length, judging weights
+- [x] Check the official handbook: teams may align to any SDG 1–17, but are randomly assigned to a domain and must follow its challenge brief; detailed challenge briefs and judging weights are reserved for the post-registration Participant Handbook (§§7.1–7.3 and 3).
+- [ ] Ask organisers whether the pre-existing-code declaration can be amended after registration and how to declare additional reused code; §8.2.1 requires approval.
+- [ ] Confirm final pitch duration and operational judging details when the Participant Handbook is issued.
 - [ ] **Parked:** hours available during SDC week (19–25 Oct) alongside classes
-- [ ] Final LLM choice, from the planted-error test
+- [ ] Evaluate each configured model only on tasks where it is used: independent and clinician-authored triage replies, fictional packet images, and approved-answer selection as applicable. The planted-error test validates deterministic safety rules and does not select an LLM.
 - [ ] Transcription choice, from the 1-hour test
 - [ ] Voice-note quality in Tamil and Chinese
-- [ ] Whether Favoriot has a free tier
+- [x] Check Favoriot's published free-tier availability and limits; see [`UNDONE_WORK.md`](UNDONE_WORK.md) §2.2 for the plan and conflicting signup-page limits.
+- [ ] Verify the limits assigned to the actual test account and run the fake-data device/webhook test.
 - [ ] WhatsApp template approvals
 
 ---

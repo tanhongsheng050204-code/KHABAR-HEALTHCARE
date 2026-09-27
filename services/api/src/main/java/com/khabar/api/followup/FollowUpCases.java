@@ -5,6 +5,7 @@ import com.khabar.api.audit.AuditLog;
 import com.khabar.api.clinicops.ClinicActivity;
 import com.khabar.api.clinicops.ClinicOps;
 import com.khabar.api.clinicops.ClinicSettings;
+import com.khabar.api.clinicops.RotaEntryRepository;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
@@ -15,10 +16,13 @@ import com.khabar.api.readings.Reading;
 import com.khabar.api.readings.ReadingRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,11 +44,12 @@ public class FollowUpCases {
     private final ClinicOps clinicOps;
     private final ClinicStaffAccess staffAccess;
     private final AppUserRepository users;
+    private final RotaEntryRepository rota;
     private final AdjustableClock clock;
 
     public FollowUpCases(FollowUpCaseRepository cases, FollowUpCaseEventRepository events, PatientReplyRepository replies,
                          ReadingRepository readings, CheckInRepository checkIns, AuditLog auditLog, ClinicOps clinicOps,
-                         ClinicStaffAccess staffAccess, AppUserRepository users, AdjustableClock clock) {
+                         ClinicStaffAccess staffAccess, AppUserRepository users, RotaEntryRepository rota, AdjustableClock clock) {
         this.cases = cases;
         this.events = events;
         this.replies = replies;
@@ -54,12 +59,14 @@ public class FollowUpCases {
         this.clinicOps = clinicOps;
         this.staffAccess = staffAccess;
         this.users = users;
+        this.rota = rota;
         this.clock = clock;
     }
 
     public record CaseView(UUID id, CaseStatus status, TriageLevel level, String reason, UUID ownerId, String ownerName,
                            Instant openedAt, Instant acknowledgedAt, Instant acknowledgeBy, boolean overdue,
-                           Instant escalatedAt, String escalatedTo, int contactAttempts, Instant lastAttemptAt,
+                           Instant escalatedAt, String escalatedTo, Instant autoRoutedAt, String autoRoutedTo,
+                           int contactAttempts, Instant lastAttemptAt,
                            Instant closedAt, ClosureReason closureReason) {
     }
 
@@ -87,11 +94,55 @@ public class FollowUpCases {
         return cases.findByClinicIdAndClosedAtIsNull(clinicId);
     }
 
+    /**
+     * Route overdue, unacknowledged cases to today's rostered backup. This records queue routing only: it does not
+     * mark the case acknowledged or claim that the backup received a notification. The scheduler is opt-in until
+     * a clinic has reviewed its response policy and a staff notification channel is configured.
+     */
+    @Transactional
+    public int autoEscalateOverdueCases() {
+        Instant now = clock.instant();
+        DayOfWeek today = LocalDate.now(clock).getDayOfWeek();
+        int routed = 0;
+        for (FollowUpCase candidate : cases.findByClosedAtIsNull()) {
+            FollowUpCase c = cases.lockById(candidate.getId()).orElse(null);
+            if (c == null || !c.isOpen() || c.getAcknowledgedAt() != null || c.getEscalatedAt() != null
+                    || c.getAutoRoutedAt() != null) {
+                continue;
+            }
+            ClinicSettings settings = clinicOps.settingsFor(c.getClinic().getId());
+            Instant due = c.getOpenedAt().plus(Duration.ofMinutes(settings.ackMinutes(c.getLevel())));
+            if (!now.isAfter(due)) {
+                continue;
+            }
+            UUID backupId = rota.findByClinicIdAndDayOfWeek(c.getClinic().getId(), today)
+                    .map(entry -> entry.getBackupUserId()).orElse(null);
+            AppUser backup = backupId == null ? null : users.findById(backupId)
+                    .filter(user -> user.getClinic() != null
+                            && user.getClinic().getId().equals(c.getClinic().getId())
+                            && staffAccess.canManageFollowUp(user))
+                    .orElse(null);
+            if (backup == null) {
+                continue;
+            }
+            CaseStatus before = c.getStatus();
+            if (!c.autoRouteToBackup(backup.getId(), now)) {
+                continue;
+            }
+            events.save(new FollowUpCaseEvent(c.getId(), FollowUpCaseEvent.Action.AUTO_ROUTED, before, c.getStatus(),
+                    null, "Khabar (automatic)",
+                    "Routed to today's rostered backup after the acknowledgement deadline. This is not clinician escalation, and no staff notification was sent.", now));
+            routed++;
+        }
+        return routed;
+    }
+
     public CaseView view(FollowUpCase c, ClinicSettings settings, Instant now) {
         Instant due = c.getOpenedAt().plus(Duration.ofMinutes(settings.ackMinutes(c.getLevel())));
         boolean overdue = c.isOpen() && c.getAcknowledgedAt() == null && now.isAfter(due);
         return new CaseView(c.getId(), c.getStatus(), c.getLevel(), c.getReason(), c.getOwnerId(), nameOf(c.getOwnerId()),
                 c.getOpenedAt(), c.getAcknowledgedAt(), due, overdue, c.getEscalatedAt(), nameOf(c.getEscalatedTo()),
+                c.getAutoRoutedAt(), nameOf(c.getAutoRoutedTo()),
                 c.getContactAttempts(), c.getLastAttemptAt(), c.getClosedAt(), c.getClosureReason());
     }
 

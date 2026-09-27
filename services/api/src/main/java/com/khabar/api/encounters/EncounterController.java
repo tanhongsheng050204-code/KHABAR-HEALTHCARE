@@ -193,7 +193,12 @@ public class EncounterController {
     @PostMapping("/api/encounters/{id}/finalise")
     @Transactional
     public EncounterView finalise(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
-        Encounter encounter = load(id, requireDoctor(jwt));
+        AppUser doctor = requireDoctor(jwt);
+        Encounter encounter = encounters.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        requireSameClinic(doctor, encounter.getPatient());
+        if (encounter.getStatus() == Encounter.Status.FINAL) {
+            return view(encounter);
+        }
         guarded(() -> encounter.finalise(clock.instant()), encounter);
 
         Patient patient = encounter.getPatient();

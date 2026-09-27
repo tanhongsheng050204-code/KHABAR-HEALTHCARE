@@ -15,7 +15,22 @@ class EvaluationResponse(BaseModel):
 
 @router.post("/check", response_model=EvaluationResponse)
 def check_draft(draft: Draft):
-    findings = evaluate(with_graph(draft, graph.context_or_none(draft.graph_id)))
+    graph_context, graph_status = graph.context_with_status(draft.graph_id)
+    findings = evaluate(with_graph(draft, graph_context))
+    if graph_status != "available":
+        reasons = {
+            "missing_graph_id": "no patient graph ID was supplied",
+            "not_configured": "the patient graph is not configured",
+            "unreachable": "the patient graph could not be reached",
+            "patient_missing": "no patient context was found in the graph",
+        }
+        reason = reasons.get(graph_status, "patient graph context was unavailable")
+        findings.append(Finding(
+            check="patient_graph_context",
+            severity="WARN",
+            detail=(f"Patient graph context was not checked because {reason}. Review the patient's current "
+                    "medicines, allergies, pregnancy status, and herbs directly before finalising."),
+        ))
     return EvaluationResponse(blocking=any(f.severity == "CRITICAL" for f in findings), findings=findings)
 
 

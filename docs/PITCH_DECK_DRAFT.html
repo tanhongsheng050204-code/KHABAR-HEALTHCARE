@@ -212,13 +212,13 @@
         <div class="small-footer"><span>Fictional-data prototype · Not a medical device · Not for clinical use</span><span>04 / 07</span></div>
       </section>
 
-      <section class="slide evidence-slide" data-notes="These numbers refer to local verification recorded in the test results: 226 API tests passed, with one optional local PostgreSQL smoke test skipped; 205 agent tests passed. Hosted CI ran the PostgreSQL smoke separately. Hosted CI covers software checks; it does not mean the branch is deployed or ready for clinical use.">
+      <section class="slide evidence-slide" data-notes="These numbers refer to local verification recorded in the test results: 238 API tests passed (239 run), with one optional local PostgreSQL smoke test skipped; 209 agent tests passed. The current local code includes a warning when Neo4j context is unavailable; this has not been deployed. Hosted CI on an earlier commit ran PostgreSQL smoke checks; it does not verify this worktree, mean the branch is deployed, or establish clinical readiness.">
         <div class="topline"><div class="brand"><span class="brand-mark" aria-hidden="true">♥</span> Khabar</div><span class="draft">04 · What we checked</span></div>
         <p class="eyebrow">Software evidence</p>
         <h2>A tested prototype.<br>Not a validated care service.</h2>
         <div class="metric-row">
           <div class="metric"><strong>226</strong><span>API tests passed¹</span></div>
-          <div class="metric"><strong>205</strong><span>Agent tests passed</span></div>
+          <div class="metric"><strong>209</strong><span>Agent tests passed</span></div>
           <div class="metric"><strong>CI ✓</strong><span>API · agents · web · PostgreSQL migration and recovery checks</span></div>
         </div>
         <div class="status-strip">

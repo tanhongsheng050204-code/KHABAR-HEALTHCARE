@@ -1,4 +1,4 @@
-# Khabar — Technical Explanation & Architecture Notes
+﻿# Khabar — Technical Explanation & Architecture Notes
 
 > **Daily Log:** What the code merged today does and why. (Defense for SDC Handbook §8.5.7 / §8.5.3).
 
@@ -44,8 +44,8 @@ Everything from "before the visit" to "30 days after" now runs end to end on a l
 ### 2. The visit (`encounters/`)
 
 - **Notes to draft.** The doctor types shorthand (`T. Metformin 500mg 1/1 BD PC`, `TCA 2/52`). The agents' report agent parses it with rules, not the LLM, so a dose is never guessed.
-- **Safety check.** The evaluator gets the draft plus everything known about the patient: allergies (from the record and from intake), pregnancy, the "what I take" list and herbs. The **grounding** check flags any drug in the report that the doctor's notes never mention: the most dangerous kind of AI slip.
-- **Three-layer block.** A critical finding stops finalising in the domain object (`Encounter.finalise` throws), in the API (409) and in the database (a `CHECK` constraint: status cannot be `FINAL` while critical findings are open). Even a bug in the Java code cannot write a blocked report. The screen is the planned third place in the UI.
+- **Safety check.** The evaluator gets the draft plus everything known about the patient: allergies (from the record and from intake), pregnancy, the "what I take" list and herbs. The deterministic **grounding** check flags a prescribed drug in the report that the doctor's notes do not mention. This is a narrow mismatch check; it does not verify every claim in the report.
+- **Three-layer block.** A critical finding stops finalising in the domain object (`Encounter.finalise` throws), in the API (409) and in the database (a `CHECK` constraint: status cannot be `FINAL` while critical findings are open). The UI also disables finalisation while a critical finding remains unresolved.
 - **Overrides** need a written reason of 10+ characters and go in the audit log.
 
 ### 3. The summary
@@ -225,3 +225,36 @@ API 197 tests and agents 204 tests pass; the web app's lint, type check and buil
 deploy workflow deployed the accessibility fixes by itself. The agents service now compares its internal
 key in constant time. New docs: `SETUP_INTEGRATIONS.md` (provider setup without secrets), `DECISIONS.md`,
 `TEST_RESULTS.md` and `CODE_TO_EXPLAIN.md` (what to be able to explain to SDC judges).
+
+## 25 Sep 2026: Safe retries and opt-in overdue routing
+
+### 1. Recovery-update retries
+
+The browser gives each recovery update a random ID. It keeps only that ID in `sessionStorage`, so a page reload
+can reuse it without saving the patient's words in browser storage. The API saves the ID with the patient reply
+and the database makes that pair unique. If the same ID and text arrive again, Khabar returns the saved result
+without triaging or sending another message. If the ID is reused with different text, the API returns a conflict
+and the browser retries with a new ID. Focused tests cover matching retries, conflicting text, one saved reply,
+one outbound notice, and one triage call.
+
+### 2. Overdue case routing
+
+An opt-in scheduler can route an unacknowledged overdue case to the backup listed for today's clinic rota. It
+records an `AUTO_ROUTED` case-history event, but it does not say the backup has seen the case. V6 stores that
+routing separately from a clinician escalation, so it cannot satisfy the urgent-case rule requiring clinician
+escalation before closing as unreachable. The screen says no staff notification was sent, and the scheduler is
+disabled by default with `KHABAR_AUTO_ESCALATION_ENABLED=false`. A real notification channel and clinician review
+of the acknowledgement times, closure reasons, and routing policy are still required before anyone enables it.
+
+### Caregiver demo access and local screen check (25 Sep 2026)
+
+- Added a development-only **Caregiver view** quick sign-in using the existing local `/dev/token?as=caregiver` route. The shortcut is gated on development mode; it is absent from the generated production login HTML and executable bundles.
+- Opened the seeded caregiver workspace locally as Nurul. The page showed consent active, Aminah as the linked patient, read-only access, shared medicines, and empty summary/readings states. This is a manual UI check only; no real screen-reader or caregiver usability review is implied.
+
+### Caregiver consent scopes (25 Sep 2026)
+
+- The invite offered `SUMMARY` or `SUMMARY_AND_ALERTS`, but the API had been checking only for any active caregiver link before returning patient details, medicines, and readings. That meant the narrower choice did not narrow access.
+- The API now treats `SUMMARY` as the approved take-home summary only. `SUMMARY_AND_ALERTS` also permits the patient card, medicines, and readings. `/api/me` reports each active patient scope; the caregiver page fails closed and omits shared details if it cannot confirm that scope.
+- Integration tests cover a `SUMMARY` invitation through acceptance, the scope returned by `/api/me`, allowed summary access, denied record/medicine/reading access, and the full-scope route. The caregiver page's actual sharing labels now describe the data covered by the choices.
+
+\n

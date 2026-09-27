@@ -8,7 +8,8 @@ Each has a script in `services/agents/scripts/`, so a result can be re-run and c
 Drafting the report from the doctor's notes and every safety check are **rule-based**:
 `report_agent.py` reads the shorthand with a parser, and `evaluator.py` uses DDInter and written rules.
 So the ten-case planted-error set does not depend on the model, and it passes 10/10 whichever model is
-configured (`tests/test_planted_errors.py`). The model matters in four places:
+configured (`tests/test_planted_errors.py`). It validates the deterministic evaluator; it cannot select
+an LLM. The model matters in these optional places:
 
 | Where | What the model does | How it's measured |
 |---|---|---|
@@ -42,6 +43,11 @@ baring"). They are a floor, not a triage. Two changes follow:
 The widened lists still need a doctor's review, like the originals.
 
 ## Still to run (needs a provider key)
+
+The word-list-only held-out baseline was freshly reproduced locally on 25 Sep 2026 with no provider key:
+2/12 red replies caught, 16/22 replies under-triaged, and 0 false alarms on expected-ok replies. See
+[`triage-wordlist-current.md`](triage-wordlist-current.md). This remains a weak baseline, not an emergency
+detection validation or model comparison.
 
 Provider model IDs are time-sensitive. As checked on 25 Sep 2026, Google's current stable list includes
 `gemini-3.8-flash` and `gemini-3.6-flash`; use those as triage/packet-photo candidates and recheck the

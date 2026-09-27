@@ -59,14 +59,15 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder(@Value("${khabar.security.supabase-jwks-url:}") String jwksUrl,
                                  @Value("${khabar.security.supabase-jwt-secret:}") String secret) {
+        String issuer = issuerFromJwksUrl(jwksUrl);
         JwtDecoder asymmetric = jwksUrl.isBlank() ? null : withSupabaseChecks(NimbusJwtDecoder.withJwkSetUri(jwksUrl)
                 .jwsAlgorithm(SignatureAlgorithm.ES256)
                 .jwsAlgorithm(SignatureAlgorithm.RS256)
-                .build());
+                .build(), issuer);
         JwtDecoder shared = secret.length() < 32 ? null : withSupabaseChecks(NimbusJwtDecoder
                 .withSecretKey(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"))
                 .macAlgorithm(MacAlgorithm.HS256)
-                .build());
+                .build(), null);
         if (asymmetric == null && shared == null) {
             throw new IllegalStateException("Set SUPABASE_JWKS_URL (asymmetric keys) or SUPABASE_JWT_SECRET (HS256, 32+ characters) so sign-ins can be verified.");
         }
@@ -90,9 +91,23 @@ public class SecurityConfig {
         };
     }
 
-    private static JwtDecoder withSupabaseChecks(NimbusJwtDecoder decoder) {
+    private static String issuerFromJwksUrl(String jwksUrl) {
+        if (jwksUrl == null || jwksUrl.isBlank()) return null;
+        String suffix = "/.well-known/jwks.json";
+        if (!jwksUrl.endsWith(suffix)) {
+            throw new IllegalStateException("SUPABASE_JWKS_URL must end with /.well-known/jwks.json so the token issuer can be validated.");
+        }
+        return jwksUrl.substring(0, jwksUrl.length() - suffix.length());
+    }
+
+    private static JwtDecoder withSupabaseChecks(NimbusJwtDecoder decoder, String issuer) {
         JwtClaimValidator<List<String>> audience = new JwtClaimValidator<>("aud", aud -> aud != null && aud.contains(SUPABASE_AUDIENCE));
-        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<Jwt>(JwtValidators.createDefault(), audience));
+        if (issuer == null) {
+            decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<Jwt>(JwtValidators.createDefault(), audience));
+        } else {
+            JwtClaimValidator<String> issuerClaim = new JwtClaimValidator<>("iss", issuer::equals);
+            decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<Jwt>(JwtValidators.createDefault(), audience, issuerClaim));
+        }
         return decoder;
     }
 

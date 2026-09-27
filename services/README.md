@@ -21,7 +21,7 @@ as a Python service, with a Supabase Postgres database. Everything there is fict
 sign in as a demo person. The backend sleeps after five idle minutes, so the first request takes about
 15 seconds.
 
-That deployment is a **public fictional-data demo**, not a clinic-pilot environment. For pilot preparation, the API now has a separate `pilot` Spring profile (`SPRING_PROFILES_ACTIVE=pilot`) that does not load `local` demo controllers or seed data, refuses to start if combined with `local` or `demo`, applies versioned Flyway migrations, validates rather than mutates the resulting schema, and keeps scheduled check-ins off unless explicitly enabled. Fresh databases apply V1 to V4; an existing non-empty database requires a separately reviewed schema comparison and explicit baseline before startup. H2 PostgreSQL-mode migration tests pass, and the project notes record the PostgreSQL 16 smoke test passing in hosted CI on 24 Sep 2026. Production secrets, existing-database baseline, backup/restore and rollback rehearsal, clinical approval, and deployment remain separate gates. See [the database migration procedure](../docs/DATABASE_MIGRATIONS.md). Do not change the public demo's active profiles to `pilot` as a shortcut.
+That deployment is a **public fictional-data demo**, not a clinic-pilot environment. For pilot preparation, the API now has a separate `pilot` Spring profile (`SPRING_PROFILES_ACTIVE=pilot`) that does not load `local` demo controllers or seed data, refuses to start if combined with `local` or `demo`, applies versioned Flyway migrations, validates rather than mutates the resulting schema, and keeps scheduled check-ins off unless explicitly enabled. Fresh databases apply V1 to V6; an existing non-empty database requires a separately reviewed schema comparison and explicit baseline before startup. H2 PostgreSQL-mode migration tests pass through V6. The hosted PostgreSQL 16 smoke and backup/restore checks predate V5/V6 and must be rerun against this migration head; do not count the older result as current compatibility evidence. Production secrets, existing-database baseline, backup/restore and rollback rehearsal, clinical approval, and deployment remain separate gates. See [the database migration procedure](../docs/DATABASE_MIGRATIONS.md). Do not change the public demo's active profiles to `pilot` as a shortcut.
 
 On the docs page, press **Authorize** and paste a token from `POST /dev/token?as=doctor` to try the
 endpoints as the demo doctor. From the command line:
@@ -43,6 +43,12 @@ database (connected from the Marketplace with the `DB_` prefix), `INTERNAL_SERVI
 `SUPABASE_JWT_SECRET`, `FIELD_ENCRYPTION_KEY`, `AGENTS_SERVICE_URL`, `WEB_ALLOWED_ORIGINS` and
 `WEB_APP_URL`. `services/api/src/main/resources/application-demo.yml` explains what the demo profile
 changes; `services/vercel.json` and `services/api/Dockerfile.vercel` are how Vercel builds it.
+
+After an API/agents deployment, run `node scripts/check-health.mjs` from `services/`. It checks that the
+API returns JSON status `UP` at `/api/health` and agents return `healthy` at `/agents/health`. To check
+local services, pass the API base URL and agents health URL separately, for example:
+`node scripts/check-health.mjs http://localhost:8080 http://localhost:8000/health`. The script exits
+nonzero when either endpoint is unavailable or returns an unexpected status.
 
 ## Run it on your machine (no accounts needed)
 
@@ -77,7 +83,7 @@ curl -s localhost:8080/api/me -H "Authorization: Bearer $TOKEN"
 curl -s -X POST localhost:8080/api/intake/chat -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"messages":[]}'
 ```
 
-Without `GEMINI_API_KEY` the intake agent runs a scripted four-question interview and triage uses the word lists only, so the whole flow works offline.
+Without `GEMINI_API_KEY`, intake uses a scripted four-question interview and triage uses the word lists, so those agent paths do not require an external LLM provider. The web app, API, agents, and database still need to be reachable; this is not device-wide offline support, and bandwidth throttling has not been tested.
 
 ### Demo helpers (local profile only)
 
@@ -134,9 +140,11 @@ A blood sugar of 2.8 mmol/L puts Aminah at the top of the call list.
 ## Tests
 
 ```bash
-cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 204 tests
-cd services/api && ./mvnw test                                    # 208 pass, 1 optional PostgreSQL smoke skipped; includes Neo4j
+cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 209 tests
+cd services/api && ./mvnw test                                    # latest: 238 passed, 1 optional PostgreSQL smoke skipped
 ```
+
+Latest full local results are recorded in [`../docs/TEST_RESULTS.md`](../docs/TEST_RESULTS.md). The optional PostgreSQL smoke test runs in hosted CI; the current uncommitted V5/V6 migrations still need a hosted PostgreSQL 16 run.
 
 ## Endpoints
 
@@ -155,7 +163,7 @@ Sign-in and onboarding
 | Method | Path | Who | What |
 |---|---|---|---|
 | GET | `/api/health` | anyone | Liveness |
-| GET | `/api/me` | any registered user | Role, clinic, and the patient's own record id |
+| GET | `/api/me` | any registered user | Role, clinic, the patient's own record id, and active caregiver patient ids with their consent scopes |
 | POST | `/api/onboarding/clinic` | anyone signed in, with the bootstrap token | Creates the first clinic and makes the caller its doctor. Off unless `KHABAR_BOOTSTRAP_TOKEN` is set |
 | POST | `/api/clinic/patients` | doctor | Registers a patient and returns a one-time code (valid 7 days) that links the patient's own sign-in to the record |
 | POST | `/api/clinic/doctor-invites` | doctor | A one-time code that makes a colleague a doctor at the same clinic |
@@ -169,11 +177,13 @@ Patient record
 
 | Method | Path | Who | What |
 |---|---|---|---|
-| GET | `/api/patients/{id}` | doctor at the clinic, the patient, a consented caregiver | Record with IC masked; every non-patient view is written to the audit log |
+| GET | `/api/patients/{id}` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | Record with IC masked; every non-patient view is written to the audit log. A `SUMMARY` caregiver cannot read the patient record |
 | GET | `/api/patients/{id}/access-log` | the patient, doctor at the clinic | "Who viewed my record", newest first |
-| GET / POST | `/api/patients/{id}/medications` | doctor at the clinic, the patient, a consented caregiver | "What I take": medicines and herbs from other places. The safety check reads this list |
+| GET / POST | `/api/patients/{id}/medications` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | "What I take": medicines and herbs from other places. The safety check reads this list |
 | DELETE | `/api/patients/{id}/medications/{itemId}` | same | Marks an item as stopped (the row is kept) |
-| GET / POST | `/api/patients/{id}/readings` | same | Home blood pressure or blood sugar. Each reading is rated; a worrying one goes on the call list |
+| GET / POST | `/api/patients/{id}/readings` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | Home blood pressure or blood sugar. Each reading is rated; a worrying one goes on the call list |
+
+Caregiver scopes are enforced by the API: `SUMMARY` can read `/api/patients/{id}/summary` only; `SUMMARY_AND_ALERTS` also permits the patient card, medicines, and home readings. The caregiver home gets scopes from `/api/me` and hides the shared details when the grant is summary-only.
 | PUT | `/api/patients/{id}/device` | doctor at the clinic | Links a home device (its Favoriot developer id) to the patient |
 
 Before the visit
@@ -256,6 +266,8 @@ The API has **no working defaults for secrets** and refuses to start without the
 | `AGENTS_SERVICE_URL`, `WEB_ALLOWED_ORIGINS` | Where the agents run; which web origins may call the API |
 | `KHABAR_BOOTSTRAP_TOKEN` | Lets the first doctor create a clinic. Clear it once the clinic exists |
 | `KHABAR_TIME_ZONE` | Default `Asia/Kuala_Lumpur`; decides when check-ins are due |
+| `KHABAR_AUTO_ESCALATION_ENABLED` | Defaults to `false`. After clinician approval, `true` routes overdue unacknowledged cases to today's rostered backup in the clinic queue; it does not notify staff or count as an acknowledgement |
+| `KHABAR_AUTO_ESCALATION_POLL_MS` | Scheduler interval in milliseconds; defaults to 60000 |
 | `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TOKEN` | Leave empty to keep outgoing messages in the outbox table |
 | `WHATSAPP_CHECKIN_TEMPLATE` | Your approved check-in template (WhatsApp requires a template to start a conversation) |
 | `WHATSAPP_SUMMARY_TEMPLATE` | Your approved summary template with one body parameter `{{1}}`. Long summaries are split between lines into several messages |

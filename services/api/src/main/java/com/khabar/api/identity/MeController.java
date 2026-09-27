@@ -1,6 +1,7 @@
 package com.khabar.api.identity;
 
 import com.khabar.api.patients.CaregiverLinkRepository;
+import com.khabar.api.patients.CaregiverScope;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -29,9 +32,10 @@ public class MeController {
         this.staffAccess = staffAccess;
     }
 
-    /** patientId is the patient's own record. patientIds are active records a caregiver has consent to open. */
+    /** patientId is the patient's own record; patientScopes exposes each caregiver link's granted scope. */
     public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId,
-                             List<UUID> patientIds, List<ClinicStaffRole> clinicRoles) {
+                             List<UUID> patientIds, Map<UUID, CaregiverScope> patientScopes,
+                             List<ClinicStaffRole> clinicRoles) {
     }
 
     @GetMapping
@@ -41,12 +45,19 @@ public class MeController {
         UUID patientId = user.getRole() == Role.PATIENT
                 ? patients.findByAccountId(user.getId()).map(Patient::getId).orElse(null)
                 : null;
-        List<UUID> patientIds = user.getRole() == Role.CAREGIVER
-                ? caregiverLinks.findByCaregiverIdAndRevokedAtIsNull(user.getId()).stream()
-                    .map(link -> link.getPatient().getId()).toList()
-                : List.of();
+        Map<UUID, CaregiverScope> patientScopes = new LinkedHashMap<>();
+        if (user.getRole() == Role.CAREGIVER) {
+            caregiverLinks.findByCaregiverIdAndRevokedAtIsNull(user.getId()).forEach(link -> {
+                UUID linkedPatientId = link.getPatient().getId();
+                patientScopes.merge(linkedPatientId, link.getScope(), (first, next) ->
+                        first == CaregiverScope.SUMMARY_AND_ALERTS || next == CaregiverScope.SUMMARY_AND_ALERTS
+                                ? CaregiverScope.SUMMARY_AND_ALERTS : CaregiverScope.SUMMARY);
+            });
+        }
+        List<UUID> patientIds = List.copyOf(patientScopes.keySet());
         return new MeResponse(user.getId(), user.getRole(), user.getDisplayName(),
-                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId, patientIds,
+                clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId,
+                patientIds, patientScopes,
                 staffAccess.rolesFor(user));
     }
 }

@@ -62,6 +62,10 @@ public class FollowUpCase {
 
     private UUID escalatedTo;
 
+    private Instant autoRoutedAt;
+
+    private UUID autoRoutedTo;
+
     @Column(nullable = false)
     private int contactAttempts;
 
@@ -147,6 +151,17 @@ public class FollowUpCase {
         status = CaseStatus.ESCALATED;
     }
 
+    /** Routes an overdue case to the rostered backup without satisfying the clinician escalation safeguard. */
+    boolean autoRouteToBackup(UUID to, Instant at) {
+        if (!isOpen() || acknowledgedAt != null || escalatedAt != null || autoRoutedAt != null || to == null) {
+            return false;
+        }
+        autoRoutedAt = at;
+        autoRoutedTo = to;
+        status = CaseStatus.ESCALATED;
+        return true;
+    }
+
     void close(ClosureReason reason, String note, UUID actor, Instant at) {
         acknowledge(actor, at);
         closureReason = reason;
@@ -168,6 +183,8 @@ public class FollowUpCase {
     public Instant getAcknowledgedAt() { return acknowledgedAt; }
     public Instant getEscalatedAt() { return escalatedAt; }
     public UUID getEscalatedTo() { return escalatedTo; }
+    public Instant getAutoRoutedAt() { return autoRoutedAt; }
+    public UUID getAutoRoutedTo() { return autoRoutedTo; }
     public int getContactAttempts() { return contactAttempts; }
     public Instant getLastAttemptAt() { return lastAttemptAt; }
     public Instant getClosedAt() { return closedAt; }

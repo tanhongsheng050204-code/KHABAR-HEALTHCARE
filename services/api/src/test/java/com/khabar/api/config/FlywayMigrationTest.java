@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.sql.DatabaseMetaData;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlywayMigrationTest {
@@ -26,13 +28,23 @@ class FlywayMigrationTest {
 
         Flyway flyway = flyway(dataSource);
 
-        assertEquals(4, flyway.migrate().migrationsExecuted);
+        assertEquals(6, flyway.migrate().migrationsExecuted);
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
         try (Connection connection = dataSource.getConnection();
              var columns = connection.getMetaData().getColumns(null, null, "READING", "RECEIVED_AT")) {
             assertTrue(columns.next(), "V2 must provision reading.received_at.");
             assertEquals(DatabaseMetaData.columnNoNulls, columns.getInt("NULLABLE"));
+        }
+        try (Connection connection = dataSource.getConnection();
+             var columns = connection.getMetaData().getColumns(null, null, "PATIENT_REPLY", "CLIENT_MESSAGE_ID")) {
+            assertTrue(columns.next(), "V5 must add the optional client id used for safe reply retries.");
+            assertEquals(DatabaseMetaData.columnNullable, columns.getInt("NULLABLE"));
+        }
+        try (Connection connection = dataSource.getConnection();
+             var columns = connection.getMetaData().getColumns(null, null, "FOLLOW_UP_CASE", "AUTO_ROUTED_AT")) {
+            assertTrue(columns.next(), "V6 must keep automatic queue routing separate from clinician escalation.");
+            assertEquals(DatabaseMetaData.columnNullable, columns.getInt("NULLABLE"));
         }
     }
 
@@ -120,6 +132,88 @@ class FlywayMigrationTest {
                 assertEquals(null, result.getObject("granted_by"), "The historical grantor is unknown.");
                 assertEquals(null, result.getObject("revoked_at"));
             }
+        }
+    }
+
+    @Test
+    void replyIdempotencyMigrationPreservesLegacyRowsAndScopesUniquenessToPatient() throws Exception {
+        JdbcDataSource dataSource = dataSource();
+        UUID clinicId = UUID.randomUUID();
+        UUID firstPatientId = UUID.randomUUID();
+        UUID secondPatientId = UUID.randomUUID();
+        UUID legacyReplyId = UUID.randomUUID();
+        UUID clientMessageId = UUID.randomUUID();
+
+        Flyway.configure().dataSource(dataSource).locations("classpath:db/migration")
+                .target(MigrationVersion.fromVersion("4")).load().migrate();
+
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement clinic = connection.prepareStatement("insert into clinic(id, name) values (?, ?)")) {
+                clinic.setObject(1, clinicId);
+                clinic.setString(2, "Reply migration test");
+                clinic.executeUpdate();
+            }
+            insertPatient(connection, clinicId, firstPatientId, "First synthetic patient");
+            insertPatient(connection, clinicId, secondPatientId, "Second synthetic patient");
+            try (PreparedStatement legacy = connection.prepareStatement(
+                    "insert into patient_reply(id, patient_id, received_at, text_enc, level, missed_dose) values (?, ?, ?, ?, ?, ?)")) {
+                legacy.setObject(1, legacyReplyId);
+                legacy.setObject(2, firstPatientId);
+                legacy.setTimestamp(3, Timestamp.from(Instant.parse("2026-01-02T03:04:05Z")));
+                legacy.setString(4, "synthetic-encrypted-text");
+                legacy.setString(5, "OK");
+                legacy.setBoolean(6, false);
+                legacy.executeUpdate();
+            }
+        }
+
+        flyway(dataSource).migrate();
+
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement legacy = connection.prepareStatement(
+                    "select client_message_id from patient_reply where id = ?")) {
+                legacy.setObject(1, legacyReplyId);
+                try (var result = legacy.executeQuery()) {
+                    assertTrue(result.next());
+                    assertEquals(null, result.getObject("client_message_id"),
+                            "Pre-migration replies must remain valid without a client-generated ID.");
+                }
+            }
+
+            insertReplyWithClientId(connection, UUID.randomUUID(), firstPatientId, clientMessageId);
+            insertReplyWithClientId(connection, UUID.randomUUID(), secondPatientId, clientMessageId);
+            assertThrows(SQLException.class,
+                    () -> insertReplyWithClientId(connection, UUID.randomUUID(), firstPatientId, clientMessageId),
+                    "A client request ID must be unique per patient to prevent duplicate reply processing.");
+        }
+    }
+
+    private static void insertPatient(Connection connection, UUID clinicId, UUID patientId, String name) throws SQLException {
+        try (PreparedStatement patient = connection.prepareStatement(
+                "insert into patient(id, clinic_id, graph_id, full_name, preferred_language, pregnant) values (?, ?, ?, ?, ?, ?)")) {
+            patient.setObject(1, patientId);
+            patient.setObject(2, clinicId);
+            patient.setObject(3, UUID.randomUUID());
+            patient.setString(4, name);
+            patient.setString(5, "en");
+            patient.setBoolean(6, false);
+            patient.executeUpdate();
+        }
+    }
+
+    private static void insertReplyWithClientId(Connection connection, UUID replyId, UUID patientId,
+                                                UUID clientMessageId) throws SQLException {
+        try (PreparedStatement reply = connection.prepareStatement(
+                "insert into patient_reply(id, patient_id, received_at, text_enc, level, missed_dose, client_message_id) " +
+                        "values (?, ?, ?, ?, ?, ?, ?)")) {
+            reply.setObject(1, replyId);
+            reply.setObject(2, patientId);
+            reply.setTimestamp(3, Timestamp.from(Instant.parse("2026-01-02T03:04:05Z")));
+            reply.setString(4, "synthetic-encrypted-text");
+            reply.setString(5, "OK");
+            reply.setBoolean(6, false);
+            reply.setObject(7, clientMessageId);
+            reply.executeUpdate();
         }
     }
 

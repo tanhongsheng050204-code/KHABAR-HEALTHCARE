@@ -6,26 +6,28 @@ verify the current branch or deployment. Record each new run's date, commit, env
 
 ## Before the run
 
-- [ ] Choose local or deployed environment and record its base URLs; do not mix local and production data.
-- [ ] Confirm API and agent health checks pass.
-- [ ] Confirm the selected clinic and fictional patient exist. If rebuilding local data, use the demo profile's fake-patient generator; never enter a real person's data.
-- [ ] Confirm the selected patient has a fictional condition, medication list, allergy/herb context, and a usable appointment.
-- [ ] Confirm demo-only auth is in use locally, or real role sign-in is configured in the deployed environment. Never paste tokens into this document.
-- [ ] Confirm messaging fallback: local runs may use the outbox; live WhatsApp runs require approved templates and a designated test number.
-- [ ] Open the patient record, visit workspace, and call list before starting.
+- [x] Local run: environment and base URLs recorded; H2 and fictional data were used without mixing production data. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md). A deployed run remains open.
+- [x] Local API and agent health checks passed at startup. This does not establish current public deployment health; see [`WORKSPACE_VERIFICATION_2026-09-25.md`](WORKSPACE_VERIFICATION_2026-09-25.md).
+- [x] The seeded fictional clinic/patients and usable appointment were confirmed in the local rehearsal; the seed included a condition and medicine context.
+- [x] The local safety review surfaced a planted duplicate-medicine critical finding and an herb warning. The complete clinically reviewed allergy/medicine context check remains open.
+- [x] Local demo-only identities were used. Real role sign-in remains open.
+- [x] Local messaging used the outbox and the rehearsal explicitly recorded that no external message was sent. Real WhatsApp requires approved templates and a designated test number.
+- [x] The patient view, visit flow, and doctor call list were opened during the local rehearsal; see the recorded outcomes in [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
 
 ## Core story
 
-- [ ] Book or open the fictional patient's appointment.
-- [ ] Complete intake and confirm the pre-visit report reflects the patient's answers.
-- [ ] Review the patient's current medicines, allergy, and herb context.
-- [ ] Enter fictional consultation notes and generate the draft.
-- [ ] Run the safety review; confirm planted duplicate/interactions are visible and critical findings block finalisation.
-- [ ] Resolve or document the required override reason; finalise the visit.
+- [x] Open the fictional patient's existing booked appointment.
+- [x] Complete the four-question fictional intake and confirm the pre-visit report reflects the answers and medicine-list items.
+- [x] Review the seeded fictional medicine/herb context through the pre-visit report and safety findings. This is not clinical validation of the source data.
+- [x] Enter a clearly labelled fictional rehearsal note and generate the visit draft.
+- [x] The UI notice was corrected to distinguish an empty agent result from a structured draft; lint, typecheck, and production build passed.
+- [x] Post-fix browser check: an intentionally unstructured fictional note produced the “no structured draft fields” message; the page still showed “No draft yet” and kept safety check/finalisation disabled.
+- [x] Run the safety review; a planted duplicate medicine blocked finalisation and a herb finding appeared as a warning.
+- [x] Record a rehearsal-only override reason and finalise the visit. This was not a clinical decision.
 - [ ] Review the patient summary in the selected language and verify medicine, dose, timing, and warning signs against the approved visit.
-- [ ] Confirm the follow-up plan/check-in is created.
-- [ ] Send through the local outbox or approved WhatsApp test configuration; do not message a real patient.
-- [ ] Submit a fictional follow-up reply, verify its triage, and confirm the call list reflects any urgent item.
+- [x] Confirm finalisation started the follow-up plan.
+- [x] Confirm the summary was queued in the local outbox; no WhatsApp delivery was claimed or attempted.
+- [x] Submit a fictional urgent follow-up reply, verify the precautionary response, and confirm it appeared at the top of the doctor call list.
 
 ## Role and access checks
 
@@ -34,16 +36,35 @@ Run each check with a separate doctor, patient, and caregiver session in an isol
 - [ ] Doctor can open only their clinic's assigned records and complete the intended visit workflow.
 - [ ] Patient can open their own record and manage consent, but cannot access another patient's record.
 - [ ] Caregiver can see only the linked patient's consented scope.
-- [ ] Revoke caregiver consent and verify access is denied immediately, including on a fresh request/session.
-- [ ] Record both allowed and denied outcomes. Do not use a real person's records.
+- [x] Local current-worktree UI check: a fictional caregiver with `SUMMARY` scope saw the summary-only state with no medication or reading details. The test patient had no finalised summary; deployed access and populated-summary rendering remain unverified. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Local H2 check: after consent was revoked, a fresh caregiver request was denied (403). This is not a deployed or real-account check. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Allowed and denied caregiver outcomes were recorded using fictional records: linked patient 200, unrelated patient 403, and revoked-consent fresh request 403. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md). No real person's records were used.
 
 ## Failure and fallback checks
 
-- [ ] With the agent service unavailable, confirm the API gives a clear recoverable error and does not lose already-saved clinical data.
-- [ ] With WhatsApp unavailable/unconfigured, confirm the local outbox/fallback is visible and no message is claimed as delivered.
-- [ ] With Neo4j unavailable locally, confirm the core record remains usable and graph-dependent context is clearly treated as unavailable.
-- [ ] Throttle or disconnect the network during a non-destructive screen action; confirm the user can retry and no duplicate finalisation/message is created.
-- [ ] Note cold-start delay separately from functional failure.
+- [x] Stop FastAPI while Spring remains available: a fictional unclassified reply was stored as `REVIEW` and received cautious fallback wording. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] WhatsApp was unconfigured; the final summary appeared in the local outbox and the record states no external delivery occurred. This does not test an outage after provider configuration.
+- [x] Current-worktree browser check with Neo4j disabled: the fictional visit and safety review remained usable and the safety card displayed a non-blocking graph-context warning directing manual record review; the duplicate-medicine critical gate remained in force. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Agent safety checks now return a visible, non-blocking `patient_graph_context` warning when the graph is unconfigured, unreachable, missing the patient, or missing a graph ID. The warning says graph-derived medicines, allergies, pregnancy status, and herbs were not checked and directs a manual record review. Agent tests cover those states; web lint, typecheck, and production build pass. See [`TEST_RESULTS.md`](TEST_RESULTS.md).
+- [x] Simulate finalise responses being lost after the API commits; confirm a reload shows the visit as final. See [`FINALISE_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`](FINALISE_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md).
+- [x] Delay a local fictional recovery-update response by five seconds; confirm the send control stays disabled while pending, one POST succeeds, the form clears, and the acknowledgement appears. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Simulate a recovery-update network failure before the API receives the first request; confirm the draft and client message ID are preserved, then retry and confirm exactly one request reaches the API. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Exercise connection-loss/recovery over HTTP: stop the local API while a fictional recovery-update draft is open, observe the failed request and retained draft, restart the API, then retry successfully. This simulates endpoint disconnection/recovery, not device-wide offline mode or bandwidth throttling. See the follow-on check in [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Browser-emulate offline and a throttled connection on the current-source fictional patient recovery-update flow: the offline POST failed with the draft retained, then one retry at 1,200 ms latency and constrained throughput stayed pending, succeeded once, cleared the draft, and displayed the acknowledgement. This is browser-network emulation only; device-wide, mobile-network, packet-loss, provider, and deployed checks remain open. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Record local API cold-start separately from functional failure: 11.97 seconds from launch to first healthy HTTP response; Spring startup reported 6.557 seconds. This is one local API-only sample, not a web/agents or deployed cold-start check. See [`COLD_START_CHECK_2026-09-25_LOCAL.md`](COLD_START_CHECK_2026-09-25_LOCAL.md).
+
+## Keyboard accessibility follow-up
+
+- [x] Source fix: the login page has a “Skip to sign in” link, and the shared “Skip to workspace” link targets overview main landmarks that accept programmatic focus (`tabIndex=-1`) across doctor, patient, caregiver, record, visit, loading, and error views. The local sign-in accessibility tree exposes the link and named target.
+- [x] Localized patient-facing summary text carries its BCP 47 language code for assistive-technology pronunciation; clinician, patient, and caregiver summary displays are covered in source.
+- [x] The clinician visit-note textarea has a visible programmatic label; the remaining textareas in the web components are associated with wrapping labels.
+- [x] Partial live keyboard check (25 Sep): in the current production-built web preview, Tab exposed a visible focus ring on “Skip to sign in”; Enter moved focus to the named sign-in section. In the fictional doctor demo home, Tab exposed “Skip to workspace”; Enter moved focus to the overview main landmark, and the next Tab reached “Add patient.” This covers those two skip links and the first post-landmark control only; the all-role/all-route pass below remains open.
+- [x] Partial live keyboard check (25 Sep): on the fictional patient-record route, Tab and Enter activated “Skip to workspace”; focus then advanced to “Back to clinic.” This does not cover the visit route or every control in the record.
+- [x] Partial live keyboard check (25 Sep): the production-built patient view also moved focus from “Skip to workspace” to the overview, then to “Send a new check-in.” In the development-only caregiver view, the Next.js Dev Tools button precedes the app in tab order; the next Tab focuses the workspace skip link and Enter focuses the main target. That caregiver view failed closed because the connected local API is older and did not return the current sharing-scope field; no shared details were exposed, and this is not a current-backend permission test.
+- [x] Browser-driven Tab pass (25 Sep): login, doctor home, patient home, and doctor patient-record routes were each tabbed until the first target repeated. All 114 targets across those runs were visible and matched `:focus-visible`; login/doctor/patient/record skip-link behavior has also been checked. The doctor motion toggle set `data-motion=off`; system-level reduced motion was not enabled. Full scope and limits are in [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
+- [x] Isolated current-source route check (25 Sep): caregiver and visit views ran against the current API in a separate in-memory H2 stack. Five caregiver and 13 visit app controls matched `:focus-visible`; both skip links focused their overview. The caregiver content reflected the active shared scope. The visit was left as an empty draft and disappeared when the isolated API stopped. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md); the remaining screen-reader and human accessibility review stays open.
+- [ ] Manually tab through each role and route, confirm focus visibility and logical order, and verify the skip link moves focus to the main landmark.
+- [ ] Complete and record a screen-reader review, including pronunciation across English, Bahasa Melayu, Chinese, and Tamil; source markup and Next.js lint do not substitute for assistive-technology testing.
 
 ## Result record
 

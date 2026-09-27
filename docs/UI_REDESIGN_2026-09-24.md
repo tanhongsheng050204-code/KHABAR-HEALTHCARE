@@ -1,4 +1,4 @@
-# Khabar UI redesign — implementation and verification
+﻿# Khabar UI redesign — implementation and verification
 
 Date: 24 September 2026  
 Status: implemented, committed and published to the live web app on 24 September 2026 (GitHub deploy workflow). Remaining browser verification is listed below.
@@ -104,8 +104,13 @@ These checks do not constitute full accessibility conformance, performance certi
   - Keyboard: the first Tab reaches "Skip to workspace", which jumps past the sidebar; focus order follows the page and every stop shows a focus ring. The patient search and the sign-in email field had no visible ring; both now do. Each patient row's link is named "Open <name>'s record" instead of "Open".
   - No sideways page scrolling on any screen at 320 px, or at 640 px (a 1280 px window at 200% zoom).
   - Toasts are announced (errors as alerts, others as status).
-- [ ] A pass with a real screen reader (NVDA or VoiceOver) and a check of the caregiver home, which has no demo button.
+- [x] Caregiver home opened locally with the seeded caregiver demo (25 Sep): verified the linked fictional patient, read-only label, consent status, shared medicines, and empty summary/readings states. A development-only Caregiver view shortcut was added because the existing quick demo buttons covered only doctor and patient roles.
+- [x] Caregiver page accessibility-tree inspection (25 Sep): the browser tree exposes the skip link, named workspace navigation and Overview link, one page heading, section headings for the linked patient/plan/medicines/readings, and the consent/read-only text. This is a static browser-tree check; it does not count as an NVDA or VoiceOver screen-reader pass.
+- [ ] Complete a real screen-reader pass (NVDA or VoiceOver) for caregiver navigation, landmarks, content order, and status announcements.
 - [ ] Real Supabase password/OTP/invitation flows with authorized test accounts and email delivery configured.
 - [ ] Production performance and public-deployment smoke checks after an explicitly requested release.
 
 Provider integration, deployment credentials, and broader readiness work remain tracked in `UNDONE_WORK.md`; this redesign does not mark them complete.
+
+
+\n

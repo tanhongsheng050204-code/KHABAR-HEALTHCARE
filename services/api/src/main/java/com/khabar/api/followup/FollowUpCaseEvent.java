@@ -20,7 +20,7 @@ import java.util.UUID;
 @Table(name = "follow_up_case_event", indexes = @Index(name = "ix_case_event_case", columnList = "case_id"))
 public class FollowUpCaseEvent {
 
-    public enum Action { OPENED, LEVEL_RAISED, ASSIGNED, ACKNOWLEDGED, CONTACT_REACHED, CONTACT_NO_ANSWER, ESCALATED, CLOSED }
+    public enum Action { OPENED, LEVEL_RAISED, ASSIGNED, ACKNOWLEDGED, CONTACT_REACHED, CONTACT_NO_ANSWER, AUTO_ROUTED, ESCALATED, CLOSED }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

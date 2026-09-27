@@ -94,6 +94,18 @@ class DemoGraphTest {
     }
 
     @Test
+    void resettingTheFictionalDemoRestoresAminahsConditionsToTheGraph() throws Exception {
+        try (Session session = DRIVER.session()) {
+            session.run("MATCH (n) DETACH DELETE n").consume();
+        }
+
+        mvc.perform(post("/dev/demo/reset")).andExpect(status().isOk());
+
+        assertThat(agentsRead("conditions")).extracting(r -> r.get("name").asString())
+                .containsExactly("diabetes", "hypertension");
+    }
+
+    @Test
     void theGraphHoldsNoNameIcOrPhoneForAnyDemoPatient() {
         try (Session session = DRIVER.session()) {
             List<String> values = session.run("MATCH (n) RETURN properties(n) AS p UNION ALL MATCH ()-[r]->() RETURN properties(r) AS p").list()

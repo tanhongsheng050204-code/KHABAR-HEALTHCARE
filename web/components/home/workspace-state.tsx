@@ -29,7 +29,7 @@ export function WorkspaceError({
   retry: () => void;
 }) {
   return (
-    <main className={styles.workspace} id="overview">
+    <main className={styles.workspace} id="overview" tabIndex={-1}>
       <section className={styles.loadError} role="alert">
         <HeartPulse size={28} />
         <h1>Your care space needs another moment.</h1>

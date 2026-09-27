@@ -101,6 +101,22 @@ class SupabaseTokenDecoderTest {
     }
 
     @Test
+    void refusesAsymmetricallySignedTokenWithWrongIssuer() throws Exception {
+        JWTClaimsSet wrongIssuer = new JWTClaimsSet.Builder(claims(UUID.randomUUID(), "authenticated", 3_600_000))
+                .issuer("https://another-project.supabase.co/auth/v1").build();
+        String token = sign(new ECDSASigner(supabaseKey), new JWSHeader.Builder(JWSAlgorithm.ES256)
+                .keyID(supabaseKey.getKeyID()).build(), wrongIssuer);
+        String missingIssuer = sign(new ECDSASigner(supabaseKey), new JWSHeader.Builder(JWSAlgorithm.ES256)
+                .keyID(supabaseKey.getKeyID()).build(), new JWTClaimsSet.Builder(claims(UUID.randomUUID(), "authenticated", 3_600_000))
+                .issuer(null).build());
+
+        assertThatThrownBy(() -> config.jwtDecoder(jwksUrl, "").decode(token))
+                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> config.jwtDecoder(jwksUrl, "").decode(missingIssuer))
+                .isInstanceOf(JwtException.class);
+    }
+
+    @Test
     void refusesADemoTokenSignedWithTheWrongSecret() {
         assertThatThrownBy(() -> config.jwtDecoder(jwksUrl, SECRET).decode(demoToken(UUID.randomUUID(), "another-secret-that-is-also-at-least-32-bytes")))
                 .isInstanceOf(JwtException.class);
@@ -146,6 +162,7 @@ class SupabaseTokenDecoderTest {
         long expiresAt = System.currentTimeMillis() + expiresInMillis;
         return new JWTClaimsSet.Builder()
                 .subject(user.toString())
+                .issuer("http://127.0.0.1:" + jwks.getAddress().getPort() + "/auth/v1")
                 .audience(audience)
                 .claim("role", "authenticated")
                 .issueTime(new Date(expiresAt - 3_600_000))

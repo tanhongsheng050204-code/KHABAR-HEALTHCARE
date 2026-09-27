@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * "What I take": the patient, a consented caregiver or the clinic keeps this list, and the
+ * "What I take": the patient, a caregiver with SUMMARY_AND_ALERTS consent, or the clinic keeps this list, and the
  * doctor's safety check compares every new prescription against it.
  */
 @RestController

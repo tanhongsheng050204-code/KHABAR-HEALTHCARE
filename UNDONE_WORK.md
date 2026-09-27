@@ -1,4 +1,4 @@
-# Khabar — Remaining Work
+﻿# Khabar — Remaining Work
 
 **Reviewed:** 25 September 2026
 **Source of truth:** [`plan.md`](plan.md), checked against the current codebase and project documentation.  
@@ -8,33 +8,36 @@
 
 The local core product is largely implemented and tested:
 
-- API: **226 automated tests passing** in the 25 Sep full suite, including embedded Neo4j graph tests; the optional local PostgreSQL-only test is skipped, and hosted PostgreSQL 16 migration/schema checks passed again on 25 Sep. A focused follow-up-message regression suite also passed (9 tests). See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
-- Agents: **205 automated tests passing** in the 25 Sep run; one third-party deprecation warning. This includes a regression check for the Vercel-prefixed health endpoint.
-- Next.js web app: lint, TypeScript, and the production build pass. The build needed to run outside the restricted sandbox because its worker could not spawn there (`EPERM`). Hosted verification for head `40188c1` passed all jobs on 25 Sep (run [36112593024](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36112593024)); this head adds documentation after application-code commit `1bbdd10`, whose corrected privacy assertion passed. These are CI results, not deployment evidence. Fresh read-only route checks on 25 Sep returned web 200 and API `/api/health` 200; both `/agents/health` and `/agents/agents/health` returned 404. Deployment and successful live agent health verification remain open.
+- API: the latest full local rerun on 25 Sep executed **240 tests: 239 passed, 0 failed, 0 errored, 1 optional PostgreSQL smoke skipped**, including the Supabase wrong-issuer regression. A fresh rerun in this continuation reproduced that count; H2 applied and validated V1–V6. Hosted PostgreSQL 16 migration/schema/backup checks passed on an earlier branch head before current V5/V6 changes. See [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md). Hosted CI has not run against the current uncommitted changes.
+- Agents: **209 automated tests passing** in the latest 25 Sep run; one third-party deprecation warning. This includes graph-unavailable evaluator warnings, status coverage for missing IDs/unconfigured or unreachable Neo4j/missing graph patients, and a regression check for the Vercel-prefixed health endpoint.
+- Next.js web app: lint, TypeScript, and production build pass on the current worktree (25 Sep). Hosted verification for head `40188c1` passed all jobs on 25 Sep (run [36112593024](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36112593024)); this head adds documentation after application-code commit `1bbdd10`, whose corrected privacy assertion passed. These are CI results, not deployment evidence. The latest public health-script run timed out at API `/api/health` and got HTTP 404 at `/agents/health`; recent reads have also returned API 200 and 404 at both `/agents/health` and `/agents/agents/health`, so deployment health is not established. Authenticated Vercel CLI inspection recorded in [`docs/WORKSPACE_VERIFICATION_2026-09-25.md`](docs/WORKSPACE_VERIFICATION_2026-09-25.md) found the current production deployment predates the health-route fix and the project settings differ from documented Services/root expectations. No setting change or deployment has been made.
 - Local bug bash done (23 Sep): [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md), 11 defects found and fixed, including one safety issue.
 - The main clinical workflow, access rules, encryption, de-identification, follow-up logic, and demo data are implemented locally.
 
-The remaining work is primarily real-provider integration, missing stretch features, evidence-gathering, and demo/public-readiness work.
+The remaining work is primarily real-provider integration, missing stretch features, evidence-gathering, and demo/public-readiness work. The local evaluator now adds a visible, non-blocking safety warning whenever graph-derived context could not be checked; a current-worktree browser rehearsal with Neo4j disabled confirmed that the warning appears in the visit safety card and the separate critical duplicate-medicine gate remains active. The local graph-disabled check is recorded in [`docs/DEMO_RUN_2026-09-25_LOCAL.md`](docs/DEMO_RUN_2026-09-25_LOCAL.md).
 
 ### Pilot-readiness engineering added — 24 September 2026
+
+- [x] Prepared a fictional-demo-only intended-use and claims-boundary draft ([`docs/INTENDED_USE_DRAFT.md`](docs/INTENDED_USE_DRAFT.md)). It explicitly excludes real-patient and clinical use, states the measured triage limitation, and identifies owner, clinician, privacy, and regulatory reviews still required. It is not approved and does not close the pilot acceptance gate.
 
 - [x] Call-list snapshots are server-timestamped. Recording successful contact closes only replies, readings, and unanswered check-ins that existed in that snapshot; later items remain open. The doctor UI confirms the effect before submission.
 - [x] Controller errors return a safe, consistent code/message/status/request-reference/retryability shape. `X-Request-ID` is server-generated and exposed to the web app through CORS.
 - [x] A separate Spring `pilot` profile refuses to run with `local` or `demo`, excludes local demo controllers/seeding, validates (rather than updates) the database schema, and leaves scheduled check-ins off by default.
-- [x] Added `.github/workflows/verify.yml` to run API tests, agent tests, and frontend lint/typecheck/build on pushes and pull requests. The latest hosted run for `pilot-foundations` head `40188c139b285e5931c25c9040e88568cf870282` passed on 25 Sep, including API tests, agent tests, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and disposable backup/restore ([run 36112593024](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36112593024)). Public deployment verification remains open.
+- [x] Added `.github/workflows/verify.yml` to run API tests, agent tests, and frontend lint/typecheck/build on pushes and pull requests. The latest hosted run for `pilot-foundations` head `01be0f6e36b9ba0971f90de8cd40b63c3f604d8f` passed on 25 Sep, including API tests, agent tests, web lint/typecheck/build, PostgreSQL 16 migration/schema validation, and disposable backup/restore ([run 36112985600](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36112985600)). Public deployment verification remains open.
 - [x] Added V1 initial schema and V2 reading receive-time/backfill migrations. H2 PostgreSQL-mode tests verify clean creation, one-time migration, legacy timestamp backfill, and `pilot` profile startup with Hibernate schema validation.
 - [x] Added an isolated PostgreSQL 16 migration/schema-validation smoke job to CI. It passed in hosted runs on 24 and 25 Sep, including the latest branch head run 36104133960.
 - [x] Added a PostgreSQL 16 CI backup/restore rehearsal using a custom-format dump, a second disposable database, and checks for a marker row and Flyway history. Run 36104133960 passed; this is synthetic-data CI evidence only.
 - [x] Follow-up cases (24 Sep): each listed patient gets one open case (New → Assigned → Acknowledged → In progress / Unable to contact / Escalated → Resolved) with owner, acknowledgement deadline, call attempts, escalation and a structured closure reason, plus an append-only history. Cases stay listed until closed; urgent cases need a note and, to close as unreachable, an escalation first. Assign/acknowledge/close are idempotent. Doctor and nurse queues show status, owner and overdue flags, with filters (mine, unassigned, overdue, urgent). V4 migration and 12 tests.
 - [x] Clinic settings (24 Sep): hours, escalation contact, per-level acknowledgement times and a weekly rota with backup, set by doctors or clinic admins. The call list shows today's cover and says plainly when nobody is rostered. Admins also see a clinic activity log (cases by reference, never patient names) and integration health (agents, messages, scheduler, graph, sign-in).
-- [ ] Still open for the alert lifecycle: notifying the on-duty person (push, SMS or WhatsApp to staff), automatic escalation when a case goes overdue, and a clinician review of the closure reasons and default times.
-- [ ] Before pilot: compare and back up any existing database before review/baselining; rehearse forward migration recovery and deployment rollback. The disposable PostgreSQL 16 CI backup/restore checks the recovery point by confirming a post-backup write is absent ([run 36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612)). This is not production recovery evidence and does not authorize using the public demo database for a pilot.
+- [x] Added opt-in automatic overdue routing to that weekday's active rostered backup. V6 stores routing separately from clinician escalation; it records an append-only event, leaves the case unacknowledged and visibly overdue, and explicitly says no staff notification was sent. It cannot satisfy the clinician-escalation gate for closing an urgent case as unreachable. `KHABAR_AUTO_ESCALATION_ENABLED` is false by default; automated tests cover routing, idempotency, the no-backup case and the closure safeguard.
+- [ ] Still open for the alert lifecycle: send an actual notification to the on-duty person (push, SMS or WhatsApp to staff), and have a clinician approve the closure reasons, acknowledgement deadlines and auto-routing behavior before anyone enables the scheduler or uses this for care.
+- [ ] Before pilot: compare and back up any existing database before review/baselining; rehearse forward migration recovery and deployment rollback. CI run [36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612) rehearsed restore from a disposable PostgreSQL 16 backup, but predates the current uncommitted V5/V6 migrations. Rerun the hosted PostgreSQL migration and backup/restore jobs on a commit containing V1–V6 before treating the current migration head as PostgreSQL-verified. No disposable PostgreSQL server or container runtime is available in this local shell. None of this is production recovery evidence or authorization to use the public demo database for a pilot.
 
 ### UI redesign update — 24 September 2026
 
-The approved teal/lavender care-story redesign is implemented across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. The previously deployed version was confirmed on the live site on 24 Sep. The current branch head passed hosted lint, TypeScript, production build, API, agent, and PostgreSQL migration checks on 25 Sep; deployment of this branch to the public demo remains open. The root layout no longer downloads fonts during builds: it uses the existing system sans/monospace stacks and Georgia serif fallback. If exact Geist/Newsreader branding is required, self-host reviewed font assets and recheck their licensing before adding them.
+The approved teal/lavender care-story redesign is implemented across landing, login, doctor home, and patient home. It includes motion controls, navigation repairs, loading/error states, and mobile usability improvements. The previously deployed version was confirmed on the live site on 24 Sep. Hosted checks passed on an earlier 25 Sep branch head; those checks predate the current uncommitted V5/V6 migrations and finalisation changes. Deployment and PostgreSQL verification of the current worktree remain open. The root layout no longer downloads fonts during builds: it uses the existing system sans/monospace stacks and Georgia serif fallback. If exact Geist/Newsreader branding is required, self-host reviewed font assets and recheck their licensing before adding them.
 
-See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the implementation summary and explicit remaining checks. Local patient and doctor browser flows have since been verified; device reduced-motion, full accessibility checks, real sign-in, and deployment verification remain open.
+See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the implementation summary and explicit remaining checks. Local patient and doctor browser flows have since been verified. A current-worktree caregiver UI check also confirmed the `SUMMARY`-only state hides medication and reading details; because that patient had no finalised summary, populated-summary rendering remains unverified. On 25 Sep the login page gained a “Skip to sign in” link, and the shared workspace skip-link targets were made programmatically focusable across workspace, patient-record, and visit pages. A browser-driven Tab pass traversed login (11 targets), doctor home (63), patient home (28), and doctor patient record (12); every reached element had visible bounds and matched `:focus-visible`. In an isolated current-source local stack, the caregiver page rendered its active sharing scope and its five app controls, and the visit page's 13 app controls matched `:focus-visible`; both skip links focused the overview. The visit was an empty draft in isolated in-memory H2 and disappeared when the API stopped. The doctor motion control paused motion (`data-motion=off`), but system-level reduced-motion behavior was not tested. A development-only caregiver check against the older shared local API remains fail-closed and is not current-backend permission evidence. Details and limits are in [`docs/DEMO_RUN_2026-09-25_LOCAL.md`](docs/DEMO_RUN_2026-09-25_LOCAL.md). Remaining route states, OS reduced-motion settings, a real screen-reader review, and representative accessibility testing remain open. Localized patient, caregiver, and clinician summary text now sets its `lang` attribute from the summary locale, constrained in the web type to the summary agent’s supported `en`, `ms`, `zh`, and `ta` codes. The clinician visit-note textarea has a visible associated label. Current-worktree lint, typecheck, and production build pass. Real sign-in, revocation in a fresh session, and deployment verification remain open.
 
 ---
 
@@ -53,7 +56,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [x] Add tests proving that personally identifiable information cannot enter Neo4j (`PatientGraphSyncTest`, `DemoGraphTest`, against a real in-process Neo4j).
 - [x] Manual happy path (23 Sep): local Neo4j + API + agents; Aminah's context read back by graph ID through the agents; a medicine added in the API appeared in the graph; the safety check given only her graph ID caught the duplicate metformin and the bitter-gourd clash.
 - [x] Run the deployed flow against AuraDB (24 Sep): free AuraDB instance `ebc9e325` (replaced the first instance, `18125f54`, whose password had been exposed; Aura Free allows no password change); the three `NEO4J_*` variables set on `khabar-api` production; redeployed; `POST /dev/graph/sync` wrote 31 patients. Aminah's context read back through the live agents by graph ID only (duplicate metformin from two clinics, bitter gourd, last visit, "pening" symptom). AuraDB checked directly: patient nodes hold only `graph_id` and `pregnant`; no names, IC numbers or phone numbers found.
-- [ ] No patient in the live database has a recorded condition yet, so the graph has no `Condition` nodes. Conditions arrive through the guided intake; run it once on the live site before the demo.
+- [ ] Verify `Condition` nodes in the deployed demo graph after the API containing `de97e75` or later is deployed and the fictional demo reset runs. Local `DemoData.resetFollowUp()` now restores Aminah's seeded intake with diabetes and hypertension and calls `graphSync.changed`; `DemoGraphTest.resettingTheFictionalDemoRestoresAminahsConditionsToTheGraph` clears the in-process graph, invokes that reset, and verifies both conditions are written back. The live demo graph has not been checked after this reset path, so deployment verification remains open.
 
 **Done when:** the demo patient’s medication, allergy, herb, and condition context is written to and read from Neo4j using only the random graph ID.
 
@@ -65,23 +68,27 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 - [ ] Configure Supabase Auth for doctor email/password and patient/caregiver email OTP.
 - [x] Configure the web app with the public Supabase URL and publishable key (already set on the `khabar-landing` project).
-- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API. Local part done (24 Sep): the API now accepts real Supabase sign-ins (ES256, checked against the project's published keys) and the demo buttons' HS256 tokens side by side, each only against its own key (`SecurityConfig.jwtDecoder`). `SupabaseTokenDecoderTest` (8 tests) covers both token kinds, another project's key, the wrong secret, expired tokens, the wrong audience, unsigned and malformed tokens, and refusing to start with neither key configured. The live key set was checked: one ES256 P-256 key. The issuer is not checked: the project's key set already pins tokens to this project. Deployed to `khabar-api` production on 24 Sep (production has both `SUPABASE_JWKS_URL` and `SUPABASE_JWT_SECRET`; the code deployed before this used only the key set when both were present, which refused demo-button tokens). Still open: confirm one real and one demo sign-in on the live site.
+- [ ] Validate issuer, audience, signing keys, expiry, and role mapping in the deployed API. Local code derives the expected issuer from `SUPABASE_JWKS_URL` and validates it on asymmetric Supabase tokens; the separate demo HS256 path continues to validate audience/expiry against its own secret. `SupabaseTokenDecoderTest` now has 9 passing cases, including a correctly signed token with a wrong issuer, another project's key, the wrong secret, expired tokens, the wrong audience, unsigned and malformed tokens, both supported token kinds, and refusing to start with neither key configured. The current full API suite passed locally; deployed role behavior remains open: confirm doctor, patient, caregiver, and demo sign-ins on the live site.
 - [ ] Test doctor, patient, and caregiver sign-in on the deployed web app.
 - [ ] Test revoked caregiver consent immediately blocks access in the deployed environment.
+- Local API regression added 25 Sep: a caregiver first reads the fictional patient's record, the same consent row is revoked, and the next request is denied with HTTP 403 (`PatientRecordAccessTest.revokingConsentImmediatelyBlocksTheCaregiversNextRecordRequest`). This verifies server-side request-time revocation; deployed role behavior and already-rendered browser content remain open.
+- [x] Enforce caregiver consent scope: `SUMMARY` can access only the approved summary endpoint; `SUMMARY_AND_ALERTS` also grants the shared patient card, medication list and readings. `/api/me` reports the per-patient scope and the caregiver UI hides those details for summary-only consent. `PatientRecordAccessTest` and `OnboardingTest` cover denied detail/medication/reading access, allowed summary access and scope visibility. Deployed role behavior remains open.
 
 **Done when:** all three roles can sign in without a developer token and can access only the records allowed by their role.
 
 ### 1.3 Verify the deployed end-to-end product
 
-**Status:** Deployed rehearsal with demo sign-in passed on 23 Sep (see the end of [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Still open: the same run with real Supabase sign-in and AuraDB connected. The web deploy workflow was fixed on 24 Sep (new token; the org and project ID secrets had a hidden character from a PowerShell pipe): every push to `main` that changes `web/` now lints, type-checks and deploys the web app.
+**Status:** Deployed rehearsal with demo sign-in passed on 23 Sep (see the end of [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). On 25 Sep, read-only requests returned web 200, API `/api/health` 200, and 404 for both agent health routes. The last successful web deploy workflow run was 35976458448 on `main` at `79924b3` (24 Sep); current `main` is `5a1056b`, and changes since that deployment include `services/agents/core/security.py`. The workflow deploys `web/` only; API and agents are deployed manually. Still open: deploy the verified API/agents code through the authorized release process, restore and verify public agent health, and repeat the public rehearsal with real Supabase sign-in and AuraDB connected.
 
 **Required work**
 
 - [ ] Confirm deployed web, API, agent service, Supabase, and Neo4j environment variables are configured correctly.
+- [ ] Deploy and verify the current backend after current V1–V6 migrations pass hosted PostgreSQL/backup checks. Authenticated CLI inspection shows the latest production deployment was created on 24 Sep, before commit `da5658a` (25 Sep), which added the Vercel-prefixed `/agents/health` route; this stale deployment is the leading explanation for the current 404. That deployment did build both services. Also correct/re-verify project build settings: CLI inspection reports Framework Preset **Other** (`framework: null`) and root unset (`rootDirectory: null`), while the documented setup expects Vercel Services and root `services/`. No setting change or deployment has been made. See [`docs/WORKSPACE_VERIFICATION_2026-09-25.md`](docs/WORKSPACE_VERIFICATION_2026-09-25.md) and [`docs/SETUP_INTEGRATIONS.md`](docs/SETUP_INTEGRATIONS.md).
 - [x] Perform an end-to-end rehearsal using fake data on the public URLs, with demo sign-in: pre-visit → draft → safety review → finalise → summary → follow-up reply → call list (booking and intake were run locally the same day).
 - [ ] Repeat the rehearsal for doctor, patient, and caregiver permissions.
 - [ ] Record defects and fix only issues that affect the core demo.
 - [x] Keep a concise demo-run checklist and result: [`docs/DEMO_RUN_CHECKLIST.md`](docs/DEMO_RUN_CHECKLIST.md) and [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md).
+- [x] Add a repeatable public API/agents health check (`services/scripts/check-health.mjs`) so a deploy is not considered healthy when the agents route returns 404.
 
 **Done when:** the entire core story works from public URLs without local-only services or developer tokens.
 
@@ -111,12 +118,13 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 **Required work**
 
-- [ ] Confirm Favoriot’s current free-tier availability and limits.
+- [x] Check Favoriot's current published plan limits (25 Sep 2026): the pricing page lists a lifetime RM0 tier with 1 device, 500 daily data points, 1 dashboard, 1 rule, and 1-month data retention ([official pricing](https://www.favoriot.com/iotplatform/pricing)); its 1 Sep 2026 notice says the subscription plans were restructured ([official notice](https://www.favoriot.com/category/press-release/)). The older free-plan signup page still lists unlimited devices, 500 API calls/day, and 1-year retention ([official signup page](https://www.favoriot.com/subscribe-free-plan)), so confirm which limits the actual new account receives before relying on the service.
+- [ ] Verify the selected free-tier limits in the actual test account and confirm a one-device integration test is still available.
 - [ ] Configure a test device or forwarding rule using the per-device secret.
 - [ ] Send one blood pressure and one glucose reading through Favoriot.
 - [ ] Verify a worrying reading affects the doctor call list.
 
-**Decision:** If live setup is not quick and free, keep the simulated reading flow in the demo and present real Favoriot connection as a next step.
+**Decision:** Published pricing currently offers a limited one-device free tier; keep simulated readings as the demo fallback until account limits and a successful webhook/call-list test are confirmed. Do not use Favoriot readings for clinical care.
 
 ### 2.3 LLM and transcription evaluation
 
@@ -124,8 +132,9 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 **Required work**
 
-- [ ] Run the ten-case planted-error set on the candidate LLMs.
-- [ ] Record which critical errors each model catches and select the safer model for this prototype.
+- [x] Re-run the independent held-out word-list baseline locally (25 Sep 2026): **2/12 red replies caught, 16/22 replies under-triaged, 0 false alarms on expected-ok replies**. This is not the planned model comparison and does not validate emergency detection; report: [`docs/evals/triage-wordlist-current.md`](docs/evals/triage-wordlist-current.md).
+- [x] Clarify the planned evaluation: the ten-case planted-error suite checks the deterministic evaluator and cannot select a model. The suite and clean-draft check remain automated regression coverage (`services/agents/tests/test_planted_errors.py`).
+- [ ] Compare candidate models only on tasks where they are used, including the independent holdout plus clinician-authored triage set; requires a provider key and qualified clinician-authored examples. Do not claim emergency detection performance before this work and review are complete.
 - [ ] Run the one-hour transcription comparison on five Manglish recordings.
 - [ ] Count clinically important drug-name errors, not only general transcription quality.
 - [ ] Record the selected LLM, transcription model, results, date, and rationale in `plan.md` or `docs/EXPLAIN.md`.
@@ -201,6 +210,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 **Required work**
 
+- [x] Prepare a draft facilitation protocol and low-data score sheet ([`docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md`](docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md)). It requires owner, ethics/event, clinician, fluent-reader, and privacy review before recruitment; preparation is not participant evidence.
 - [ ] Recruit five people using their preferred languages.
 - [ ] Compare English-only and Khabar summaries using the balanced two-case method in `plan.md`.
 - [ ] Ask the three planned questions: medicine, timing/dose, and warning symptom.
@@ -211,21 +221,21 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 **Status:** Future scheduled work; not evidenced as complete.
 
 - [x] Bug bash the core workflow locally ([`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md)). Repeat on the deployed site once it is redeployed.
-- [ ] Prepare stable fake demo data, including Mak Cik Aminah’s full story.
+- [x] Prepare stable fake demo data, including Mak Cik Aminah’s full story. The local demo profile seeds fictional patients, and `POST /dev/demo/reset` restores Aminah’s intake, conditions, exact three medication/remedy entries, caregiver consent, and booked appointment; `services/README.md` documents the reset. The 25 Sep local rehearsal used the seeded story. This does not seed or alter production data.
 - [ ] Move services to reliable / always-on hosting before a live demo.
 - [x] Prepare first drafts of 3-, 5-, and 7-minute pitch versions (`docs/PITCH_SCRIPTS.md`). Personalization, factual check against the live demo environment, and timed rehearsal remain open.
 - [ ] Record and review a demo video.
-- [ ] Rehearse the demo with poor-network and provider-failure fallbacks.
+- [ ] Rehearse the demo with provider-failure fallbacks. Local checks have covered API outage and retry, a five-second delayed recovery-update response, a browser-simulated request failure before the API received it followed by one retry, browser-context offline/reconnect and Chromium-throttled recovery update, and lost-response-after-commit/reload for recovery updates and visit finalisation (see `docs/DEMO_RUN_2026-09-25_LOCAL.md`, `docs/RECOVERY_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`, and `docs/FINALISE_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`). API tests verify a repeated request does not triage or notify twice. A local API-only cold-start sample returned healthy in 11.97 seconds from launch (details in `docs/COLD_START_CHECK_2026-09-25_LOCAL.md`); this is not deployed performance evidence. Device-wide/mobile network loss, WhatsApp/provider outage, PostgreSQL concurrency, and deployed rehearsal remain open.
 - [x] Create a repeatable rehearsal checklist with core workflow, role/access checks, failure fallbacks, and a result template (`docs/DEMO_RUN_CHECKLIST.md`). This is preparation only; no rehearsal result is implied.
-- [x] Run a local fictional-data rehearsal on 25 Sep, including a completed guided intake visible in the doctor pre-visit report, visit safety gate, final summary/outbox, patient urgent reply/call-list update, linked/unlinked caregiver access and immediate revocation, and the agent-down reply fallback ([record](docs/DEMO_RUN_2026-09-25_LOCAL.md)). Graph-backed context, network/retry tests and deployed rehearsal remain open.
+- [x] Run a local fictional-data rehearsal on 25 Sep, including a completed guided intake visible in the doctor pre-visit report, visit safety gate, final summary/outbox, patient urgent reply/call-list update, linked/unlinked caregiver access and immediate revocation, the agent-down reply fallback, and local outage/retry ([record](docs/DEMO_RUN_2026-09-25_LOCAL.md)). Recovery update retries are idempotent by client request ID and preserve only that opaque ID across reloads. Lost-response/reload recovery and browser-context offline/throttled-network behavior were checked locally for updates; finalisation lost-response/reload was also checked. Graph-backed context, device-wide network failure, provider outage, PostgreSQL concurrency, and deployed rehearsal remain open.
 
 ### 4.3 Documentation habit
 
 **Status:** `docs/EXPLAIN.md` exists, but daily coverage has not been verified.
 
 - [x] Add a dated entry explaining the DDInter evaluator and sign-in changes in plain language (`docs/EXPLAIN.md`, 23 Sep 2026). Ongoing daily coverage remains the builder's responsibility.
-- [ ] Record architecture decisions, integration credentials setup steps without secrets, and test results.
-- [ ] Keep a short list of code areas you can personally explain for the SDC review.
+- [x] Record architecture decisions, integration setup steps without secrets, and test results (`docs/DECISIONS.md`, `docs/SETUP_INTEGRATIONS.md`, `docs/TEST_RESULTS.md`, and `services/README.md`). Keep these records current as changes are made.
+- [x] Prepare a short code-area study list for the SDC review (`docs/CODE_TO_EXPLAIN.md`). The checklist is intentionally unticked: the builder still needs to read each area and confirm they can explain it without notes.
 
 ---
 
@@ -233,11 +243,14 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 These are not implementation tasks, but they are still open in `plan.md`.
 
-- [ ] Get organisers’ answers on SDGs, declaration changes, pitch length, and judging weights.
+- [x] Check the official handbook: all SDGs 1–17 are in scope; teams are randomly assigned a domain, while its challenge brief and judging weights are supplied in the post-registration Participant Handbook (§§7.1–7.3 and 3).
+- [ ] Ask organisers whether a pre-existing-code declaration can be amended after registration and how to declare additional reused code; §8.2.1 requires approval.
+- [ ] Confirm final pitch duration and operational judging details when the Participant Handbook is issued.
 - [ ] Decide available working hours for the SDC week alongside classes.
 - [x] Create a separate local Git repository at `../starter-skeleton/` containing the generic skeleton. It currently has no remote configured; publish/configure the intended repository and confirm its contents before registration.
 - [x] The tracked starter-skeleton files contain the generic example flow rather than Khabar clinical features, screens, patient data, or prompts. Review the full tracked history again before publication.
-- [ ] Submit the declaration before registration. A draft is in `../starter-skeleton/DECLARATION_DRAFT.md`; insert the public repository link, verify the event wording, and submit through the organiser's process.
+- [x] Compare the starter declaration with the official handbook §§8.2.1, 8.4.1, and 8.5; the draft now states organiser approval is required and separates starter disclosure from project-wide tool/resource disclosure (`../starter-skeleton/DECLARATION_DRAFT.md`). Prepare a separate project-wide disclosure draft (`docs/PROJECT_DISCLOSURE_DRAFT.md`) from code and workspace evidence without credentials.
+- [ ] Still open: publish the starter, confirm the exact AI tools and provider use with the project owner, finalize the resource list, submit during registration, and obtain organiser approval. The starter repository's separate checklist is [`../starter-skeleton/UNDONE_WORK.md`](../starter-skeleton/UNDONE_WORK.md).
 
 ---
 
@@ -259,3 +272,11 @@ Do not mark a task complete merely because code exists. Mark it complete only wh
 - **Provider integration:** a successful test against the real provider using fake data.
 - **Security/access work:** an explicit denied-access test as well as an allowed-access test.
 - **Demo work:** one uninterrupted rehearsal from deployed URLs.
+
+- [x] Browser-check lost-response recovery on 25 Sep using a local one-shot proxy: the API returned 200 upstream, the proxy dropped the browser response, and after reload the same fictional update received the stored acknowledgement on retry. The draft text was not persisted. See [`docs/RECOVERY_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`](docs/RECOVERY_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md). API tests separately confirm retry idempotency (one reply, one triage, one notice); provider and deployed-network checks remain open.
+
+\n
+
+\n
+
+\n

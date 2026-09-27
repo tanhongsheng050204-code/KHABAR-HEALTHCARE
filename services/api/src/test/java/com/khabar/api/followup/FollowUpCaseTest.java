@@ -10,12 +10,14 @@ import com.khabar.api.identity.ClinicRepository;
 import com.khabar.api.identity.ClinicStaffAccess;
 import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.Role;
+import com.khabar.api.messaging.OutboundMessageRepository;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.service.AgentClientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,6 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -56,6 +60,9 @@ class FollowUpCaseTest {
     @Autowired AppUserRepository users;
     @Autowired PatientRepository patients;
     @Autowired PatientReplyRepository replies;
+    @Autowired OutboundMessageRepository outbound;
+    @Autowired FollowUpCases followUpCases;
+    @Autowired ApplicationContext applicationContext;
     @Autowired ClinicStaffAccess staffAccess;
     @MockBean AgentClientService agents;
 
@@ -83,6 +90,11 @@ class FollowUpCaseTest {
         when(agents.checkAgentHealth()).thenReturn(healthy);
     }
 
+    @Test
+    void automaticRoutingSchedulerIsDisabledByDefault() {
+        assertThat(applicationContext.getBeansOfType(FollowUpCaseAutoEscalationScheduler.class)).isEmpty();
+    }
+
     Patient followedUp(Patient p) {
         p.startFollowUp(LocalDate.now().minusDays(3));
         return patients.save(p);
@@ -93,6 +105,43 @@ class FollowUpCaseTest {
         mvc.perform(post("/api/followup/replies").header("Authorization", bearer(as.getId()))
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(Map.of("text", text))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void retryingTheSameClientMessageReturnsPriorResultWithoutDuplicatingTriageOrNotice() throws Exception {
+        UUID clientMessageId = UUID.randomUUID();
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "watch", "matched", "x"));
+        String body = json.writeValueAsString(Map.of("text", "Masih pening", "clientMessageId", clientMessageId));
+
+        mvc.perform(post("/api/followup/replies").header("Authorization", bearer(aminahAccount.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/followup/replies").header("Authorization", bearer(aminahAccount.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Kemas kini ini telah diterima dan tidak dihantar semula."));
+
+        assertThat(replies.findByPatientIdAndClientMessageId(aminah.getId(), clientMessageId)).isPresent();
+        assertThat(outbound.findTop50ByOrderByIdDesc().stream()
+                .filter(message -> message.getPatientId().equals(aminah.getId()) && message.getKind().equals("NOTICE")))
+                .hasSize(1);
+        verify(agents, times(1)).triageReply(anyString(), any());
+    }
+
+    @Test
+    void clientMessageIdCannotBeReusedForDifferentText() throws Exception {
+        UUID clientMessageId = UUID.randomUUID();
+        when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "watch", "matched", "x"));
+        mvc.perform(post("/api/followup/replies").header("Authorization", bearer(aminahAccount.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(
+                                Map.of("text", "Masih pening", "clientMessageId", clientMessageId))))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/followup/replies").header("Authorization", bearer(aminahAccount.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(
+                                Map.of("text", "Lebih sakit", "clientMessageId", clientMessageId))))
+                .andExpect(status().isConflict());
+        assertThat(replies.findByPatientIdAndClientMessageId(aminah.getId(), clientMessageId)).isPresent();
+        verify(agents, times(1)).triageReply(anyString(), any());
     }
 
     JsonNode callList(AppUser as) throws Exception {
@@ -235,6 +284,52 @@ class FollowUpCaseTest {
         clock.advance(Duration.ofMinutes(10));
         assertThat(itemFor(callList(nurse), rosnah).get("followUpCase").get("overdue").asBoolean()).isTrue();
         act(nurse, id, "acknowledge", null).andExpect(jsonPath("$.overdue").value(false));
+    }
+
+    @Test
+    void autoEscalationRoutesOverdueCaseToRosterBackupWithoutClaimingAcknowledgementOrNotification() throws Exception {
+        String today = LocalDate.now(clock).getDayOfWeek().name();
+        saveSettings(doctor, 5, 5, 5, List.of(Map.of(
+                "day", today, "primaryUserId", doctor.getId(), "backupUserId", nurse.getId())))
+                .andExpect(status().isOk());
+        reply(rosnahAccount, "red", "Sakit dada");
+        String id = caseId(doctor, rosnah);
+
+        clock.advance(Duration.ofMinutes(6));
+        assertThat(followUpCases.autoEscalateOverdueCases()).isEqualTo(1);
+        JsonNode escalated = itemFor(callList(doctor), rosnah).get("followUpCase");
+        assertThat(escalated.get("status").asText()).isEqualTo("ESCALATED");
+        assertThat(escalated.get("autoRoutedTo").asText()).isEqualTo("Nurse Mei");
+        assertThat(escalated.get("escalatedTo").isNull()).isTrue();
+        assertThat(escalated.get("escalatedAt").isNull()).isTrue();
+        assertThat(escalated.get("acknowledgedAt").isNull()).isTrue();
+        assertThat(escalated.get("overdue").asBoolean()).isTrue();
+
+        JsonNode events = history(doctor, id).get("events");
+        assertThat(events).hasSize(2);
+        assertThat(events.get(1).get("by").asText()).isEqualTo("Khabar (automatic)");
+        assertThat(events.get(1).get("note").asText()).contains("no staff notification was sent");
+        assertThat(followUpCases.autoEscalateOverdueCases()).isZero();
+        assertThat(history(doctor, id).get("events")).hasSize(2);
+
+        act(nurse, id, "contact", Map.of("outcome", "NO_ANSWER"));
+        act(nurse, id, "close", close("UNABLE_TO_CONTACT_AFTER_ATTEMPTS", "No answer after the automatic queue route", callList(nurse)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void autoEscalationLeavesOverdueCaseOpenWhenTodayHasNoRosteredBackup() throws Exception {
+        saveSettings(doctor, 5, 5, 5, List.of()).andExpect(status().isOk());
+        reply(rosnahAccount, "watch", "Masih pening");
+        String id = caseId(doctor, rosnah);
+        clock.advance(Duration.ofMinutes(6));
+
+        assertThat(followUpCases.autoEscalateOverdueCases()).isZero();
+        JsonNode active = itemFor(callList(doctor), rosnah).get("followUpCase");
+        assertThat(active.get("status").asText()).isEqualTo("NEW");
+        assertThat(active.get("overdue").asBoolean()).isTrue();
+        assertThat(active.get("autoRoutedAt").isNull()).isTrue();
+        assertThat(history(doctor, id).get("events")).hasSize(1);
     }
 
     ResultActions saveSettings(AppUser as, int red, int watch, int review, List<Map<String, Object>> rota) throws Exception {

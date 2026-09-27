@@ -195,7 +195,7 @@ export function DoctorHome({
       <WorkspaceError message={loadError} retry={() => void load()} />
     );
   return (
-    <main className={styles.workspace} id="overview">
+    <main className={styles.workspace} id="overview" tabIndex={-1}>
       {loadError && (
         <div className={styles.refreshError} role="alert">
           The refresh failed. Showing the last loaded information.{" "}

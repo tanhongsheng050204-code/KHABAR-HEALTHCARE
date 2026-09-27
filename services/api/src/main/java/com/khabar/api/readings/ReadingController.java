@@ -39,8 +39,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * F4: home blood pressure and blood sugar. Readings come from the patient or a caregiver in the app,
- * or from a linked device through Favoriot's HTTP forwarding. A worrying one goes on the call list.
+ * F4: home blood pressure and blood sugar. Readings come from the patient or a caregiver with
+ * SUMMARY_AND_ALERTS consent, or from a linked device through Favoriot's HTTP forwarding. A worrying
+ * one goes on the call list.
  */
 @RestController
 public class ReadingController {

@@ -5,6 +5,20 @@
   min-height: 100svh;
   background: #f8fbfa;
 }
+.skipLink {
+  position: fixed;
+  z-index: 20;
+  top: -80px;
+  left: 16px;
+  padding: 12px 16px;
+  color: #143f37;
+  background: #fff;
+  border: 2px solid #3c9b8c;
+  border-radius: 8px;
+}
+.skipLink:focus-visible {
+  top: 12px;
+}
 .story {
   position: relative;
   display: flex;

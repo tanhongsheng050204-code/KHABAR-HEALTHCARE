@@ -75,8 +75,8 @@
 **On-slide copy**
 
 - Next.js web app, Spring Boot API, FastAPI agent service, Supabase auth wiring, and Neo4j graph integration.
-- Local verification: API 226 passed (one optional local PostgreSQL test skipped), agents 205 passed, and web lint, type-check, and build passed.
-- Hosted CI passed all jobs, including PostgreSQL migration validation and a disposable backup/restore recovery-point check.
+- Latest local verification: API 238 passed (239 run, one optional local PostgreSQL test skipped), agents 209 passed, and web lint, type-check, and production build passed. Graph-unavailable safety warnings are included locally but have not been deployed.
+- Hosted CI passed all jobs, including PostgreSQL migration validation and a disposable backup/restore recovery-point check, on earlier commit `01be0f6`; it predates the current uncommitted V5/V6 and finalisation changes.
 
 **Visual:** Architecture diagram with the API owning records and access, and the agent service receiving de-identified task context.
 
