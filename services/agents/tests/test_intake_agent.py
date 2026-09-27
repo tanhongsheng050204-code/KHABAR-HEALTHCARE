@@ -41,6 +41,17 @@ def test_llm_turn_is_returned_to_the_caller():
     assert result["is_complete"] is False
 
 
+def test_the_first_model_turn_sends_a_conversation_not_only_instructions():
+    # Gemini moves the system message into system_instruction and rejects a request whose
+    # conversation is then empty ("contents are required"), which broke every first turn.
+    llm = RecordingLLM()
+    run(build_intake_graph(llm=llm), [])
+
+    conversation = [m for m in llm.sent if m.type != "system"]
+    assert conversation, "the model must receive at least one non-system message"
+    assert conversation[0].type == "human"
+
+
 def test_without_an_llm_the_scripted_intake_opens_with_the_reason_for_the_visit():
     graph = build_intake_graph(llm=None)
     result = run(graph, [], language="English")
