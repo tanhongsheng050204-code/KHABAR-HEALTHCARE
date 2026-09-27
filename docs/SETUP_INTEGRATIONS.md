@@ -54,6 +54,21 @@ buttons' tokens. What's left is configuration in the Supabase dashboard (Authent
    works; use a sender address you control.
 4. **URL configuration:** Site URL `https://khabar-landing-six.vercel.app`.
 
+**What is configured now, and what went wrong on the way (27 Sep):**
+
+- Until a custom SMTP sender is set, the templates cannot be edited, and the default email's link pointed to
+  `http://localhost:3000` with no code, whatever the Site URL. Set SMTP first, then edit the templates (step 2).
+- Resend's free sandbox sender (`onboarding@resend.dev`) only delivers to the Resend account owner's own
+  address, so it cannot reach other patients without a verified domain.
+- Current sender: a Gmail account through `smtp.gmail.com`, port `587`, username = the Gmail address,
+  password = a Gmail **App Password** (needs 2-Step Verification). Gmail limits daily sending.
+- When switching providers, change **every** field. A Host left at the old provider produced
+  `535 "Invalid username"` in Authentication → Logs, because the Gmail login was being sent to Resend.
+- A first-time address gets the **Confirm signup** template and an existing one gets **Magic Link**, so both
+  need `{{ .Token }}`.
+- Supabase limits how often one address can request a code; a second request within seconds returns `429`
+  (the sign-in screen shows "could not send a code").
+
 **Doctor accounts** (the screen has no staff sign-up, on purpose):
 1. Supabase → Authentication → Users → Add user, with email and password, and "Auto confirm" on.
 2. In the app, an existing doctor uses *Invite a doctor* (clinic tools, at the bottom of the doctor home), or calls
