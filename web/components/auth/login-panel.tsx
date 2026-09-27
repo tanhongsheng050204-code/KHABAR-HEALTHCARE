@@ -47,6 +47,10 @@ export function LoginPanel() {
   const [otp, setOtp] = useState("");
   const [manualToken, setManualToken] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [verified, setVerified] = useState<{
+    token: string;
+    registered: boolean;
+  } | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{
@@ -58,20 +62,62 @@ export function LoginPanel() {
 
   async function complete(token: string) {
     if (inviteCode.trim()) {
-      await apiRequest(
-        `/api/invites/${encodeURIComponent(inviteCode.trim())}/accept`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            displayName: displayName.trim() || undefined,
-          }),
-        },
-        token,
-      );
+      try {
+        await apiRequest(
+          `/api/invites/${encodeURIComponent(inviteCode.trim())}/accept`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              displayName: displayName.trim() || undefined,
+            }),
+          },
+          token,
+        );
+      } catch (error) {
+        // The sign-in itself succeeded; only the invitation failed. Keep the session so a
+        // one-time email code is not wasted, and say which code was the problem.
+        const reason =
+          error instanceof Error ? error.message : "It could not be used.";
+        const registered = await apiRequest<Me>("/api/me", {}, token).then(
+          () => true,
+          () => false,
+        );
+        setVerified({ token, registered });
+        throw new Error(
+          registered
+            ? `You are signed in, but the invitation code was not used: ${reason} You can continue without it.`
+            : `Your sign-in worked, but the invitation code was not accepted: ${reason} Check the invitation code below and try again. You do not need a new email code.`,
+        );
+      }
     }
     await apiRequest<Me>("/api/me", {}, token);
     setToken(token);
     router.replace("/home");
+  }
+
+  function continueSignedIn() {
+    if (!verified) return;
+    setToken(verified.token);
+    router.replace("/home");
+  }
+
+  async function retryInvite() {
+    if (!verified) return;
+    setBusy("invite");
+    setMessage(null);
+    try {
+      await complete(verified.token);
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "The invitation code could not be used.",
+      });
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function demo(role: "doctor" | "patient" | "caregiver") {
@@ -98,6 +144,7 @@ export function LoginPanel() {
   async function sendCode(event?: React.FormEvent) {
     event?.preventDefault();
     setMessage(null);
+    setVerified(null);
     if (!supabaseUrl || !supabaseKey) {
       setMessage({
         tone: "error",
@@ -169,6 +216,7 @@ export function LoginPanel() {
   async function signInWithPassword(event: React.FormEvent) {
     event.preventDefault();
     setMessage(null);
+    setVerified(null);
     if (!supabaseUrl || !supabaseKey) {
       setMessage({
         tone: "error",
@@ -259,6 +307,7 @@ export function LoginPanel() {
           onClick={() => {
             setMethod("password");
             setStage("credentials");
+            setVerified(null);
             setMessage(null);
           }}
           disabled={!!busy}
@@ -274,6 +323,7 @@ export function LoginPanel() {
           onClick={() => {
             setMethod("otp");
             setStage("credentials");
+            setVerified(null);
             setMessage(null);
           }}
           disabled={!!busy}
@@ -289,6 +339,29 @@ export function LoginPanel() {
         >
           {message.tone === "success" && <Check size={16} />}
           <span>{message.text}</span>
+        </div>
+      )}
+
+      {verified && (
+        <div className={styles.form}>
+          {verified.registered && (
+            <button
+              className="button-primary"
+              type="button"
+              disabled={!!busy}
+              onClick={continueSignedIn}
+            >
+              <ArrowRight size={17} /> Continue without the code
+            </button>
+          )}
+          <button
+            className={styles.backButton}
+            type="button"
+            disabled={!!busy}
+            onClick={() => void retryInvite()}
+          >
+            Try the invitation code again
+          </button>
         </div>
       )}
 
@@ -322,6 +395,7 @@ export function LoginPanel() {
             type="button"
             onClick={() => {
               setStage("credentials");
+              setVerified(null);
               setOtp("");
               setMessage(null);
             }}
