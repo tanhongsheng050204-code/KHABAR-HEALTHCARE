@@ -24,7 +24,7 @@ verify the current branch or deployment. Record each new run's date, commit, env
 - [x] Post-fix browser check: an intentionally unstructured fictional note produced the “no structured draft fields” message; the page still showed “No draft yet” and kept safety check/finalisation disabled.
 - [x] Run the safety review; a planted duplicate medicine blocked finalisation and a herb finding appeared as a warning.
 - [x] Record a rehearsal-only override reason and finalise the visit. This was not a clinical decision.
-- [ ] Review the patient summary in the selected language and verify medicine, dose, timing, and warning signs against the approved visit.
+- [x] Review the patient summary in the selected language and verify medicine, dose, timing, and warning signs against the approved visit. Deployed run 28 Sep ([record](DEMO_RUN_2026-09-28_DEPLOYED.md)): medicine, strength, dose, frequency, food timing and follow-up interval matched exactly (EN). Warning signs are a fixed generic sentence, and the doctor's free-text plan ("stop bitter gourd juice") and specific warning signs were not included; this is by design and is recorded as a finding needing a clinician decision.
 - [x] Confirm finalisation started the follow-up plan.
 - [x] Confirm the summary was queued in the local outbox; no WhatsApp delivery was claimed or attempted.
 - [x] Submit a fictional urgent follow-up reply, verify the precautionary response, and confirm it appeared at the top of the doctor call list.
@@ -33,9 +33,9 @@ verify the current branch or deployment. Record each new run's date, commit, env
 
 Run each check with a separate doctor, patient, and caregiver session in an isolated test environment.
 
-- [ ] Doctor can open only their clinic's assigned records and complete the intended visit workflow.
-- [ ] Patient can open their own record and manage consent, but cannot access another patient's record.
-- [ ] Caregiver can see only the linked patient's consented scope.
+- [ ] Doctor can open only their clinic's assigned records and complete the intended visit workflow. Deployed 28 Sep with a real doctor account: the visit workflow completed ([record](DEMO_RUN_2026-09-28_DEPLOYED.md)); cross-clinic denial not yet exercised.
+- [ ] Patient can open their own record and manage consent, but cannot access another patient's record. Deployed 27–28 Sep with a real patient account: own record, summary and consent management (invite and revoke a caregiver) worked; cross-patient denial not yet exercised.
+- [ ] Caregiver can see only the linked patient's consented scope. Deployed 27 Sep with a real caregiver account: `SUMMARY` scope showed a read-only view and revocation blocked the open session on refresh; a populated summary has not yet been viewed as caregiver.
 - [x] Local current-worktree UI check: a fictional caregiver with `SUMMARY` scope saw the summary-only state with no medication or reading details. The test patient had no finalised summary; deployed access and populated-summary rendering remain unverified. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
 - [x] Local H2 check: after consent was revoked, a fresh caregiver request was denied (403). This is not a deployed or real-account check. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md).
 - [x] Allowed and denied caregiver outcomes were recorded using fictional records: linked patient 200, unrelated patient 403, and revoked-consent fresh request 403. See [`DEMO_RUN_2026-09-25_LOCAL.md`](DEMO_RUN_2026-09-25_LOCAL.md). No real person's records were used.
