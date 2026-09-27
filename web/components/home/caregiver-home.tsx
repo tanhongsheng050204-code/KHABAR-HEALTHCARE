@@ -13,6 +13,7 @@ import type { Me, Medication, Patient, Reading, Summary } from "@/lib/types";
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import styles from "@/app/home/home.module.css";
 import { greetingName } from "@/lib/names";
+import { ListenButton } from "./listen-button";
 
 type Notice = { tone: "error" | "success" | "info"; text: string };
 
@@ -164,6 +165,7 @@ export function CaregiverHome({
                   <blockquote className={styles.caregiverSummary} lang={summary.language}>
                     {summary.text}
                   </blockquote>
+                  <ListenButton text={summary.text} language={summary.language} />
                   {summary.needsDoctor && (
                     <div className={styles.doctorAttention}>
                       <HeartPulse size={17} />

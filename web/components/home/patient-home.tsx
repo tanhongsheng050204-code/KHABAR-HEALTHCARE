@@ -30,6 +30,7 @@ import type {
   Summary,
 } from "@/lib/types";
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
+import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import styles from "@/app/home/home.module.css";
 import { greetingName } from "@/lib/names";
@@ -189,6 +190,7 @@ export function PatientHome({
               </p>
             </div>
             <blockquote lang={summary.language}>{summary.text}</blockquote>
+            <ListenButton text={summary.text} language={summary.language} />
             {summary.needsDoctor && (
               <div className={styles.doctorAttention}>
                 <MessageCircle size={17} />
