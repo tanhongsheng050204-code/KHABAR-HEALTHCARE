@@ -12,6 +12,7 @@ import {
   MessageCircle,
   ShieldCheck,
   Stethoscope,
+  UserRoundPlus,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -28,6 +29,8 @@ import {
 import styles from "@/app/home/home.module.css";
 const roleIcon = {
   DOCTOR: Stethoscope,
+  NURSE: HeartPulse,
+  CLINIC_ADMIN: UserRoundPlus,
   PATIENT: UserRound,
   CAREGIVER: ShieldCheck,
 };
@@ -43,13 +46,23 @@ export function AppShell({
   const RoleIcon = roleIcon[me.role];
   const pathname = usePathname();
   const { section, navigate } = useWorkspaceNavigation();
+  const clinicDoctor = me.clinicRoles?.includes("DOCTOR");
+  const adminOnlyHome = me.clinicRoles?.includes("CLINIC_ADMIN") && !me.clinicRoles?.includes("NURSE") && !me.clinicRoles?.includes("DOCTOR");
   const links: { id: WorkspaceSection; label: string; icon: typeof Home }[] = [
-    { id: "overview", label: "Overview", icon: Home },
-    ...(me.role === "DOCTOR"
+    { id: "overview", label: adminOnlyHome ? "Staff & access" : me.clinicRoles?.includes("NURSE") && me.role !== "DOCTOR" ? "Call list" : "Overview", icon: adminOnlyHome ? UsersRound : me.clinicRoles?.includes("NURSE") ? HeartPulse : Home },
+    ...(clinicDoctor
       ? [
           { id: "people" as const, label: "Patients", icon: UsersRound },
           { id: "schedule" as const, label: "Schedule", icon: CalendarDays },
         ]
+      : []),
+    ...(me.clinicRoles?.includes("NURSE") && me.role !== "DOCTOR"
+      ? [
+          { id: "people" as const, label: "Patient roster", icon: UsersRound },
+        ]
+      : []),
+    ...(me.clinicRoles?.some((role) => role === "CLINIC_ADMIN" || role === "DOCTOR") && !adminOnlyHome
+      ? [{ id: "staff" as const, label: "Staff & access", icon: UsersRound }]
       : []),
     ...(me.role === "PATIENT"
       ? [

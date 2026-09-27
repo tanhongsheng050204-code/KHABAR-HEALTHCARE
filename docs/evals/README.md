@@ -8,7 +8,8 @@ Each has a script in `services/agents/scripts/`, so a result can be re-run and c
 Drafting the report from the doctor's notes and every safety check are **rule-based**:
 `report_agent.py` reads the shorthand with a parser, and `evaluator.py` uses DDInter and written rules.
 So the ten-case planted-error set does not depend on the model, and it passes 10/10 whichever model is
-configured (`tests/test_planted_errors.py`). The model matters in four places:
+configured (`tests/test_planted_errors.py`). It validates the deterministic evaluator; it cannot select
+an LLM. The model matters in these optional places:
 
 | Where | What the model does | How it's measured |
 |---|---|---|
@@ -43,10 +44,20 @@ The widened lists still need a doctor's review, like the originals.
 
 ## Still to run (needs a provider key)
 
+The word-list-only held-out baseline was freshly reproduced locally on 25 Sep 2026 with no provider key:
+2/12 red replies caught, 16/22 replies under-triaged, and 0 false alarms on expected-ok replies. See
+[`triage-wordlist-current.md`](triage-wordlist-current.md). This remains a weak baseline, not an emergency
+detection validation or model comparison.
+
+Provider model IDs are time-sensitive. As checked on 25 Sep 2026, Google's current stable list includes
+`gemini-3.8-flash` and `gemini-3.6-flash`; use those as triage/packet-photo candidates and recheck the
+[official model list](https://ai.google.dev/gemini-api/docs/models) before running. Groq currently lists
+both planned Whisper IDs in its [speech-to-text docs](https://console.groq.com/docs/speech-to-text).
+
 | Test | Command (from `services/agents`) | Needs |
 |---|---|---|
-| Triage model comparison | `python -m scripts.compare_triage_models --set holdout --models gemini-3.6-flash gemini-3.5-flash-lite --out ../../docs/evals/triage-models.md` | `GEMINI_API_KEY` |
-| Packet photos | `python -m scripts.eval_packet_reader --models gemini-3.6-flash --out ../../docs/evals/packets.md` | `GEMINI_API_KEY` |
+| Triage model comparison | `python -m scripts.compare_triage_models --set holdout --models gemini-3.8-flash gemini-3.6-flash --out ../../docs/evals/triage-models.md` | `GEMINI_API_KEY` |
+| Packet photos | `python -m scripts.eval_packet_reader --models gemini-3.8-flash --out ../../docs/evals/packets.md` | `GEMINI_API_KEY` |
 | Transcription | Record the five scripts in `evals/recordings/`, then `python -m scripts.score_transcripts --models whisper-large-v3-turbo whisper-large-v3 --out ../../docs/evals/transcription.md` | `GROQ_API_KEY` |
 
 Keys go in `services/agents/.env`, which git ignores. Free-tier Gemini may use what it's sent to improve

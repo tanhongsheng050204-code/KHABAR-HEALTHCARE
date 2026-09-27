@@ -5,6 +5,8 @@ import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
 import com.khabar.api.identity.ClinicRepository;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.Role;
 import com.khabar.api.followup.ApprovedAnswer;
 import com.khabar.api.followup.ApprovedAnswerRepository;
@@ -72,12 +74,13 @@ public class DemoData implements ApplicationRunner {
     private final AppointmentRepository appointments;
     private final AdjustableClock clock;
     private final PatientGraphSync graphSync;
+    private final ClinicStaffAccess staffAccess;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
                     MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
                     ApprovedAnswerRepository answers, ReadingRepository readings, AppointmentRepository appointments,
-                    AdjustableClock clock, PatientGraphSync graphSync) {
+                    AdjustableClock clock, PatientGraphSync graphSync, ClinicStaffAccess staffAccess) {
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -91,16 +94,20 @@ public class DemoData implements ApplicationRunner {
         this.appointments = appointments;
         this.clock = clock;
         this.graphSync = graphSync;
+        this.staffAccess = staffAccess;
     }
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
         if (users.existsById(DOCTOR_ID)) {
+            users.findById(DOCTOR_ID).filter(user -> user.getClinic() != null)
+                    .ifPresent(user -> staffAccess.grant(user, user.getClinic(), ClinicStaffRole.DOCTOR, user.getId(), clock.instant()));
             return;
         }
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya (demo)"));
         AppUser doctor = users.save(new AppUser(DOCTOR_ID, Role.DOCTOR, "Dr Priya", clinic));
+        staffAccess.grant(doctor, clinic, ClinicStaffRole.DOCTOR, doctor.getId(), clock.instant());
         AppUser aminahAccount = users.save(new AppUser(AMINAH_ACCOUNT_ID, Role.PATIENT, "Aminah", null));
         users.save(new AppUser(NURUL_ID, Role.CAREGIVER, "Nurul", null));
 

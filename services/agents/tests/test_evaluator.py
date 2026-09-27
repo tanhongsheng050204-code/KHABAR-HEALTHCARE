@@ -164,8 +164,26 @@ def test_the_check_endpoint_reads_the_graph_when_given_a_graph_id(monkeypatch):
     from fastapi.testclient import TestClient
     from main import app
     from routers import evaluator as router
-    monkeypatch.setattr(router.graph, "context_or_none", lambda gid: {"allergies": ["penicillin"]} if gid == "g-1" else None)
+    monkeypatch.setattr(router.graph, "context_with_status", lambda gid: ({"allergies": ["penicillin"]}, "available") if gid == "g-1" else (None, "patient_missing"))
     body = {"graph_id": "g-1", "prescription": [{"name": "Amoxicillin", "dose_mg": 500, "times_per_day": 3}],
             "report": {"diagnosis": "Tonsillitis", "plan": "Antibiotics", "follow_up": "PRN"}}
     response = TestClient(app).post("/agents/evaluator/check", json=body, headers={"X-Internal-Service-Key": "dev-internal-secret"})
     assert response.json()["findings"][0]["check"] == "allergy"
+
+
+def test_the_check_endpoint_warns_when_graph_context_is_unavailable(monkeypatch):
+    from fastapi.testclient import TestClient
+    from main import app
+    from routers import evaluator as router
+    monkeypatch.setattr(router.graph, "context_with_status", lambda graph_id: (None, "not_configured"))
+    response = TestClient(app).post(
+        "/agents/evaluator/check",
+        json={"graph_id": "g-1", "report": {"diagnosis": "Review", "plan": "Review", "follow_up": "Review"}},
+        headers={"X-Internal-Service-Key": "dev-internal-secret"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["blocking"] is False
+    graph_finding = next(f for f in body["findings"] if f["check"] == "patient_graph_context")
+    assert graph_finding["severity"] == "WARN"
+    assert "Review the patient's current medicines" in graph_finding["detail"]

@@ -15,10 +15,16 @@ To add a value: `cd services` then `npx vercel env add NAME production`, and pas
 To add a GitHub secret: `gh secret set NAME --body "value"`. Don't pipe it in PowerShell: that added an
 invisible byte-order mark once and broke the deploy.
 
-**What is already set on `khabar-api` (24 Sep 2026):** database, `FIELD_ENCRYPTION_KEY`,
+**Last recorded production-variable presence check (24 Sep 2026):** database, `FIELD_ENCRYPTION_KEY`,
 `INTERNAL_SERVICE_KEY`, `SUPABASE_JWKS_URL`, `SUPABASE_JWT_SECRET`, `NEO4J_*`, `WEB_ALLOWED_ORIGINS`,
 `WEB_APP_URL`, `AGENTS_SERVICE_URL`. **Not set yet:** `GEMINI_API_KEY`, `GROQ_API_KEY`, `WHATSAPP_*`,
 `FAVORIOT_DEVICE_SECRET`.
+
+This is a dated configuration-presence snapshot, not confirmation of current deployment variable values. Never record secret contents here. On the latest read-only check on 25 Sep, the web and API `/api/health` returned HTTP 200; both `/agents/health` and `/agents/agents/health` returned 404, and `/agents` returned 401 (not a health check). The repository health-check script passed the API check and failed the agent check. The connected Vercel integration still returns “Authentication required,” but the local Vercel CLI session is authenticated and can inspect the project read-only; it reports the project framework as Other and `rootDirectory` as unset. See [the verification record](WORKSPACE_VERIFICATION_2026-09-25.md).
+
+**Agent health route diagnosis:** [`services/vercel.json`](../services/vercel.json) defines `api` and `agents` as Vercel Services and rewrites `/agents/*` to `agents`; current FastAPI defines both `/health` and `/agents/health`. The active production deployment was created on 24 Sep, before commit `da5658a` (25 Sep) added the `/agents/health` route, so deployed code is stale relative to that fix; this is the leading explanation for the current 404, not yet confirmed by a new deployment. The production build did include both services. Project inspection also reported Framework Preset **Other** and an unset root directory. After the current V1–V6 migrations pass hosted PostgreSQL/backup verification, set/verify the `khabar-api` project framework as **Services** and root directory as `services/`, deploy the reviewed current source, and require `/agents/health` HTTP 200 with `status: healthy`. Vercel documents the Services selection, service rewrites, and that build-setting changes apply on the next deployment ([Vercel Services guide](https://vercel.com/kb/guide/vercel-services), [Configure a build](https://vercel.com/docs/builds/configure-a-build)). Do not treat `/agents` returning 401 as a health check. No settings were changed and no deployment was initiated.
+
+Use `node scripts/check-health.mjs` from `services/` to check the API and public agent route together. It exits nonzero if either endpoint fails. The local API and agents can be checked without Vercel by passing their addresses explicitly; the successful local and failing public results are recorded in [the test results](TEST_RESULTS.md).
 
 ---
 
@@ -86,7 +92,7 @@ Until this is set, messages go to the local outbox, which is fine for the demo.
 
 ## 4. Favoriot (home readings)
 
-1. Confirm the free tier at favoriot.com. If it isn't free, keep the simulated readings (backlog 2.2).
+1. Favoriot's pricing page currently lists a lifetime RM0 plan with 1 device, 500 daily data points, 1 dashboard, 1 rule, and 1-month retention ([pricing](https://www.favoriot.com/iotplatform/pricing); plan changes announced 1 Sep 2026 in the [official notice](https://www.favoriot.com/category/press-release/)). Its separate [free-plan signup page](https://www.favoriot.com/subscribe-free-plan) still lists older/different limits (unlimited devices, 500 API calls/day, 1-year retention). Confirm the actual account's assigned limits before testing; if access or a free test account is unavailable, keep simulated readings.
 2. Set a random `FAVORIOT_DEVICE_SECRET` on `khabar-api` and redeploy.
 3. In Favoriot, add an HTTP forwarding rule to `https://khabar-api.vercel.app/api/webhooks/favoriot`
    with a header `X-Khabar-Device-Secret: <the same value>`. The body is Favoriot's stream JSON, e.g.

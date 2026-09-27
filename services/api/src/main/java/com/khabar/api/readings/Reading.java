@@ -40,6 +40,9 @@ public class Reading {
     @Column(nullable = false)
     private Instant measuredAt;
 
+    /** When Khabar received this reading; unlike measuredAt, this cannot be supplied or backdated by a patient. */
+    private Instant receivedAt;
+
     /** patient, caregiver, clinic or favoriot */
     @Column(nullable = false, length = 20)
     private String source;
@@ -59,7 +62,8 @@ public class Reading {
     protected Reading() {
     }
 
-    private Reading(Patient patient, Kind kind, Integer systolic, Integer diastolic, Double glucose, Instant measuredAt, String source,
+    private Reading(Patient patient, Kind kind, Integer systolic, Integer diastolic, Double glucose, Instant measuredAt,
+                    Instant receivedAt, String source,
                     ReadingLevels.Assessment assessment) {
         this.id = UUID.randomUUID();
         this.patient = patient;
@@ -68,17 +72,18 @@ public class Reading {
         this.diastolic = diastolic;
         this.glucose = glucose;
         this.measuredAt = measuredAt;
+        this.receivedAt = receivedAt;
         this.source = source;
         this.level = assessment.level();
         this.description = assessment.description();
     }
 
-    public static Reading glucose(Patient patient, double mmol, Instant measuredAt, String source) {
-        return new Reading(patient, Kind.GLUCOSE, null, null, mmol, measuredAt, source, ReadingLevels.glucose(mmol));
+    public static Reading glucose(Patient patient, double mmol, Instant measuredAt, Instant receivedAt, String source) {
+        return new Reading(patient, Kind.GLUCOSE, null, null, mmol, measuredAt, receivedAt, source, ReadingLevels.glucose(mmol));
     }
 
-    public static Reading bloodPressure(Patient patient, int systolic, int diastolic, Instant measuredAt, String source) {
-        return new Reading(patient, Kind.BLOOD_PRESSURE, systolic, diastolic, null, measuredAt, source,
+    public static Reading bloodPressure(Patient patient, int systolic, int diastolic, Instant measuredAt, Instant receivedAt, String source) {
+        return new Reading(patient, Kind.BLOOD_PRESSURE, systolic, diastolic, null, measuredAt, receivedAt, source,
                 ReadingLevels.bloodPressure(systolic, diastolic));
     }
 
@@ -101,6 +106,14 @@ public class Reading {
 
     public Instant getMeasuredAt() {
         return measuredAt;
+    }
+
+    /**
+     * Old local/demo rows predate receivedAt. Their measurement time is the only available safe lower-confidence fallback;
+     * pilot rollout requires a migration/backfill before enabling schema validation.
+     */
+    public Instant getWorkflowReceivedAt() {
+        return receivedAt != null ? receivedAt : measuredAt;
     }
 
     public String getSource() {

@@ -7,7 +7,7 @@ public enum TriageLevel {
     REVIEW,
     OK;
 
-    /** Anything the agents service returns that we do not recognise goes to a person. */
+    /** Anything the agents service returns that we do not recognise is routed to the clinic review queue. */
     public static TriageLevel fromAgent(Object value) {
         if (value == null) {
             return REVIEW;

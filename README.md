@@ -13,7 +13,7 @@
 
 [![Khabar landing page](artifacts/readme/01-landing.png)](https://khabar-landing-six.vercel.app)
 
-> ⚠️ **Status (24 Sep 2026):** working prototype, deployed. 381 automated tests pass (193 API, 188 agents). All patient data is **fictional**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md). Open work: [UNDONE_WORK.md](UNDONE_WORK.md).
+> ⚠️ **Status (25 Sep 2026):** working prototype, deployed. Latest local verification ran 239 API tests: 238 passed and the optional PostgreSQL smoke test was skipped. The 209 agent tests and frontend lint, TypeScript, and production build passed. Hosted CI for branch head `01be0f6` passed all jobs on 25 Sep (API, agents, web, PostgreSQL migration/schema, and backup/restore); it predates the current uncommitted V5/V6, finalisation, and graph-warning changes. Repeated public read-only probes returned web HTTP 200, timed out at API `/api/health`, and returned 404 at both tested agent health routes. The Vercel integration currently requires authentication, so project logs/settings are unverified. This feature branch has not been deployed; API and agent releases are separate manual deployments. All patient data is **fictional**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md). Open work: [UNDONE_WORK.md](UNDONE_WORK.md).
 
 ---
 
@@ -62,16 +62,16 @@ Malaysian clinic patients leave with instructions they often can't follow, and n
 | **DoctorOnCall / BookDoc** (Malaysia) | Online consultations, pharmacy, booking | Focused on *getting* care, not on what happens after the patient goes home. |
 
 ### Our Solution
-Khabar is an AI platform for Malaysian clinics that follows the patient home. It keeps the clinic workflow CliniFlow showed works (AI intake, an AI-drafted report and a hard safety gate), then makes the **30 days after the visit** the main story: a plain-language summary in the patient's own language, regular check-ins that notice when something is wrong, and a daily list that tells the clinic whom to call. Khabar never gives new medical advice. It relays what the doctor decided and escalates anything worrying to a human.
+Khabar is an AI platform for Malaysian clinics that follows the patient home. It keeps the clinic workflow CliniFlow showed works (AI intake, a structured report draft from the doctor's notes and a hard safety gate), then makes the **30 days after the visit** the main story: a plain-language summary in the patient's own language, regular check-ins with prototype reply routing into a daily clinic review list. Khabar never gives new medical advice. It relays what the doctor decided; replies needing review enter the clinic queue, but staff are not automatically notified and anyone's response is not guaranteed.
 
 **Feature set**
 
 | Stage | Features |
 |---|---|
 | **Before the visit** | Self-booking from the clinic's calendar · a guided intake chat in the patient's language that already knows their history · a pre-visit page for the doctor · a shared **"everything I take"** list (medicines from every clinic, supplements, jamu, herbs) · reading a **medicine-packet photo**, with consent, into that list |
-| **During the visit** | The doctor types shorthand or speaks, and the AI structures it into a draft report · a **safety check** (allergy, interaction, duplicate across clinics and brands, herb clash, dose, pregnancy, invented drugs or symptoms, missing fields) · a **critical finding cannot be finalised** without a written reason, enforced in the screen, the API **and** the database |
+| **During the visit** | The doctor types shorthand or speaks, and deterministic parsing structures those clinician-authored notes into a draft report · a **safety check** (allergy, interaction, duplicate across clinics and brands, herb clash, dose, pregnancy, invented drugs or symptoms, missing fields) · a **critical finding cannot be finalised** without a written reason, enforced in the screen, the API **and** the database |
 | **After the visit** | A summary in **BM, English, Chinese or Tamil**, sent on WhatsApp · **Ramadan fasting mode** (sahur and berbuka timings) · **caregiver access** that the patient grants and can revoke |
-| **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · two-way replies with **red-flag triage** in four languages · fixed 999 advice for emergencies · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
+| **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · prototype reply routing in four languages · precautionary 999 wording for replies needing review · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
 | **Privacy** | Access rules per role · encrypted sensitive fields · names and IC numbers removed before anything reaches the AI · a **"who viewed my record"** audit trail |
 
 ---
@@ -85,7 +85,7 @@ Chosen ideas are listed first.
 |---|---|
 | **A (Chosen)** Clinic workflow with "after the visit" as the main story | Market research found the spaces before and during the visit crowded (scribes, booking, telemedicine), but almost nobody follows the patient home in Malaysia. |
 | **B (Chosen)** Summaries in BM, English, Chinese and Tamil | Plain-language rewrites improve understanding, and Malaysia is multilingual. AI translation still lags for non-English languages, so wording is constrained to what the doctor approved. |
-| **C (Chosen)** Two-way follow-up with red-flag alerts | Adherence is about 50%. WhatsApp is where Malaysian patients already are. Memora proved the model in the US. |
+| **C (Chosen)** Two-way follow-up with clinic review routing | Adherence is about 50%. WhatsApp is where Malaysian patients already are. Memora proved the model in the US. Reply routing is a prototype and does not provide staff alerts or validated emergency detection. |
 | **D (Chosen)** "Who needs you first" call list for the clinic | Gives the paying customer, the clinic, a daily reason to open the product. |
 | **E (Chosen)** "Everything I take" list and packet photo | Fragmented records plus 69.4% traditional-medicine use means duplicates and herb clashes go unseen. |
 | **F (Chosen)** Family caregiver access, with consent | 79.6% of older Malaysians rely on their children. |
@@ -169,7 +169,7 @@ mindmap
 flowchart LR
   B[Books a slot] --> I[Intake chat<br/>in own language]
   I --> PV[Doctor's pre-visit page<br/>+ medicine cross-check]
-  PV --> V[Visit: notes → AI draft]
+  PV --> V[Visit: notes → structured draft]
   V --> S{Safety check}
   S -- critical --> R[Doctor must write<br/>a reason]
   R --> F
@@ -180,7 +180,7 @@ flowchart LR
   T -- red flag --> E[999 advice + top of<br/>clinic call list]
   T -- routine --> A[Doctor-approved answer<br/>or acknowledgement]
 ```
-*The AI drafts, structures and sorts. The doctor decides every clinical point, and warning signs always reach a person.*
+*The software prepares drafts and sorts follow-up. The doctor decides every clinical point. Replies needing review enter the clinic queue, but no staff notification is sent and the prototype is not a reliable emergency screen.*
 
 **Design evolution:** the UI went through three rounds before the current one.
 
@@ -232,7 +232,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 ### 7. A reply that raises a red flag
 <img src="artifacts/readme/07-red-flag-reply-mobile.png" alt="Red-flag reply with 999 advice" width="320">
 
-*She writes "Sakit dada sejak pagi, susah nak bernafas" (chest pain since morning, hard to breathe). Khabar does not improvise: it answers with fixed, pre-approved BM wording (the clinic has been told; call 999 or go to the nearest emergency department) and puts her at the top of the clinic's call list.*
+*This scripted example uses a phrase in the current word list. Khabar replies with fixed BM wording (call 999 or go to the nearest emergency department) and adds it to the clinic's list. This is an illustration of the flow, not evidence that Khabar reliably detects emergencies; the recorded word-list score on held-out replies was 2/12.*
 
 ---
 
@@ -241,9 +241,9 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | Feature | What's new, or the twist |
 |---|---|
 | **After the visit is the product** | Most clinic AI ends when the patient leaves. Khabar's value is days 1–30. |
-| **Four languages, Malaysian style** | Summaries and triage in BM, English, Chinese and Tamil, including Manglish replies like *"pening sikit"*. |
-| **Red-flag triage that errs towards alerting** | A reply is urgent if **either** a doctor-approved keyword list **or** the AI says so. The AI can raise urgency, never lower it. |
-| **Patients only hear approved words** | Replies to patients come from three fixed sources: 999 advice for red flags, answers the doctor approved, or a plain acknowledgement. The AI never invents advice. |
+| **Four-language follow-up** | Summaries and reply handling support BM, English, Chinese and Tamil, including Manglish replies like *"pening sikit"*. The prototype classifier has not been validated for emergency detection. |
+| **Cautious reply routing** | Word lists route replies for clinic attention; an optional model can only raise the level. Word lists scored 22/22 on tuned examples but 2/12 on held-out replies, so these labels are not a reliable emergency screen. Human review and the fixed precautionary 999 message remain essential. |
+| **Patients only hear approved words** | Replies come from fixed sources: precautionary 999 wording, answers the clinic approved, or an acknowledgement. The AI does not generate patient advice. |
 | **"Everything I take," across clinics and cultures** | Cross-checks medicines from *other* clinics, local brand names, and **traditional remedies** (jamu, herbs, TCM) that patients rarely mention. |
 | **Safety checks from data, not AI opinion** | Interactions come from **DDInter 2.0**, with written rules for allergies, doses, duplicates and herbs. The AI structures notes; it does not judge safety. |
 | **A gate enforced three times** | A critical finding is blocked in the UI, the API **and** a database rule, so a bug in one layer can't let it through. |
@@ -258,7 +258,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | Clinic workflow (intake → report → safety) | ✅ | — | — | ✅ |
 | Follow-up after the visit | One WhatsApp message | ✅ SMS, US | Medication reminders | ✅ 30 days, two-way |
 | BM / Chinese / Tamil | — | — | — | ✅ |
-| Red-flag alerts to the clinic | — | ✅ | — | ✅ |
+| Prototype reply routing to a clinic queue | — | ✅ | — | ✅; emergency detection and staff alerts are not validated/implemented |
 | Traditional-medicine and other-clinic check | — | — | — | ✅ |
 | Ramadan mode | — | — | — | ✅ |
 | Patient-visible access log | — | — | — | ✅ |
@@ -282,7 +282,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | **Transcription** | **Groq Whisper large-v3-turbo** | About US$0.04 per hour of audio; supports Malay and Tamil. | Accuracy on drug names in Manglish, still to be measured on five recordings. |
 | **Messaging** | **WhatsApp Cloud API** | Where Malaysian patients already are. Webhook signatures are verified. | The test number reaches only 5 phones, and clinic-started messages need Meta-approved templates. Until then, messages go to a local outbox. |
 | **Drug data** | **DDInter 2.0** subset + our own brand-name and herb tables | Free, peer-reviewed interaction data (70 pairs cover the demo medicines), with a reproducible import script. | Non-commercial licence (CC BY-NC-SA 4.0). Brand names are mapped by hand, and the herb list needs a pharmacist's review. Missing data is never treated as "safe". |
-| **IoT (stretch)** | **Favoriot** | A Malaysian IoT platform with a REST API and per-device secrets. | Free tier unconfirmed, so the demo uses simulated readings. |
+| **IoT (stretch)** | **Favoriot** | A Malaysian IoT platform with a REST API and per-device secrets. | Its 25 Sep 2026 pricing page lists a limited lifetime free plan (1 device, 500 daily data points, 1-month retention); the separate signup page shows older conflicting limits. The demo uses simulated readings until an account and live test confirm availability. See [`UNDONE_WORK.md`](UNDONE_WORK.md) §2.2. |
 | **Hosting** | **Vercel**: `khabar-landing` for the web app; `khabar-api` in Singapore (`sin1`) running the API as a container and the agents as a Python service | Free tier, low latency from Malaysia, one place to deploy. A push to `main` that changes the web app is checked (lint, types) and deployed automatically by GitHub Actions. | Serverless cold starts, and the free Supabase and AuraDB tiers pause when idle. Before a live demo we warm everything up or move the API to an always-on host. |
 
 ### System architecture diagram
@@ -318,7 +318,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 | Tier | Scope | Status (24 Sep) |
 |---|---|---|
-| **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · AI report drafting · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · two-way red-flag triage · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built, tested and deployed |
+| **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · structured report draft from clinician notes · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · prototype reply routing · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built and locally verified; hosted CI and deployment of the current uncommitted branch remain open |
 | **Tier 2: planned** | Packet photo · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking · Neo4j graph | ✅ Built. Packet photos still need a real Gemini test. |
 | **Tier 3: stretch** | Speaking instead of typing in the visit · Favoriot readings · voice-note summaries · learning each doctor's writing style | Speech-to-text and Favoriot are built (Favoriot with simulated readings). Voice notes and writing style are **not built** and are first to drop. |
 
@@ -326,21 +326,22 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 | Part | Done | Still to do |
 |---|---|---|
-| Sign-in and access | Doctor, patient and caregiver access rules; revoking caregiver consent blocks access at once; the API verifies real Supabase sign-ins and demo tokens | A real sign-in for each role on the live site; a custom SMTP sender for patient codes |
+| Sign-in and access | Doctor and patient access rules; caregiver `SUMMARY` is limited to the approved summary, while `SUMMARY_AND_ALERTS` permits shared patient details, medicines and readings; revoking consent blocks the next API request | A real sign-in for each role on the live site; verify scope and revocation with deployed accounts; a custom SMTP sender for patient codes |
 | Visit and safety | Notes or speech → structured draft; the ten-mistake planted-error set is a test, and all ten are caught | Pharmacist review of dose limits and herb evidence |
-| Follow-up | Check-ins, four-language triage, approved-words-only replies, missed doses, home readings, the ranked call list | A live WhatsApp loop with approved templates; a real Favoriot device |
-| Patient graph | Live on AuraDB with 31 fictional patients, read back by random ID only | Conditions appear once the live intake is run |
-| Evidence | Automated tests and bug bash (below) | The planted-error comparison across LLMs; the transcription test; the 5-person understanding pilot |
+| Follow-up | Check-ins, prototype four-language reply routing, approved-words-only replies, missed doses, home readings, the ranked call list | Validate triage on clinician-authored held-out replies; live WhatsApp loop with approved templates; a real Favoriot device |
+| Patient graph | Live on AuraDB with 31 fictional patients, read back by random ID only | The demo reset now restores Aminah's fictional diabetes and hypertension intake and queues the graph update; verify those `Condition` nodes after the current API is deployed and reset runs |
+| Evidence | Automated tests and bug bash (below) | Clinician-authored triage evaluation; the transcription test; the 5-person understanding pilot |
 
 ---
 
 ## 6. Evidence it works
 
-- **381 automated tests pass:** 193 in the API (including access rules, encryption, the safety gate, token checks and a real in-process Neo4j) and 188 in the agents service (including the planted-error set and triage in four languages).
+- **Verification (25 Sep):** the latest local API suite ran 239 tests: 238 passed, 0 failed, 0 errored, and the optional PostgreSQL test was skipped. The 209 agent tests and frontend lint, TypeScript and production build pass as well. Hosted CI run [36112985600](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36112985600) passed on earlier branch head `01be0f6`; it predates the current uncommitted V5/V6, finalisation, and graph-warning changes, and does not deploy the branch. Repeated public read-only probes returned web 200, timed out at API `/api/health`, and returned 404 for both tested agent health paths. Current-branch PostgreSQL and live deployment verification remain open.
 - **Bug bash (23 Sep):** 11 defects found and fixed, including one patient-safety issue: a reply confirmation that could be empty when triage was down now always includes 999 advice. See [docs/BUG_BASH_2026-09-23.md](docs/BUG_BASH_2026-09-23.md).
 - **Deployed rehearsal (23 Sep):** pre-visit → draft → safety review → finalise → summary → follow-up reply → call list, run on the public URLs with demo sign-in.
+- **Local rehearsal (25 Sep):** guided intake → pre-visit report → doctor visit and duplicate-safety gate → final summary → patient follow-up reply → doctor call list, plus caregiver access/revocation and agent-outage fallback, all exercised with fictional data. It did not verify the current public deployment, real sign-in, or graph/provider readiness; see [the local run record](docs/DEMO_RUN_2026-09-25_LOCAL.md).
 - **Privacy test:** a test proves that no name, IC number or phone number can reach the Neo4j graph, and the live AuraDB instance was checked directly.
-- **How we'll measure impact:** a 5-person understanding test comparing an English-only summary with a Khabar summary in the reader's own language (medicine, timing, warning sign). We'll report it honestly as a small pilot, not as proof.
+- **Planned comprehension check:** a draft five-person summary-understanding protocol is in [`docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md`](docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md). It is not approved or run; recruitment and results remain open. Any result will be reported as a small usability signal, not proof of clinical impact.
 
 ---
 

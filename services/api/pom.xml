@@ -44,6 +44,16 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Versioned schema changes for the guarded pilot profile. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
         <!-- Verifies Supabase-issued JWTs (JWKS for ES256/RS256, or the legacy HS256 secret) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

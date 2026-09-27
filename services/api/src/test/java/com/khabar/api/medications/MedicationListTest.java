@@ -71,7 +71,7 @@ class MedicationListTest {
         aminahAccount = users.save(new AppUser(UUID.randomUUID(), Role.PATIENT, "Aminah", null));
         nurul = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Nurul", null));
         aminah = patients.save(new Patient(clinic, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms"));
-        caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY));
+        caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
     }
 
     ResultActions add(AppUser as, Map<String, Object> body) throws Exception {

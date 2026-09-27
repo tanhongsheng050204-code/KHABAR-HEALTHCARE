@@ -2,8 +2,9 @@ package com.khabar.api.followup;
 
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.CurrentUser;
-import com.khabar.api.identity.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -36,11 +37,13 @@ public class ApprovedAnswerController {
     private final CurrentUser currentUser;
     private final ApprovedAnswerRepository answers;
     private final AdjustableClock clock;
+    private final ClinicStaffAccess staffAccess;
 
-    public ApprovedAnswerController(CurrentUser currentUser, ApprovedAnswerRepository answers, AdjustableClock clock) {
+    public ApprovedAnswerController(CurrentUser currentUser, ApprovedAnswerRepository answers, AdjustableClock clock, ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.answers = answers;
         this.clock = clock;
+        this.staffAccess = staffAccess;
     }
 
     public record AnswerRequest(String title, List<String> triggers, Map<String, String> texts) {
@@ -105,7 +108,7 @@ public class ApprovedAnswerController {
 
     private AppUser requireDoctor(Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        if (user.getRole() != Role.DOCTOR || user.getClinic() == null) {
+        if (!staffAccess.hasRole(user, ClinicStaffRole.DOCTOR) || user.getClinic() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Approved answers are written by clinic doctors.");
         }
         return user;

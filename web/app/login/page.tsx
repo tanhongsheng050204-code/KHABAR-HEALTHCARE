@@ -12,6 +12,9 @@ export default function LoginPage() {
   return (
     <ExperienceMotion>
       <main className={styles.page}>
+        <a className={styles.skipLink} href="#sign-in">
+          Skip to sign in
+        </a>
         <section className={styles.story}>
           <div className={styles.storyTop}>
             <Brand />
@@ -80,7 +83,7 @@ export default function LoginPage() {
             <i />
           </div>
         </section>
-        <section className={styles.formSide}>
+        <section className={styles.formSide} id="sign-in" tabIndex={-1}>
           <div className={styles.formUtility}>
             <span>Your Khabar space</span>
             <MotionButton />

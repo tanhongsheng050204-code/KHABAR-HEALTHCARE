@@ -7,6 +7,8 @@ import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.followup.TriageLevel;
 import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.identity.Role;
 import com.khabar.api.patients.Patient;
@@ -37,8 +39,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * F4: home blood pressure and blood sugar. Readings come from the patient or a caregiver in the app,
- * or from a linked device through Favoriot's HTTP forwarding. A worrying one goes on the call list.
+ * F4: home blood pressure and blood sugar. Readings come from the patient or a caregiver with
+ * SUMMARY_AND_ALERTS consent, or from a linked device through Favoriot's HTTP forwarding. A worrying
+ * one goes on the call list.
  */
 @RestController
 public class ReadingController {
@@ -54,10 +57,12 @@ public class ReadingController {
     private final AdjustableClock clock;
     private final String deviceSecret;
     private final PatientGraphSync graphSync;
+    private final ClinicStaffAccess staffAccess;
 
     public ReadingController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, ReadingRepository readings,
                              DeviceLinkRepository devices, AuditLog auditLog, AdjustableClock clock,
-                             @Value("${khabar.favoriot.device-secret:}") String deviceSecret, PatientGraphSync graphSync) {
+                             @Value("${khabar.favoriot.device-secret:}") String deviceSecret, PatientGraphSync graphSync,
+                             ClinicStaffAccess staffAccess) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
@@ -67,6 +72,7 @@ public class ReadingController {
         this.clock = clock;
         this.deviceSecret = deviceSecret;
         this.graphSync = graphSync;
+        this.staffAccess = staffAccess;
     }
 
     public record ReadingRequest(Double glucose, Integer systolic, Integer diastolic) {
@@ -90,7 +96,7 @@ public class ReadingController {
         String source = switch (user.getRole()) {
             case PATIENT -> "patient";
             case CAREGIVER -> "caregiver";
-            case DOCTOR -> "clinic";
+            case DOCTOR, NURSE, CLINIC_ADMIN -> "clinic";
         };
         Reading saved = readings.save(build(patient, request.glucose(), request.systolic(), request.diastolic(), source));
         graphSync.changed(patient.getId());
@@ -113,7 +119,8 @@ public class ReadingController {
     public DeviceRequest linkDevice(@PathVariable UUID patientId, @RequestBody DeviceRequest request, @AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = currentUser.from(jwt);
         Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (doctor.getRole() != Role.DOCTOR || doctor.getClinic() == null || !doctor.getClinic().getId().equals(patient.getClinic().getId())) {
+        if (!staffAccess.hasRole(doctor, ClinicStaffRole.DOCTOR) || doctor.getClinic() == null
+                || !doctor.getClinic().getId().equals(patient.getClinic().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Devices are linked by the patient's clinic.");
         }
         String deviceId = request.deviceId() == null ? "" : request.deviceId().trim();
@@ -161,13 +168,13 @@ public class ReadingController {
             if (glucose < 0.5 || glucose > 40) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Blood sugar should be in mmol/L, between 0.5 and 40.");
             }
-            return Reading.glucose(patient, glucose, now, source);
+            return Reading.glucose(patient, glucose, now, now, source);
         }
         if (glucose == null && systolic != null && diastolic != null) {
             if (systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200 || systolic <= diastolic) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "That blood pressure doesn't look right. Check the numbers.");
             }
-            return Reading.bloodPressure(patient, systolic, diastolic, now, source);
+            return Reading.bloodPressure(patient, systolic, diastolic, now, now, source);
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Send either a blood sugar, or both blood pressure numbers.");
     }

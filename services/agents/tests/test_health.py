@@ -11,6 +11,11 @@ def test_health_endpoint():
     assert data["status"] == "healthy"
     assert "service" in data
 
+def test_vercel_service_prefixed_health_route():
+    response = client.get("/agents/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
 def test_intake_chat_unauthorized():
     # Calling intake without X-Internal-Service-Key should return 401
     payload = {
@@ -37,4 +42,3 @@ def test_intake_chat_authorized():
     data = response.json()
     assert "next_question" in data
     assert "is_complete" in data
-

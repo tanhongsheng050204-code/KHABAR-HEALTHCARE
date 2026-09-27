@@ -11,19 +11,22 @@ import com.khabar.api.service.AgentDtos.AnswerOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * A patient's reply, from the app or WhatsApp: triaged (identity removed first), stored encrypted,
- * and counted as the answer to their latest check-in. A reply is never lost: if triage fails, it
- * goes to a person. The patient always hears back, but only in words a doctor approved: a red flag
- * gets the fixed emergency advice, a question the clinic has an approved answer for gets that answer,
- * and anything else is acknowledged and left for a person.
+ * and counted as the answer to their latest check-in. Replies needing review enter the clinic queue;
+ * this service does not notify staff. The patient hears only approved wording: a red label gets fixed
+ * precautionary emergency advice, a question with an approved clinic answer gets that answer, and
+ * anything else gets a notice that the clinic may not have seen it yet.
  */
 @Service
 public class FollowUpService {
@@ -58,6 +61,22 @@ public class FollowUpService {
 
     @Transactional
     public Outcome receiveReply(Patient patient, String text) {
+        return receiveReply(patient, text, null);
+    }
+
+    @Transactional
+    public Outcome receiveReply(Patient patient, String text, UUID clientMessageId) {
+        if (clientMessageId != null) {
+            Optional<PatientReply> previous = replies.findByPatientIdAndClientMessageId(patient.getId(), clientMessageId);
+            if (previous.isPresent()) {
+                if (!previous.get().getText().equals(text)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "That request ID was already used for a different update.");
+                }
+                return new Outcome(previous.get().getLevel(), null,
+                        PatientMessages.duplicateUpdateText(patient.getPreferredLanguage()));
+            }
+        }
         String redacted = Redactor.redact(text, patient);
         TriageLevel level;
         String matched = null;
@@ -73,7 +92,7 @@ public class FollowUpService {
             level = TriageLevel.REVIEW;
             triaged = false;
         }
-        PatientReply fresh = new PatientReply(patient, text, clock.instant(), level, matched);
+        PatientReply fresh = new PatientReply(patient, text, clock.instant(), level, matched, clientMessageId);
         if (missedDose) {
             fresh.markMissedDose();
         }

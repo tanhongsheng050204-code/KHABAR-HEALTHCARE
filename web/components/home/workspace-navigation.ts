@@ -7,6 +7,7 @@ const sections = [
   "readings",
   "people",
   "schedule",
+  "staff",
 ] as const;
 export type WorkspaceSection = (typeof sections)[number];
 function snapshot(): WorkspaceSection {

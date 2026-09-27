@@ -1,21 +1,13 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+Khabar is a practice-build and public demo using fictional data. It is not a medical device, is not for clinical use, and must not receive real patient information. A passing test suite or security report does not make it suitable for handling real health records.
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+There are no released versions or security-support commitments. Development happens in the repository; deployments may not match the latest source commit. Do not rely on this project for a supported or service-level-guaranteed installation.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Please do not post exploit details, credentials, or personal/health information in a public issue. If GitHub's private vulnerability reporting option is available on this repository, use it. Otherwise, contact the repository owner privately through the contact route on their GitHub profile before public disclosure. Do not send real patient information as part of a report.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Reports are reviewed on a best-effort basis. No response or remediation timeframe is promised. Do not use the public demo to test a suspected vulnerability against other people's sessions or data.

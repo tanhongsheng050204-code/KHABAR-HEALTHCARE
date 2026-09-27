@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.util.UUID;
 
-/** The patient's latest take-home summary: for the patient, a consented caregiver, or their clinic. */
+/** The patient's latest take-home summary: for the patient, any actively consented caregiver, or their clinic. */
 @RestController
 public class VisitSummaryController {
 
@@ -47,7 +47,7 @@ public class VisitSummaryController {
     public SummaryView latest(@PathVariable UUID patientId, @AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
         Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (!policy.canView(user, patient)) {
+        if (!policy.canViewSummary(user, patient)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         VisitSummary summary = summaries.findFirstByPatientIdOrderByCreatedAtDesc(patientId)

@@ -118,15 +118,19 @@ class OnboardingTest {
         accept(registered.get("inviteCode").asText(), aminah, "Aminah");
         String patientId = registered.get("patientId").asText();
 
-        String caregiverCode = body(postJson("/api/patients/me/caregiver-invites", aminah, "{\"scope\":\"SUMMARY_AND_ALERTS\"}")
+        String caregiverCode = body(postJson("/api/patients/me/caregiver-invites", aminah, "{\"scope\":\"SUMMARY\"}")
                 .andExpect(status().isCreated())).get("inviteCode").asText();
         UUID nurul = UUID.randomUUID();
         accept(caregiverCode, nurul, "Nurul").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("CAREGIVER"));
 
         mvc.perform(get("/api/me").header("Authorization", bearer(nurul)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.patientIds[0]").value(patientId));
-        mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", bearer(nurul))).andExpect(status().isOk());
+                .andExpect(jsonPath("$.patientIds[0]").value(patientId))
+                .andExpect(jsonPath("$.patientScopes['" + patientId + "']").value("SUMMARY"));
+        mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", bearer(nurul))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/{id}/summary", patientId).header("Authorization", bearer(nurul))).andExpect(status().isNotFound());
+        mvc.perform(get("/api/patients/{id}/medications", patientId).header("Authorization", bearer(nurul))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/{id}/readings", patientId).header("Authorization", bearer(nurul))).andExpect(status().isForbidden());
 
         JsonNode caregivers = body(mvc.perform(get("/api/patients/me/caregivers").header("Authorization", bearer(aminah))));
         String linkId = caregivers.get(0).get("linkId").asText();
@@ -134,7 +138,8 @@ class OnboardingTest {
 
         mvc.perform(get("/api/me").header("Authorization", bearer(nurul)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.patientIds").isEmpty());
+                .andExpect(jsonPath("$.patientIds").isEmpty())
+                .andExpect(jsonPath("$.patientScopes").isEmpty());
         mvc.perform(get("/api/patients/{id}", patientId).header("Authorization", bearer(nurul))).andExpect(status().isForbidden());
     }
 
@@ -153,6 +158,27 @@ class OnboardingTest {
         accept(registered.get("inviteCode").asText(), aminah, "Aminah");
         String code = body(postJson("/api/clinic/doctor-invites", doctor.getId(), "{}")).get("inviteCode").asText();
         accept(code, aminah, "Aminah").andExpect(status().isConflict());
+    }
+
+    @Test
+    void clinicStaffInvitationsCreateSeparateNurseAndAdministratorGrants() throws Exception {
+        String nurseCode = body(postJson("/api/clinic/staff-invites", doctor.getId(), "{\"role\":\"NURSE\"}")
+                .andExpect(status().isCreated())).get("inviteCode").asText();
+        UUID nurse = UUID.randomUUID();
+        accept(nurseCode, nurse, "Nurse Mei").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("NURSE"));
+        mvc.perform(get("/api/me").header("Authorization", bearer(nurse)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.clinicRoles[0]").value("NURSE"));
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(nurse))).andExpect(status().isOk());
+
+        String adminCode = body(postJson("/api/clinic/staff-invites", doctor.getId(), "{\"role\":\"CLINIC_ADMIN\"}")
+                .andExpect(status().isCreated())).get("inviteCode").asText();
+        UUID admin = UUID.randomUUID();
+        accept(adminCode, admin, "Clinic Admin").andExpect(status().isOk()).andExpect(jsonPath("$.role").value("CLINIC_ADMIN"));
+        mvc.perform(get("/api/me").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.clinicRoles[0]").value("CLINIC_ADMIN"));
+        mvc.perform(get("/api/clinic/staff").header("Authorization", bearer(admin))).andExpect(status().isOk());
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(admin))).andExpect(status().isForbidden());
+        postJson("/api/clinic/staff-invites", admin, "{\"role\":\"DOCTOR\"}").andExpect(status().isForbidden());
     }
 
     @Test

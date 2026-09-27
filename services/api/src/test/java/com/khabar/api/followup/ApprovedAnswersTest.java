@@ -48,6 +48,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class ApprovedAnswersTest {
 
+    @Test
+    void urgentPatientMessagesDoNotPromiseThatStaffHaveSeenTheReplyOrWillCall() {
+        Map<String, String> notSeen = Map.of(
+                "ms", "mungkin belum membacanya",
+                "en", "may not have seen it yet",
+                "zh", "可能还没有看到",
+                "ta", "இன்னும் பார்க்காமல் இருக்கலாம்");
+        Map.of(
+                "ms", new String[]{"akan menghubungi", "sudah dimaklumkan"},
+                "en", new String[]{"will contact you", "has been told"},
+                "zh", new String[]{"会联系您", "已收到通知"},
+                "ta", new String[]{"உங்களைத் தொடர்புகொள்வார்கள்", "தெரிவிக்கப்பட்டது"}
+        ).forEach((language, promises) -> {
+            String urgent = com.khabar.api.messaging.PatientMessages.urgentText(language);
+            String unclassified = com.khabar.api.messaging.PatientMessages.uncheckedText(language);
+            assertThat(urgent).contains("999", notSeen.get(language)).doesNotContain(promises);
+            assertThat(unclassified).contains("999", notSeen.get(language)).doesNotContain(promises);
+        });
+    }
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired ClinicRepository clinics;
@@ -142,24 +162,29 @@ class ApprovedAnswersTest {
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "red", "matched", "sakit dada"));
 
         reply("Sakit dada, lupa makan ubat").andExpect(jsonPath("$.level").value("RED"))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("mungkin belum membacanya")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("will contact you"))));
 
         verify(agents, never()).matchAnswer(anyString(), anyList());
         assertThat(sentToAminah()).singleElement().satisfies(m -> {
             assertThat(m.getKind()).isEqualTo("SAFETY");
             assertThat(m.getText()).contains("999");
+            assertThat(m.getText()).contains("mungkin belum membacanya");
+            assertThat(m.getText()).doesNotContain("will contact you");
         });
         callList().andExpect(jsonPath("$.items[0].level").value("RED"));
     }
 
     @Test
-    void aQuestionWithNoApprovedAnswerGoesToAPersonAndThePatientIsToldSo() throws Exception {
+    void aQuestionWithNoApprovedAnswerStaysInTheClinicQueueAndThePatientIsToldSo() throws Exception {
         approveMissedDose();
         when(agents.triageReply(anyString(), any())).thenReturn(Map.of("level", "review"));
 
         // The app shows the patient the same acknowledgement their phone gets, never a blank message
         reply("Boleh makan durian?").andExpect(jsonPath("$.answer").doesNotExist())
                 .andExpect(jsonPath("$.message").value(com.khabar.api.messaging.PatientMessages.acknowledgementText("ms", TriageLevel.REVIEW)))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("mungkin belum membacanya")))
                 // Nobody has read it yet, and the word lists miss many ways of describing an emergency
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("999")));
 

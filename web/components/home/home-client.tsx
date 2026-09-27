@@ -11,6 +11,7 @@ import { AppShell } from "./app-shell";
 import { DoctorHome } from "./doctor-home";
 import { PatientHome } from "./patient-home";
 import { CaregiverHome } from "./caregiver-home";
+import { ClinicStaffHome } from "./staff-homes";
 import styles from "@/app/home/home.module.css";
 
 export function HomeClient() {
@@ -88,7 +89,11 @@ export function HomeClient() {
           {notice.text}
         </Toast>
       )}
-      {me.role === "DOCTOR" && <DoctorHome me={me} notify={setNotice} />}{" "}
+      {/* The active clinic grant decides, not the account's original role, so a revoked grant hides it. */}
+      {me.clinicRoles?.includes("DOCTOR") ? <DoctorHome me={me} notify={setNotice} /> : null}
+      {me.role === "DOCTOR" || me.role === "NURSE" || me.role === "CLINIC_ADMIN"
+        ? <ClinicStaffHome me={me} notify={setNotice} />
+        : null}
       {me.role === "PATIENT" && <PatientHome me={me} notify={setNotice} />}{" "}
       {me.role === "CAREGIVER" && <CaregiverHome me={me} notify={setNotice} />}
     </AppShell>

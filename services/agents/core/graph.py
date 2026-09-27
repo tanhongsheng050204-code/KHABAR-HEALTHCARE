@@ -86,13 +86,27 @@ def reset_reader() -> None:
     _reader = None
 
 
-def context_or_none(graph_id: Optional[str]) -> Optional[dict[str, Any]]:
-    """For the agents' tools: the graph context, or None when there is no graph, no patient, or it is unreachable."""
-    graph = reader()
-    if graph is None or not graph_id:
-        return None
+def context_with_status(graph_id: Optional[str]) -> tuple[Optional[dict[str, Any]], str]:
+    """Return graph context and why it is absent, so safety checks can report missing coverage."""
+    if not graph_id:
+        return None, "missing_graph_id"
     try:
-        return graph.context(graph_id)
+        graph = reader()
+    except Exception as e:
+        log.warning("Patient graph could not be initialised: %s", e)
+        return None, "unreachable"
+    if graph is None:
+        return None, "not_configured"
+    try:
+        context = graph.context(graph_id)
     except Exception as e:  # the graph adds context; an agent never fails because it is down
         log.warning("Patient graph unavailable: %s", e)
-        return None
+        return None, "unreachable"
+    if context is None:
+        return None, "patient_missing"
+    return context, "available"
+
+
+def context_or_none(graph_id: Optional[str]) -> Optional[dict[str, Any]]:
+    """For optional graph tools that can continue with Spring's request data when context is absent."""
+    return context_with_status(graph_id)[0]

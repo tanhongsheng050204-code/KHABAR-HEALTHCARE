@@ -11,6 +11,7 @@ import com.khabar.api.patients.CaregiverLinkRepository;
 import com.khabar.api.patients.CaregiverScope;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
+import com.khabar.api.config.AdjustableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Map;
+import java.time.Duration;
 import java.util.UUID;
 
 import static com.khabar.api.support.TestTokens.bearer;
@@ -43,12 +45,14 @@ class ReadingsTest {
     @Autowired AppUserRepository users;
     @Autowired PatientRepository patients;
     @Autowired CaregiverLinkRepository caregiverLinks;
+    @Autowired AdjustableClock clock;
 
     AppUser doctor, doctorElsewhere, aminahAccount, nurul;
     Patient aminah;
 
     @BeforeEach
     void setUp() {
+        clock.reset();
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya"));
         Clinic other = clinics.save(new Clinic("Klinik Lain"));
         doctor = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Priya", clinic));
@@ -66,6 +70,10 @@ class ReadingsTest {
 
     ResultActions callList() throws Exception {
         return mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(doctor.getId())));
+    }
+
+    String snapshotAt() throws Exception {
+        return json.readTree(callList().andReturn().getResponse().getContentAsString()).get("snapshotAt").asText();
     }
 
     ResultActions favoriot(String secret, String body) throws Exception {
@@ -106,8 +114,29 @@ class ReadingsTest {
     @Test
     void callingThePatientClearsTheReading() throws Exception {
         record(aminahAccount, Map.of("glucose", 2.8));
-        mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId()).header("Authorization", bearer(doctor.getId())));
+        mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId())
+                .header("Authorization", bearer(doctor.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("observedThrough", snapshotAt()))));
         callList().andExpect(jsonPath("$.items.length()").value(0));
+    }
+
+    @Test
+    void recordingContactDoesNotClearAReadingReceivedAfterTheShownSnapshot() throws Exception {
+        record(aminahAccount, Map.of("glucose", 2.8)).andExpect(status().isCreated());
+        String snapshot = snapshotAt();
+
+        clock.advance(Duration.ofSeconds(2));
+        record(aminahAccount, Map.of("systolic", 165, "diastolic", 95)).andExpect(status().isCreated());
+        mvc.perform(post("/api/clinic/call-list/{id}/called", aminah.getId())
+                        .header("Authorization", bearer(doctor.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("observedThrough", snapshot))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.handledReadings").value(1));
+
+        callList().andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].urgentReply").value("Blood pressure 165/95 (high)"));
     }
 
     @Test

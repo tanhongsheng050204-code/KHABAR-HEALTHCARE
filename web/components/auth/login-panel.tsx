@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   ChevronLeft,
+  HeartHandshake,
   KeyRound,
   LoaderCircle,
   Mail,
@@ -73,7 +74,7 @@ export function LoginPanel() {
     router.replace("/home");
   }
 
-  async function demo(role: "doctor" | "patient") {
+  async function demo(role: "doctor" | "patient" | "caregiver") {
     setBusy(role);
     setMessage(null);
     try {
@@ -418,6 +419,18 @@ export function LoginPanel() {
           </div>
           <ArrowRight size={16} />
         </button>
+        {process.env.NODE_ENV === "development" && (
+          <button onClick={() => void demo("caregiver")} disabled={!!busy}>
+            <span>
+              <HeartHandshake size={18} />
+            </span>
+            <div>
+              <strong>Caregiver view</strong>
+              <small>Read-only shared patient care</small>
+            </div>
+            <ArrowRight size={16} />
+          </button>
+        )}
       </div>
 
       <details className={styles.advanced}>

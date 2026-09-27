@@ -4,7 +4,10 @@ import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.AppUserRepository;
 import com.khabar.api.identity.Clinic;
 import com.khabar.api.identity.ClinicRepository;
+import com.khabar.api.identity.ClinicStaffAccess;
+import com.khabar.api.identity.ClinicStaffRole;
 import com.khabar.api.identity.Role;
+import com.khabar.api.config.AdjustableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.http.MediaType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -23,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,8 +43,10 @@ class PatientRecordAccessTest {
     @Autowired PatientRepository patients;
     @Autowired CaregiverLinkRepository caregiverLinks;
     @Autowired JdbcTemplate jdbc;
+    @Autowired ClinicStaffAccess staffAccess;
+    @Autowired AdjustableClock clock;
 
-    AppUser doctorHere, doctorElsewhere, aminahAccount, nurul, formerCaregiver;
+    AppUser doctorHere, doctorElsewhere, nurse, clinicAdmin, aminahAccount, nurul, summaryOnlyCaregiver, formerCaregiver;
     Patient aminah, someoneElse;
 
     @BeforeEach
@@ -48,14 +55,20 @@ class PatientRecordAccessTest {
         Clinic elsewhere = clinics.save(new Clinic("Klinik Lain"));
         doctorHere = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Priya", here));
         doctorElsewhere = users.save(new AppUser(UUID.randomUUID(), Role.DOCTOR, "Dr Lim", elsewhere));
+        nurse = users.save(new AppUser(UUID.randomUUID(), Role.NURSE, "Nurse Mei", here));
+        clinicAdmin = users.save(new AppUser(UUID.randomUUID(), Role.CLINIC_ADMIN, "Clinic Admin", here));
+        staffAccess.grant(nurse, here, ClinicStaffRole.NURSE, doctorHere.getId(), clock.instant());
+        staffAccess.grant(clinicAdmin, here, ClinicStaffRole.CLINIC_ADMIN, doctorHere.getId(), clock.instant());
         aminahAccount = users.save(new AppUser(UUID.randomUUID(), Role.PATIENT, "Aminah", null));
         nurul = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Nurul", null));
+        summaryOnlyCaregiver = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Summary only", null));
         formerCaregiver = users.save(new AppUser(UUID.randomUUID(), Role.CAREGIVER, "Ex Carer", null));
 
         aminah = patients.save(new Patient(here, aminahAccount, "Aminah binti Yusof", "590312-10-5566", "012-345 6789", "ms"));
         someoneElse = patients.save(new Patient(here, null, "Tan Kok Hoe", "540101-07-1234", "016-222 3333", "zh"));
 
         caregiverLinks.save(new CaregiverLink(aminah, nurul, CaregiverScope.SUMMARY_AND_ALERTS));
+        caregiverLinks.save(new CaregiverLink(aminah, summaryOnlyCaregiver, CaregiverScope.SUMMARY));
         CaregiverLink revoked = new CaregiverLink(aminah, formerCaregiver, CaregiverScope.SUMMARY);
         revoked.revoke(Instant.now());
         caregiverLinks.save(revoked);
@@ -80,6 +93,26 @@ class PatientRecordAccessTest {
     }
 
     @Test
+    void nurseCanManageFollowUpButCannotOpenFullPatientRecord() throws Exception {
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(nurse.getId())))
+                .andExpect(status().isOk());
+        view(aminah, nurse).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void clinicAdminWithoutClinicalGrantCannotOpenPatientRecordOrCallList() throws Exception {
+        view(aminah, clinicAdmin).andExpect(status().isForbidden());
+        mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(clinicAdmin.getId())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void administratorNeedsASeparateDoctorGrantForClinicalRecordAccess() throws Exception {
+        staffAccess.grant(clinicAdmin, clinicAdmin.getClinic(), ClinicStaffRole.DOCTOR, doctorHere.getId(), clock.instant());
+        view(aminah, clinicAdmin).andExpect(status().isOk());
+    }
+
+    @Test
     void patientSeesTheirOwnRecord() throws Exception {
         view(aminah, aminahAccount).andExpect(status().isOk());
     }
@@ -92,6 +125,52 @@ class PatientRecordAccessTest {
     @Test
     void caregiverWithConsentSeesTheRecord() throws Exception {
         view(aminah, nurul).andExpect(status().isOk());
+        mvc.perform(get("/api/patients/{id}/medications", aminah.getId()).header("Authorization", bearer(nurul.getId())))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/patients/{id}/readings", aminah.getId()).header("Authorization", bearer(nurul.getId())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void summaryOnlyCaregiverCannotReadThePatientRecordMedicationListOrReadings() throws Exception {
+        view(aminah, summaryOnlyCaregiver).andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/{id}/medications", aminah.getId())
+                        .header("Authorization", bearer(summaryOnlyCaregiver.getId())))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/{id}/readings", aminah.getId())
+                        .header("Authorization", bearer(summaryOnlyCaregiver.getId())))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/patients/{id}/summary", aminah.getId())
+                        .header("Authorization", bearer(summaryOnlyCaregiver.getId())))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/me").header("Authorization", bearer(summaryOnlyCaregiver.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientScopes['" + aminah.getId() + "']").value("SUMMARY"));
+    }
+
+    @Test
+    void summaryOnlyCaregiverCannotAddMedicationOrReadingData() throws Exception {
+        mvc.perform(post("/api/patients/{id}/medications", aminah.getId())
+                        .header("Authorization", bearer(summaryOnlyCaregiver.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Unapproved fictional medicine\"}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/patients/{id}/readings", aminah.getId())
+                        .header("Authorization", bearer(summaryOnlyCaregiver.getId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"glucose\":5.5}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void revokingConsentImmediatelyBlocksTheCaregiversNextRecordRequest() throws Exception {
+        view(aminah, nurul).andExpect(status().isOk());
+
+        CaregiverLink activeLink = caregiverLinks.findByCaregiverIdAndRevokedAtIsNull(nurul.getId()).getFirst();
+        activeLink.revoke(clock.instant());
+        caregiverLinks.saveAndFlush(activeLink);
+
+        view(aminah, nurul).andExpect(status().isForbidden());
     }
 
     @Test

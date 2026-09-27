@@ -17,6 +17,11 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+  # Public demo/local profiles retain their existing Hibernate-managed schemas. The pilot
+  # profile opts into reviewed, versioned migrations explicitly.
+  flyway:
+    enabled: false
+
   # Voice recordings for speech-to-text notes (the transcription service accepts up to 25 MB)
   servlet:
     multipart:
@@ -66,6 +71,11 @@ khabar:
   checkins:
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
     poll-ms: ${CHECKINS_POLL_MS:60000}
+  follow-up:
+    auto-escalation:
+      # Enable only after clinician approval of the clinic's acknowledgement/escalation policy.
+      enabled: ${KHABAR_AUTO_ESCALATION_ENABLED:false}
+      poll-ms: ${KHABAR_AUTO_ESCALATION_POLL_MS:60000}
   # Home readings forwarded by Favoriot: the value of the X-Khabar-Device-Secret header on your forwarding rule.
   # Leave empty to switch device readings off.
   favoriot:

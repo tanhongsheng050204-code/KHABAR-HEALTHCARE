@@ -1,24 +1,44 @@
 package com.khabar.api.patients;
 
 import com.khabar.api.identity.AppUser;
+import com.khabar.api.identity.ClinicStaffAccess;
 import org.springframework.stereotype.Component;
 
 /**
  * Who may see a patient's record:
- * a doctor at the patient's clinic, the patient themself, or a caregiver the patient consented to.
+ * a doctor at the patient's clinic, the patient themself, or a caregiver with SUMMARY_AND_ALERTS consent.
+ * SUMMARY consent grants access to the approved take-home summary only.
  */
 @Component
 public class PatientAccessPolicy {
 
     private final CaregiverLinkRepository caregiverLinks;
+    private final ClinicStaffAccess staffAccess;
 
-    public PatientAccessPolicy(CaregiverLinkRepository caregiverLinks) {
+    public PatientAccessPolicy(CaregiverLinkRepository caregiverLinks, ClinicStaffAccess staffAccess) {
         this.caregiverLinks = caregiverLinks;
+        this.staffAccess = staffAccess;
     }
 
     public boolean canView(AppUser user, Patient patient) {
+        if (staffAccess.hasClinicalAccess(user) && worksAtPatientsClinic(user, patient)) {
+            return true;
+        }
         return switch (user.getRole()) {
-            case DOCTOR -> worksAtPatientsClinic(user, patient);
+            case DOCTOR, NURSE, CLINIC_ADMIN -> false;
+            case PATIENT -> isThePatient(user, patient);
+            case CAREGIVER -> caregiverLinks.existsByPatientIdAndCaregiverIdAndRevokedAtIsNullAndScope(
+                    patient.getId(), user.getId(), CaregiverScope.SUMMARY_AND_ALERTS);
+        };
+    }
+
+    /** Caregivers may read the latest approved take-home summary at either consent scope. */
+    public boolean canViewSummary(AppUser user, Patient patient) {
+        if (staffAccess.hasClinicalAccess(user) && worksAtPatientsClinic(user, patient)) {
+            return true;
+        }
+        return switch (user.getRole()) {
+            case DOCTOR, NURSE, CLINIC_ADMIN -> false;
             case PATIENT -> isThePatient(user, patient);
             case CAREGIVER -> caregiverLinks.existsByPatientIdAndCaregiverIdAndRevokedAtIsNull(patient.getId(), user.getId());
         };
@@ -31,8 +51,11 @@ public class PatientAccessPolicy {
 
     /** Clinical detail (the access log, intake answers) is for the patient and their clinic, not caregivers. */
     public boolean isPatientOrTheirClinic(AppUser user, Patient patient) {
+        if (staffAccess.hasClinicalAccess(user) && worksAtPatientsClinic(user, patient)) {
+            return true;
+        }
         return switch (user.getRole()) {
-            case DOCTOR -> worksAtPatientsClinic(user, patient);
+            case DOCTOR, NURSE, CLINIC_ADMIN -> false;
             case PATIENT -> isThePatient(user, patient);
             case CAREGIVER -> false;
         };

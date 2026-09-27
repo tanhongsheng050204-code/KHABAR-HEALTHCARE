@@ -98,6 +98,7 @@
     const button = el("button", "px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm hover:opacity-90 transition-opacity", "Mark as called");
     button.type = "button";
     button.addEventListener("click", async () => {
+      if (!window.confirm("Record successful patient contact? This closes open replies, worrying readings, and unanswered check-ins that were present at the last refresh. Review all related concerns first; newer items will stay open.")) return;
       button.disabled = true;
       button.textContent = "Saving…";
       try {
@@ -135,7 +136,10 @@
       header.append(left, signOut);
 
       const items = list.items.map((item) => renderItem(item, async (it) => {
-        await api.call("/api/clinic/call-list/" + it.patientId + "/called", { method: "POST" });
+        await api.call("/api/clinic/call-list/" + it.patientId + "/called", {
+          method: "POST",
+          body: JSON.stringify({ observedThrough: list.snapshotAt }),
+        });
         await refresh(state);
       }));
       const empty = el("p", "font-body-md text-body-md text-on-surface-variant", "Nobody needs a call right now.");

@@ -8,6 +8,8 @@ public interface CaregiverLinkRepository extends JpaRepository<CaregiverLink, UU
 
     boolean existsByPatientIdAndCaregiverIdAndRevokedAtIsNull(UUID patientId, UUID caregiverId);
 
+    boolean existsByPatientIdAndCaregiverIdAndRevokedAtIsNullAndScope(UUID patientId, UUID caregiverId, CaregiverScope scope);
+
     java.util.List<CaregiverLink> findByPatientIdAndRevokedAtIsNull(UUID patientId);
 
     java.util.List<CaregiverLink> findByCaregiverIdAndRevokedAtIsNull(UUID caregiverId);

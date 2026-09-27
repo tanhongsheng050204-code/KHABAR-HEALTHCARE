@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -216,6 +217,24 @@ class EncounterFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.language").value("ms"))
                 .andExpect(jsonPath("$.text").value("• Metformin 500 mg: 1 biji, pagi dan malam, selepas makan."));
+    }
+
+    @Test
+    void retryingFinaliseAfterACompletedRequestReturnsTheExistingVisitWithoutRepeatingSideEffects() throws Exception {
+        String id = startVisit(doctor);
+        writeNotes(id, NOTES);
+        check(id);
+
+        finalise(id).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("FINAL"));
+        finalise(id).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("FINAL"));
+
+        assertThat(jdbc.queryForObject("select count(*) from check_in where patient_id = ?", Long.class, aminah.getId()))
+                .isEqualTo(5L);
+        assertThat(jdbc.queryForObject("select count(*) from visit_summary where patient_id = ?", Long.class, aminah.getId()))
+                .isEqualTo(1L);
+        assertThat(jdbc.queryForObject("select count(*) from outbound_message where patient_id = ?", Long.class, aminah.getId()))
+                .isEqualTo(1L);
+        verify(agents, times(1)).buildSummary(anyList(), anyString(), any(), anyBoolean());
     }
 
     @Test

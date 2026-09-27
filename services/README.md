@@ -21,6 +21,8 @@ as a Python service, with a Supabase Postgres database. Everything there is fict
 sign in as a demo person. The backend sleeps after five idle minutes, so the first request takes about
 15 seconds.
 
+That deployment is a **public fictional-data demo**, not a clinic-pilot environment. For pilot preparation, the API now has a separate `pilot` Spring profile (`SPRING_PROFILES_ACTIVE=pilot`) that does not load `local` demo controllers or seed data, refuses to start if combined with `local` or `demo`, applies versioned Flyway migrations, validates rather than mutates the resulting schema, and keeps scheduled check-ins off unless explicitly enabled. Fresh databases apply V1 to V6; an existing non-empty database requires a separately reviewed schema comparison and explicit baseline before startup. H2 PostgreSQL-mode migration tests pass through V6. The hosted PostgreSQL 16 smoke and backup/restore checks predate V5/V6 and must be rerun against this migration head; do not count the older result as current compatibility evidence. Production secrets, existing-database baseline, backup/restore and rollback rehearsal, clinical approval, and deployment remain separate gates. See [the database migration procedure](../docs/DATABASE_MIGRATIONS.md). Do not change the public demo's active profiles to `pilot` as a shortcut.
+
 On the docs page, press **Authorize** and paste a token from `POST /dev/token?as=doctor` to try the
 endpoints as the demo doctor. From the command line:
 
@@ -41,6 +43,12 @@ database (connected from the Marketplace with the `DB_` prefix), `INTERNAL_SERVI
 `SUPABASE_JWT_SECRET`, `FIELD_ENCRYPTION_KEY`, `AGENTS_SERVICE_URL`, `WEB_ALLOWED_ORIGINS` and
 `WEB_APP_URL`. `services/api/src/main/resources/application-demo.yml` explains what the demo profile
 changes; `services/vercel.json` and `services/api/Dockerfile.vercel` are how Vercel builds it.
+
+After an API/agents deployment, run `node scripts/check-health.mjs` from `services/`. It checks that the
+API returns JSON status `UP` at `/api/health` and agents return `healthy` at `/agents/health`. To check
+local services, pass the API base URL and agents health URL separately, for example:
+`node scripts/check-health.mjs http://localhost:8080 http://localhost:8000/health`. The script exits
+nonzero when either endpoint is unavailable or returns an unexpected status.
 
 ## Run it on your machine (no accounts needed)
 
@@ -75,7 +83,7 @@ curl -s localhost:8080/api/me -H "Authorization: Bearer $TOKEN"
 curl -s -X POST localhost:8080/api/intake/chat -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"messages":[]}'
 ```
 
-Without `GEMINI_API_KEY` the intake agent runs a scripted four-question interview and triage uses the word lists only, so the whole flow works offline.
+Without `GEMINI_API_KEY`, intake uses a scripted four-question interview and triage uses the word lists, so those agent paths do not require an external LLM provider. The web app, API, agents, and database still need to be reachable; this is not device-wide offline support, and bandwidth throttling has not been tested.
 
 ### Demo helpers (local profile only)
 
@@ -132,11 +140,15 @@ A blood sugar of 2.8 mmol/L puts Aminah at the top of the call list.
 ## Tests
 
 ```bash
-cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 188 tests
-cd services/api && ./mvnw clean test                              # 184 tests, some against a real in-process Neo4j
+cd services/agents && .venv/Scripts/python.exe -m pytest -q      # 209 tests
+cd services/api && ./mvnw test                                    # latest: 238 passed, 1 optional PostgreSQL smoke skipped
 ```
 
+Latest full local results are recorded in [`../docs/TEST_RESULTS.md`](../docs/TEST_RESULTS.md). The optional PostgreSQL smoke test runs in hosted CI; the current uncommitted V5/V6 migrations still need a hosted PostgreSQL 16 run.
+
 ## Endpoints
+
+Controller/API errors use a stable JSON shape: `code`, `message`, `status`, `requestId` and `retryable`. The server also returns the generated support reference in `X-Request-ID` (exposed to the web app through CORS). A retryable response only means the server classifies the request as safe to retry (currently rate limiting); the client must not automatically repeat clinical write actions.
 
 **API (needs a Supabase sign-in token unless noted).** The same list, with request and response shapes,
 is browsable at [/docs](https://khabar-api.vercel.app/docs).
@@ -151,7 +163,7 @@ Sign-in and onboarding
 | Method | Path | Who | What |
 |---|---|---|---|
 | GET | `/api/health` | anyone | Liveness |
-| GET | `/api/me` | any registered user | Role, clinic, and the patient's own record id |
+| GET | `/api/me` | any registered user | Role, clinic, the patient's own record id, and active caregiver patient ids with their consent scopes |
 | POST | `/api/onboarding/clinic` | anyone signed in, with the bootstrap token | Creates the first clinic and makes the caller its doctor. Off unless `KHABAR_BOOTSTRAP_TOKEN` is set |
 | POST | `/api/clinic/patients` | doctor | Registers a patient and returns a one-time code (valid 7 days) that links the patient's own sign-in to the record |
 | POST | `/api/clinic/doctor-invites` | doctor | A one-time code that makes a colleague a doctor at the same clinic |
@@ -165,11 +177,13 @@ Patient record
 
 | Method | Path | Who | What |
 |---|---|---|---|
-| GET | `/api/patients/{id}` | doctor at the clinic, the patient, a consented caregiver | Record with IC masked; every non-patient view is written to the audit log |
+| GET | `/api/patients/{id}` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | Record with IC masked; every non-patient view is written to the audit log. A `SUMMARY` caregiver cannot read the patient record |
 | GET | `/api/patients/{id}/access-log` | the patient, doctor at the clinic | "Who viewed my record", newest first |
-| GET / POST | `/api/patients/{id}/medications` | doctor at the clinic, the patient, a consented caregiver | "What I take": medicines and herbs from other places. The safety check reads this list |
+| GET / POST | `/api/patients/{id}/medications` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | "What I take": medicines and herbs from other places. The safety check reads this list |
 | DELETE | `/api/patients/{id}/medications/{itemId}` | same | Marks an item as stopped (the row is kept) |
-| GET / POST | `/api/patients/{id}/readings` | same | Home blood pressure or blood sugar. Each reading is rated; a worrying one goes on the call list |
+| GET / POST | `/api/patients/{id}/readings` | doctor at the clinic, the patient, a `SUMMARY_AND_ALERTS` caregiver | Home blood pressure or blood sugar. Each reading is rated; a worrying one goes on the call list |
+
+Caregiver scopes are enforced by the API: `SUMMARY` can read `/api/patients/{id}/summary` only; `SUMMARY_AND_ALERTS` also permits the patient card, medicines, and home readings. The caregiver home gets scopes from `/api/me` and hides the shared details when the grant is summary-only.
 | PUT | `/api/patients/{id}/device` | doctor at the clinic | Links a home device (its Favoriot developer id) to the patient |
 
 Before the visit
@@ -202,14 +216,24 @@ After the visit
 
 | Method | Path | Who | What |
 |---|---|---|---|
-| POST | `/api/followup/replies` | patient | A follow-up reply from the app. Triaged (identity removed first) and stored encrypted; if triage is down it still goes to a person. The patient hears back only in approved words: a red flag gets fixed advice to call 999, a question with an approved answer gets the doctor's answer, anything else is acknowledged (with the 999 advice too if triage could not run). Returns `level`, `answer` (an approved answer, if one matched) and `message` (what the patient was sent) |
+| POST | `/api/followup/replies` | patient | A follow-up reply from the app. Routed (identity removed first) and stored encrypted; items needing review go to the clinic queue. No staff notification is sent by this endpoint. The patient hears only approved words: a red label gets precautionary fixed advice to call 999 and is told the clinic may not have seen the reply; a question with an approved answer gets the doctor's answer; anything else gets a cautious acknowledgement (with 999 advice if triage could not run). Returns `level`, `answer` (an approved answer, if one matched) and `message` (what the patient was sent) |
 | GET / POST | `/api/clinic/answers` · DELETE `/api/clinic/answers/{id}` | doctor | The clinic's approved answers: a title, trigger phrases, and the answer in ms / en / zh / ta. Retiring keeps the record |
 | POST | `/api/webhooks/favoriot` | a home device via Favoriot (no sign-in; checked by the `X-Khabar-Device-Secret` header) | A reading from a linked device. Unknown devices are acknowledged and ignored |
 | GET / POST | `/api/webhooks/whatsapp` | Meta (no sign-in; checked by verify token and signature) | The webhook handshake, and replies arriving on WhatsApp. Matched to a patient by a keyed hash of the phone number |
 | GET | `/api/clinic/call-list` | doctor | "Call these patients today", most urgent first. Within a level: replies, then home readings, then missed doses, then patients with no reply for 48 hours |
-| POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Marks the patient's replies and readings as handled and writes it to their access log |
+| GET | `/api/clinic/cases/assignees` | doctor or nurse | Doctors and nurses a case can be assigned to |
+| GET | `/api/clinic/cases/{id}` | doctor or nurse at the clinic | The case and its full history |
+| POST | `/api/clinic/cases/{id}/assign` | doctor or nurse | `{ "ownerId": "…" }`, or empty to take it yourself. Only doctors and nurses of the clinic |
+| POST | `/api/clinic/cases/{id}/acknowledge` | doctor or nurse | Stops the overdue clock. Repeating it changes nothing |
+| POST | `/api/clinic/cases/{id}/contact` | doctor or nurse | `{ "outcome": "REACHED" \| "NO_ANSWER", "note": "…" }` |
+| POST | `/api/clinic/cases/{id}/escalate` | doctor or nurse | `{ "note": "why", "toUserId": "doctor, optional" }` |
+| POST | `/api/clinic/cases/{id}/close` | doctor or nurse | `{ "reason": "…", "note": "…", "observedThrough": "<snapshotAt>" }`. Urgent cases need a 10-character note, and can be closed as unreachable only after escalation. Resolves only what was in the snapshot |
+| GET, PUT | `/api/clinic/settings` | read: clinic staff; change: doctor or clinic admin | Hours, escalation contact, acknowledgement minutes per level, weekly rota with backup |
+| GET | `/api/clinic/activity` | doctor or clinic admin | Staff, settings and case actions, newest first; cases by reference only |
+| GET | `/api/clinic/integrations` | doctor or clinic admin | Whether agents, patient messages, the scheduler, the graph and real sign-in are working |
+| POST | `/api/clinic/call-list/{patientId}/called` | doctor at the clinic | Records successful contact for open items no newer than the displayed queue snapshot; requires `{ "observedThrough": "<snapshotAt from GET /api/clinic/call-list>" }`. Newer items stay open. Writes the contact to the patient's access log. |
 
-Errors the screens should show come back as `{"status": 409, "message": "..."}`, with a sentence written for people.
+Controller-handled errors use a stable response shape, for example `{"code":"CONFLICT","message":"...","status":409,"requestId":"…","retryable":false}`. The server-generated `X-Request-ID` is also returned as a header; authentication-filter errors may have a different body, but still receive the correlation header.
 
 **Agents (`X-Internal-Service-Key` header required, except `/health`)**
 
@@ -242,6 +266,8 @@ The API has **no working defaults for secrets** and refuses to start without the
 | `AGENTS_SERVICE_URL`, `WEB_ALLOWED_ORIGINS` | Where the agents run; which web origins may call the API |
 | `KHABAR_BOOTSTRAP_TOKEN` | Lets the first doctor create a clinic. Clear it once the clinic exists |
 | `KHABAR_TIME_ZONE` | Default `Asia/Kuala_Lumpur`; decides when check-ins are due |
+| `KHABAR_AUTO_ESCALATION_ENABLED` | Defaults to `false`. After clinician approval, `true` routes overdue unacknowledged cases to today's rostered backup in the clinic queue; it does not notify staff or count as an acknowledgement |
+| `KHABAR_AUTO_ESCALATION_POLL_MS` | Scheduler interval in milliseconds; defaults to 60000 |
 | `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TOKEN` | Leave empty to keep outgoing messages in the outbox table |
 | `WHATSAPP_CHECKIN_TEMPLATE` | Your approved check-in template (WhatsApp requires a template to start a conversation) |
 | `WHATSAPP_SUMMARY_TEMPLATE` | Your approved summary template with one body parameter `{{1}}`. Long summaries are split between lines into several messages |
