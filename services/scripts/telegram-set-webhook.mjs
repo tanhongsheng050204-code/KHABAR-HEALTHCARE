@@ -10,6 +10,23 @@ const telegram = process.argv[3] ?? "https://api.telegram.org";
 let pending = "";
 let lastWasCr = false;
 
+// Terminals can wrap a paste in bracketed-paste markers (ESC[200~ ... ESC[201~) or pass Ctrl+V and other
+// keys through as control characters; none of that is part of a token or secret.
+function clean(value) {
+  return value.replace(/\u001b\[20[01]~/g, "").replace(/[\u0000-\u001f\u007f\u200b\ufeff]/g, "").trim();
+}
+
+// Says what is wrong with a value without showing it.
+function describe(value) {
+  const problems = [];
+  if (/\s/.test(value)) problems.push("a space");
+  if (/["'`]/.test(value)) problems.push("quote marks");
+  if (/[^\x20-\x7e]/.test(value)) problems.push("non-ASCII characters");
+  const other = value.replace(/[A-Za-z0-9_\-\s"'`]|[^\x20-\x7e]/g, "");
+  if (other) problems.push(`other symbols (${[...new Set(other)].join(" ")})`);
+  return `${value.length} characters received${problems.length ? `, including ${problems.join(", ")}` : ""}`;
+}
+
 function hidden(question) {
   return new Promise((resolve) => {
     process.stdout.write(question);
@@ -39,14 +56,14 @@ function hidden(question) {
       stdin.pause();
       stdin.off("data", onData);
       process.stdout.write("\n");
-      resolve(value.trim());
+      resolve(clean(value));
     };
     const onData = (chunk) => {
       if (take(chunk)) finish();
     };
     if (take(pending)) {
       process.stdout.write("\n");
-      resolve(value.trim());
+      resolve(clean(value));
       return;
     }
     stdin.setRawMode?.(true);
@@ -63,7 +80,7 @@ if (!token || !secret) {
   process.exit(1);
 }
 if (!/^[A-Za-z0-9_-]{1,256}$/.test(secret)) {
-  console.error("Telegram only accepts letters, digits, _ and - in the secret (1-256 characters).");
+  console.error(`Telegram only accepts letters, digits, _ and - in the secret (1-256 characters); ${describe(secret)}.`);
   process.exit(1);
 }
 
