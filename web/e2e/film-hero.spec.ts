@@ -1,0 +1,47 @@
+import { expect, test } from "@playwright/test";
+
+const dashOffset = (page: import("@playwright/test").Page) =>
+  page.locator('[data-thread="hero"] [data-draw]').first()
+    .evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset));
+
+test("the hero offers the four greeting languages, BM first", async ({ page }) => {
+  await page.goto("/preview/film");
+  const chips = page.getByRole("group", { name: "Khabar speaks her language" }).getByRole("button");
+  await expect(chips).toHaveText(["BM", "中文", "தமிழ்", "EN"]);
+  await expect(chips.first()).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#act0 [data-from='khabar']")).toContainText("Apa khabar, Mak Cik?");
+});
+
+test("choosing a language changes the greeting, by mouse or keyboard", async ({ page }) => {
+  await page.goto("/preview/film");
+  await page.getByRole("button", { name: "中文" }).click();
+  await expect(page.locator("#act0 [data-from='khabar']")).toContainText("阿姨，今天好吗？");
+  const tamil = page.getByRole("button", { name: "தமிழ்" });
+  await tamil.focus();
+  await expect(tamil).toBeInViewport();
+  await page.keyboard.press("Enter");
+  await expect(tamil).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#act0 [data-from='khabar']")).toHaveAttribute("lang", "ta");
+});
+
+test("scrolling pins the hero and draws the thread after Aminah", async ({ page }) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("#act0").locator("xpath=..")).toHaveClass(/pin-spacer/);
+  // At rest the thread runs part-way, from the door to Aminah: neither hidden (1) nor complete (0).
+  await expect.poll(() => dashOffset(page)).toBeCloseTo(0.62, 1);
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.5));
+  // Half-way through the pin it is part-drawn further, not snapped to either end.
+  await expect.poll(() => dashOffset(page), { timeout: 5000 }).toBeLessThan(0.5);
+  expect(await dashOffset(page)).toBeGreaterThan(0.05);
+});
+
+test.describe("with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("the hero is its still frame: no pin, headline and Aminah in view", async ({ page }) => {
+    await page.goto("/preview/film");
+    await expect(page.locator(".pin-spacer")).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
+    await expect(page.locator("#act0 [data-layer='aminah']")).toBeInViewport();
+  });
+});
