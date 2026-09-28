@@ -43,7 +43,7 @@ _SPOKEN_LABEL = re.compile(r"^\s*(?:(diagnosis|impression)\b\s*[,:\-]?|(plan)\s*
 # new item ("..., Tablet ...", "..., review in 2 weeks") separates items.
 _ITEM_AFTER_COMMA = re.compile(
     r",\s+(?=T\.\s|(?:tablets?|capsules?|syrup|injection|tabs?|caps?|review|follow[- ]?up|come back|"
-    r"see (?:you|me) again|return|rtc|tca|plan|diagnosis|impression|dx)\b)", re.IGNORECASE)
+    r"see (?:you|me) again|reviewed|return|rtc|tca|plan|diagnosis|impression|dx)\b)", re.IGNORECASE)
 _FORM_START = re.compile(r"^\s*(?:T\.|Tabs?\b|Caps?\b|Syr\b|Inj\b|tablets?\b|capsules?\b|syrup\b|injection\b)", re.IGNORECASE)
 _SPOKEN_FORMS = [(re.compile(r"^\s*(?:tablets?|tabs?)\b\.?", re.IGNORECASE), "T."),
                  (re.compile(r"^\s*(?:capsules?|caps?)\b\.?", re.IGNORECASE), "Cap."),
@@ -76,7 +76,7 @@ def _is_spoken_order(sentence: str) -> bool:
               or _SPOKEN_UNITS.search(sentence) or any(p.search(sentence) for p, _ in _SPOKEN_CODES))
     return bool(looks_like_order and spoken)
 _SPOKEN_FOLLOW_UP = re.compile(
-    rf"^\s*(?:review|follow[- ]?up|come back|see (?:you|me) again)\b.*?\b(?:in|after)\s+{_NUMBER}\s+(weeks?|days?)\b",
+    rf"^\s*(?:review(?:ed)?|follow(?:ed)?[- ]?up|come back|see (?:you|me) again)\b.*?\b(?:in|after)\s+{_NUMBER}\s+(weeks?|days?)\b",
     re.IGNORECASE)
 _SPOKEN_RETURN = re.compile(r"^\s*return\s+(?:to\s+(?:the\s+)?clinic\s+)?if\b", re.IGNORECASE)
 
@@ -125,12 +125,14 @@ def _labelled(sentence: str) -> bool:
     return any(p.match(sentence) for p in _LABELS.values())
 
 
-def _starts_item(sentence: str, inside_label: bool) -> bool:
-    """Whether a sentence begins a new part of the note rather than continuing the previous one."""
+def _starts_item(sentence: str, inside_label: bool, new_sentence: bool) -> bool:
+    """Whether a piece begins a new part of the note rather than continuing the previous one. After a
+    label only a new label, a follow-up, a medicine order, or a new sentence of return advice does,
+    so the doctor's own sentences stay in their Dx:/Plan: line."""
     if _labelled(sentence) or _FOLLOW_UP.match(sentence) or _FORM_START.match(sentence):
         return True
     if inside_label:
-        return False
+        return new_sentence and bool(_RETURN_ADVICE.match(sentence))
     return bool(_RETURN_ADVICE.search(sentence) or parse_line(sentence))
 
 
@@ -151,7 +153,7 @@ def _structured_lines(notes: str) -> list[str]:
         current, inside_label = None, False
         for text, sep in _chunks(line):
             spoken = _from_speech(text)
-            if current is not None and not _starts_item(spoken, inside_label):
+            if current is not None and not _starts_item(spoken, inside_label, sep == " "):
                 current += sep + text
                 continue
             if current is not None:
