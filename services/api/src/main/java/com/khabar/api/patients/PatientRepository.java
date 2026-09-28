@@ -22,4 +22,10 @@ public interface PatientRepository extends JpaRepository<Patient, UUID> {
     long countByClinicIdAndFollowUpStartIsNotNull(UUID clinicId);
 
     Optional<Patient> findFirstByPhoneIndex(String phoneIndex);
+
+    Optional<Patient> findFirstByTelegramChatIndex(String telegramChatIndex);
+
+    List<Patient> findByTelegramChatIndex(String telegramChatIndex);
+
+    List<Patient> findByPhoneIndex(String phoneIndex);
 }

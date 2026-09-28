@@ -28,7 +28,7 @@ class FlywayMigrationTest {
 
         Flyway flyway = flyway(dataSource);
 
-        assertEquals(6, flyway.migrate().migrationsExecuted);
+        assertEquals(7, flyway.migrate().migrationsExecuted);
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
         try (Connection connection = dataSource.getConnection();
@@ -44,6 +44,11 @@ class FlywayMigrationTest {
         try (Connection connection = dataSource.getConnection();
              var columns = connection.getMetaData().getColumns(null, null, "FOLLOW_UP_CASE", "AUTO_ROUTED_AT")) {
             assertTrue(columns.next(), "V6 must keep automatic queue routing separate from clinician escalation.");
+            assertEquals(DatabaseMetaData.columnNullable, columns.getInt("NULLABLE"));
+        }
+        try (Connection connection = dataSource.getConnection();
+             var columns = connection.getMetaData().getColumns(null, null, "PATIENT", "TELEGRAM_CHAT_INDEX")) {
+            assertTrue(columns.next(), "V7 must add the Telegram chat index used to find a patient.");
             assertEquals(DatabaseMetaData.columnNullable, columns.getInt("NULLABLE"));
         }
     }
