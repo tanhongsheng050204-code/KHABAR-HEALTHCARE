@@ -228,3 +228,6 @@ docs/triage_desk.html
 
 # Browser-testing tool logs
 .playwright-mcp/
+
+# Brainstorming mockups from the visual companion
+.superpowers/
