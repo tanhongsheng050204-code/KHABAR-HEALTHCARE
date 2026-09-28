@@ -852,7 +852,9 @@ function CheckInPanel({
           title="Tell us what has changed"
         />
         <p className={styles.panelIntro}>
-          Khabar removes your identifying details before AI assistance. Your
+          Please don&apos;t type names or IC numbers, yours or anyone
+          else&apos;s. Khabar removes your registered name, IC and phone number
+          before AI assistance, but it cannot recognise other names. Your
           clinic receives the saved report and transcript.
         </p>
         {lines.length ? (
@@ -949,7 +951,7 @@ function CheckInPanel({
           </div>
         )}
         <ul>
-          <li>Your identifying details are removed before triage.</li>
+          <li>Please don&apos;t type names or IC numbers. Your registered name, IC and phone number are removed before triage; other names are not.</li>
           <li>Messages do not alert clinic staff. If this is an emergency, call 999 or go to the nearest emergency department now.</li>
         </ul>
       </div>

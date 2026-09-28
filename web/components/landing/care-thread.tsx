@@ -19,7 +19,7 @@ const moments = [
     title: "Before the visit",
     heading: "Arrive with the story already started.",
     copy: "The patient books, answers a calm guided intake, and shares medicines from every source. The clinic sees the important context before the room door opens.",
-    proof: "Identity removed before AI assistance",
+    proof: "Your name, IC and phone removed before AI assistance",
     side: "A little preparation. A more personal visit.",
     steps: [
       "Appointment booked",
