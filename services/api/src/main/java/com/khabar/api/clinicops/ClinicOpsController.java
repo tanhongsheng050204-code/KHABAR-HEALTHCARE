@@ -162,12 +162,12 @@ public class ClinicOpsController {
             health = Map.of();
         }
         boolean agentsUp = "ok".equals(String.valueOf(health.get("status"))) || "healthy".equals(String.valueOf(health.get("status")));
-        boolean whatsapp = "whatsapp".equalsIgnoreCase(messenger.channel());
+        boolean telegram = "telegram".equalsIgnoreCase(messenger.channel());
         return List.of(
                 new Integration("AI agents", agentsUp ? "OK" : "DOWN",
                         agentsUp ? "Drafting, safety checks and triage are available." : "Drafts and safety checks are unavailable; replies get the 999 advice and wait for a person."),
-                new Integration("Patient messages", whatsapp ? "OK" : "LIMITED",
-                        whatsapp ? "Sent through WhatsApp." : "Kept in the local outbox; nothing reaches patients' phones."),
+                new Integration("Patient messages", telegram ? "OK" : "LIMITED",
+                        telegram ? "Sent through Telegram to patients who linked the Khabar bot." : "Kept in the local outbox; nothing reaches patients' phones."),
                 new Integration("Check-in scheduler", schedulerEnabled ? "OK" : "OFF",
                         schedulerEnabled ? "Check-ins go out on their due days." : "No check-ins are sent until it is turned on."),
                 new Integration("Patient graph", graph.enabled() ? "OK" : "OFF",

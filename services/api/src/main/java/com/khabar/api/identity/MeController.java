@@ -32,19 +32,22 @@ public class MeController {
         this.staffAccess = staffAccess;
     }
 
-    /** patientId is the patient's own record; patientScopes exposes each caregiver link's granted scope. */
+    /**
+     * patientId is the patient's own record; patientScopes exposes each caregiver link's granted scope;
+     * telegramLinked says whether the patient has linked the Khabar Telegram bot.
+     */
     public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId,
                              List<UUID> patientIds, Map<UUID, CaregiverScope> patientScopes,
-                             List<ClinicStaffRole> clinicRoles) {
+                             List<ClinicStaffRole> clinicRoles, boolean telegramLinked) {
     }
 
     @GetMapping
     public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
         Clinic clinic = user.getClinic();
-        UUID patientId = user.getRole() == Role.PATIENT
-                ? patients.findByAccountId(user.getId()).map(Patient::getId).orElse(null)
-                : null;
+        Patient own = user.getRole() == Role.PATIENT ? patients.findByAccountId(user.getId()).orElse(null) : null;
+        UUID patientId = own == null ? null : own.getId();
+        boolean telegramLinked = own != null && own.getTelegramChatId() != null;
         Map<UUID, CaregiverScope> patientScopes = new LinkedHashMap<>();
         if (user.getRole() == Role.CAREGIVER) {
             caregiverLinks.findByCaregiverIdAndRevokedAtIsNull(user.getId()).forEach(link -> {
@@ -58,6 +61,6 @@ public class MeController {
         return new MeResponse(user.getId(), user.getRole(), user.getDisplayName(),
                 clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId,
                 patientIds, patientScopes,
-                staffAccess.rolesFor(user));
+                staffAccess.rolesFor(user), telegramLinked);
     }
 }
