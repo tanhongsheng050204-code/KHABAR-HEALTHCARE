@@ -49,13 +49,16 @@ entry in [EXPLAIN.md](EXPLAIN.md).
   `FollowUpCaseAutoEscalationScheduler.java`, V5/V6 migrations and the patient/staff web screens.
   *Be ready for:* "How does a retry avoid sending twice? Why doesn't an automatic route count as a clinician
   escalation or a staff notification?"
-- [ ] **WhatsApp.** `messaging/WhatsAppCloudMessenger.java` (templates), `WhatsAppWebhookController.java`
-  (signature check). *Be ready for:* "Why templates?" (WhatsApp only allows them outside a 24-hour window).
+- [ ] **Telegram.** `messaging/TelegramBotClient.java` (sending, splitting long text, keeping the token out of
+  errors), `TelegramWebhookController.java` (secret header, own-number linking, replies into follow-up),
+  `patients/TelegramChatIndex.java`. *Be ready for:* "How do you know the number is really theirs?" (Telegram
+  verifies it, and the contact must be the sender's own) and "Why not WhatsApp?" (template approval and the
+  test-recipient limit; the cost is lower reach among older patients).
 - [ ] **Deployment.** `services/vercel.json` (two services, one project), `.github/workflows/deploy-vercel.yml`.
 
 ## Honest limits to say out loud
 
 - The word lists and the herb and dose tables need a doctor's and a pharmacist's review.
-- No real provider test yet for WhatsApp, Favoriot, Gemini packet reading or transcription.
+- No real provider test yet for Telegram, Favoriot, Gemini packet reading or transcription.
 - The understanding pilot has not been run; there is no impact number yet.
 - AI tools wrote much of the code; each part above is one you have read and can explain.

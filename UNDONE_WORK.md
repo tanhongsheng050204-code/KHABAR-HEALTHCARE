@@ -32,7 +32,7 @@
 4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
 5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
 6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
-7. Providers: WhatsApp app and template approval (§2.1), Favoriot device (§2.2). (Groq speech-to-text is live; more recorded speakers and languages are still needed, §2.3.)
+7. Providers: create the Telegram bot and set its three values, then register the webhook (§2.1), Favoriot device (§2.2). (Groq speech-to-text is live; more recorded speakers and languages are still needed, §2.3.)
 8. SDC administration (§5): publish `starter-skeleton` (committed locally, no remote), confirm AI tools used, submit declarations.
 
 **Not started, by decision:** doctor writing-style learning (§3.4, first in the drop order) and notifying the on-duty staff member (needs a provider and clinician approval).
@@ -63,7 +63,7 @@ The remaining work is primarily real-provider integration, missing stretch featu
 - [x] Follow-up cases (24 Sep): each listed patient gets one open case (New → Assigned → Acknowledged → In progress / Unable to contact / Escalated → Resolved) with owner, acknowledgement deadline, call attempts, escalation and a structured closure reason, plus an append-only history. Cases stay listed until closed; urgent cases need a note and, to close as unreachable, an escalation first. Assign/acknowledge/close are idempotent. Doctor and nurse queues show status, owner and overdue flags, with filters (mine, unassigned, overdue, urgent). V4 migration and 12 tests.
 - [x] Clinic settings (24 Sep): hours, escalation contact, per-level acknowledgement times and a weekly rota with backup, set by doctors or clinic admins. The call list shows today's cover and says plainly when nobody is rostered. Admins also see a clinic activity log (cases by reference, never patient names) and integration health (agents, messages, scheduler, graph, sign-in).
 - [x] Added opt-in automatic overdue routing to that weekday's active rostered backup. V6 stores routing separately from clinician escalation; it records an append-only event, leaves the case unacknowledged and visibly overdue, and explicitly says no staff notification was sent. It cannot satisfy the clinician-escalation gate for closing an urgent case as unreachable. `KHABAR_AUTO_ESCALATION_ENABLED` is false by default; automated tests cover routing, idempotency, the no-backup case and the closure safeguard.
-- [ ] Still open for the alert lifecycle: send an actual notification to the on-duty person (push, SMS or WhatsApp to staff), and have a clinician approve the closure reasons, acknowledgement deadlines and auto-routing behavior before anyone enables the scheduler or uses this for care.
+- [ ] Still open for the alert lifecycle: send an actual notification to the on-duty person (push, SMS or a chat message to staff), and have a clinician approve the closure reasons, acknowledgement deadlines and auto-routing behavior before anyone enables the scheduler or uses this for care.
 - [ ] Before pilot: compare and back up any existing database before review/baselining; rehearse forward migration recovery and deployment rollback. CI run [36107201612](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36107201612) rehearsed restore from a disposable PostgreSQL 16 backup, but predates the current uncommitted V5/V6 migrations. Rerun the hosted PostgreSQL migration and backup/restore jobs on a commit containing V1–V6 before treating the current migration head as PostgreSQL-verified. No disposable PostgreSQL server or container runtime is available in this local shell. None of this is production recovery evidence or authorization to use the public demo database for a pilot.
 
 ### UI redesign update — 24 September 2026
@@ -131,21 +131,20 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ## 2. Provider integration and external setup
 
-### 2.1 WhatsApp Cloud API and approved templates
+### 2.1 Telegram bot
 
-**Status:** API client and webhook handling are implemented. Without credentials and approved templates, outbound messages go to the local outbox instead of WhatsApp.
+**Status:** Built on 28 Sep 2026, replacing WhatsApp (Meta template approval and the five-recipient test limit blocked a live loop). Sending, the secret-checked webhook, linking by shared phone number, and replies into follow-up are implemented and covered by automated tests; a local run linked a demo patient through the webhook and triaged a reply. Without a bot token, outbound messages go to the local outbox. Setup steps: [SETUP_INTEGRATIONS.md §3](docs/SETUP_INTEGRATIONS.md).
 
 **Required work**
 
-- [ ] Configure Meta developer app, test number, phone-number ID, long-lived access token, webhook verify token, and app secret.
-- [ ] Submit and obtain approval for the check-in template.
-- [ ] Submit and obtain approval for the summary template.
-- [ ] Configure `WHATSAPP_CHECKIN_TEMPLATE` and `WHATSAPP_SUMMARY_TEMPLATE` in the deployed environment.
-- [ ] Subscribe the webhook and verify Meta signature validation with a real test reply.
-- [ ] Send a fake-patient summary and check-in to an approved test phone.
-- [ ] Confirm an incoming reply is linked to the correct fake patient, triaged, and reflected in the call list.
+- [ ] Create the bot with @BotFather; set `KHABAR_TELEGRAM_BOT_TOKEN`, `KHABAR_TELEGRAM_WEBHOOK_SECRET` (API) and `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` (web).
+- [ ] Deploy the API from an up-to-date `main`, then register the webhook with `node scripts/telegram-set-webhook.mjs`.
+- [ ] Register a fictional patient with the tester's own Telegram number and link the bot by sharing that number.
+- [ ] Confirm the latest summary arrives on linking.
+- [ ] Send a reply ("sakit dada") and confirm the 999 advice arrives in Telegram and the patient tops the call list.
+- [ ] Confirm a Telegram retry of the same update is not triaged twice (check the reply count after a slow response).
 
-**Done when:** one complete outbound-and-inbound WhatsApp test succeeds with fake data.
+**Done when:** one complete outbound-and-inbound Telegram test succeeds with fake data.
 
 ### 2.2 Favoriot validation
 
@@ -206,7 +205,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ### 3.2 Voice-note summaries (A3)
 
-**Status:** Partial, in PR #6 (open). A "Listen to this plan" button on the patient and caregiver homes reads the approved summary aloud with the device's own speech engine. It speaks the approved text only, and only with a voice in the summary's language; with no such voice it says so instead of using another language's voice. Checked locally with a fictional Malay summary (no-voice note; stub engine chose `ms-MY` over `id-ID`; stop and end handling). There is no provider-generated audio and no WhatsApp audio message.
+**Status:** Partial, in PR #6 (open). A "Listen to this plan" button on the patient and caregiver homes reads the approved summary aloud with the device's own speech engine. It speaks the approved text only, and only with a voice in the summary's language; with no such voice it says so instead of using another language's voice. Checked locally with a fictional Malay summary (no-voice note; stub engine chose `ms-MY` over `id-ID`; stop and end handling). There is no provider-generated audio and no Telegram audio message.
 
 **Required work**
 
@@ -260,7 +259,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [ ] Move services to reliable / always-on hosting before a live demo.
 - [x] Prepare first drafts of 3-, 5-, and 7-minute pitch versions (`docs/PITCH_SCRIPTS.md`). Personalization, factual check against the live demo environment, and timed rehearsal remain open.
 - [ ] Record and review a demo video.
-- [ ] Rehearse the demo with provider-failure fallbacks. Local checks have covered API outage and retry, a five-second delayed recovery-update response, a browser-simulated request failure before the API received it followed by one retry, browser-context offline/reconnect and Chromium-throttled recovery update, and lost-response-after-commit/reload for recovery updates and visit finalisation (see `docs/DEMO_RUN_2026-09-25_LOCAL.md`, `docs/RECOVERY_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`, and `docs/FINALISE_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`). API tests verify a repeated request does not triage or notify twice. A local API-only cold-start sample returned healthy in 11.97 seconds from launch (details in `docs/COLD_START_CHECK_2026-09-25_LOCAL.md`); this is not deployed performance evidence. Device-wide/mobile network loss, WhatsApp/provider outage, PostgreSQL concurrency, and deployed rehearsal remain open.
+- [ ] Rehearse the demo with provider-failure fallbacks. Local checks have covered API outage and retry, a five-second delayed recovery-update response, a browser-simulated request failure before the API received it followed by one retry, browser-context offline/reconnect and Chromium-throttled recovery update, and lost-response-after-commit/reload for recovery updates and visit finalisation (see `docs/DEMO_RUN_2026-09-25_LOCAL.md`, `docs/RECOVERY_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`, and `docs/FINALISE_RETRY_BROWSER_CHECK_2026-09-25_LOCAL.md`). API tests verify a repeated request does not triage or notify twice. A local API-only cold-start sample returned healthy in 11.97 seconds from launch (details in `docs/COLD_START_CHECK_2026-09-25_LOCAL.md`); this is not deployed performance evidence. Device-wide/mobile network loss, Telegram/provider outage, PostgreSQL concurrency, and deployed rehearsal remain open.
 - [x] Create a repeatable rehearsal checklist with core workflow, role/access checks, failure fallbacks, and a result template (`docs/DEMO_RUN_CHECKLIST.md`). This is preparation only; no rehearsal result is implied.
 - [x] Run a local fictional-data rehearsal on 25 Sep, including a completed guided intake visible in the doctor pre-visit report, visit safety gate, final summary/outbox, patient urgent reply/call-list update, linked/unlinked caregiver access and immediate revocation, the agent-down reply fallback, and local outage/retry ([record](docs/DEMO_RUN_2026-09-25_LOCAL.md)). Recovery update retries are idempotent by client request ID and preserve only that opaque ID across reloads. Lost-response/reload recovery and browser-context offline/throttled-network behavior were checked locally for updates; finalisation lost-response/reload was also checked. Graph-backed context, device-wide network failure, provider outage, PostgreSQL concurrency, and deployed rehearsal remain open.
 
@@ -294,7 +293,7 @@ These are not implementation tasks, but they are still open in `plan.md`.
 1. ~~Implement and test **Neo4j graph writes and reads**~~ (done locally and on the deployment with AuraDB, 24 Sep).
 2. Complete deployed **Supabase authentication** for every role.
 3. Finish a deployed end-to-end rehearsal using fake data.
-4. Configure **WhatsApp templates and webhook**; perform one real test-number loop.
+4. Set up the **Telegram bot and webhook**; perform one real loop with a fictional patient.
 5. Run the LLM and transcription selection experiments and document the decisions.
 6. Decide whether B4 photo reading, A3 voice notes, and live Favoriot are worth the remaining time. Defer them before compromising the P0 demo.
 7. Run the usability pilot, bug bash, and pitch/demo preparation.
