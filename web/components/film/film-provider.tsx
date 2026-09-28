@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -37,6 +37,17 @@ export function FilmProvider({ children, className }: { children: ReactNode; cla
   const [lang, setLang] = useState<Lang>("ms");
   const motion = !reduced && !paused;
   const value = useMemo(() => ({ motion, lang, setLang }), [motion, lang]);
+
+  // A visitor who arrives by a link such as #act3 was scrolled there using the static layout. Pinning then
+  // adds scroll length above the target, so once the acts' timelines exist (child effects run first),
+  // scroll to the target again.
+  useEffect(() => {
+    if (!motion || !window.location.hash) return;
+    const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+    if (!target) return;
+    ScrollTrigger.refresh();
+    target.scrollIntoView({ block: "start" });
+  }, [motion]);
 
   return (
     <FilmContext.Provider value={value}>

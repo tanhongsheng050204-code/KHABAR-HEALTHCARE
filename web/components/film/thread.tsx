@@ -4,8 +4,9 @@ import styles from "./film.module.css";
 export type ThreadState = "ok" | "watch" | "red";
 
 /**
- * The thread of light. Paths use pathLength 1, so stroke-dashoffset 1 hides the thread and 0 draws it
- * fully; acts tween the [data-draw] paths. The colour follows data-state: green, amber or red.
+ * The thread of light. Paths use pathLength 1, so where a dash pattern is set (the hero), stroke-dashoffset
+ * 1 hides the thread and 0 draws it fully; acts tween the [data-draw] paths. The colour follows data-state:
+ * green, amber or red; with pulse, the glow breathes.
  */
 export function Thread({
   d, viewBox, state, name, pulse = false, svgRef,
@@ -26,7 +27,6 @@ export function Thread({
     >
       <path className={styles.threadGlow} d={d} pathLength={1} data-draw="" />
       <path className={styles.threadLine} d={d} pathLength={1} data-draw="" />
-      {pulse ? <path className={styles.threadPulse} d={d} pathLength={1} /> : null}
     </svg>
   );
 }

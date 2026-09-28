@@ -59,13 +59,15 @@
 .thread[data-state="watch"] { --thread: var(--amber); }
 .thread[data-state="red"] { --thread: var(--cili); }
 .thread path { fill: none; stroke: var(--thread); stroke-linecap: round; vector-effect: non-scaling-stroke; transition: stroke 0.6s var(--ease-enter); }
-.threadLine { stroke-width: 3px; stroke-dasharray: 1; }
-.threadGlow { stroke-width: 12px; stroke-dasharray: 1; opacity: 0.45; filter: blur(5px); }
-.threadPulse { stroke-width: 6px; stroke-dasharray: 0.03 0.97; stroke-dashoffset: 1; opacity: 0; }
-.film[data-motion="on"] .threadPulse { opacity: 0.9; animation: threadPulse 2.8s linear infinite; }
-@keyframes threadPulse { to { stroke-dashoffset: 0; } }
-/* The hero's still frame: the thread runs from the door to Aminah. Scrolling draws the rest. */
-.thread[data-thread="hero"] [data-draw] { stroke-dashoffset: 0.62; }
+.threadLine { stroke-width: 3px; }
+.threadGlow { stroke-width: 12px; opacity: 0.45; filter: blur(5px); }
+/* A thread that needs attention breathes: its glow swells and fades. (A travelling dash would need
+   pathLength, which scales wrongly inside the small stretched thread SVGs.) */
+.film[data-motion="on"] .thread[data-pulse] .threadGlow { animation: threadBreathe 1.8s ease-in-out infinite; }
+@keyframes threadBreathe { 50% { opacity: 0.9; stroke-width: 18px; } }
+/* Only the hero's thread is drawn on: its dash pattern spans the whole path (pathLength 1). At rest it
+   runs from the door to Aminah; scrolling draws the rest. */
+.thread[data-thread="hero"] [data-draw] { stroke-dasharray: 1; stroke-dashoffset: 0.62; }
 
 /* ---------- Characters and bubbles ---------- */
 .aminah { display: block; width: 100%; height: auto; overflow: visible; }
@@ -118,4 +120,55 @@
   .act0Aminah { left: 12%; bottom: 3%; width: 128px; }
   .act0Greeting { left: 70%; max-width: 20ch; font-size: 14px; }
   .scrollCue { display: none; }
+}
+
+/* ---------- Act 3: thirty days at home ---------- */
+.act3 { position: relative; }
+.act3Stage { position: relative; overflow: hidden; padding: 72px 0 56px; }
+.act3Dusk { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(180deg, #f9d6a2 0%, #f0b98f 55%, #c39aa8 100%); mix-blend-mode: multiply; }
+.act3Head { position: relative; z-index: 2; padding: 0 clamp(16px, 6vw, 96px); max-width: 720px; }
+.act3Head h2 { font-size: clamp(36px, 5vw, 64px); line-height: 1; margin: 0 0 28px; }
+.act3Track { position: relative; z-index: 2; display: grid; gap: 28px; padding: 0 clamp(16px, 6vw, 96px); }
+.day { position: relative; display: grid; gap: 14px; align-content: start; max-width: 460px; }
+.day h3 { margin: 0; font-size: 28px; }
+.dayCaption { margin: 0; color: var(--teh); line-height: 1.55; max-width: 40ch; }
+.dayThread { position: relative; height: 40px; }
+/* In the pan the day threads meet across the gap between cards, so they read as one line. */
+
+.phone { background: #fffdf8; border: 2px solid var(--kopi); border-radius: 28px; padding: 12px 12px 16px; box-shadow: 0 24px 50px rgb(59 42 32 / 0.14); max-width: 360px; }
+.phoneTop { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; padding: 4px 6px 10px; border-bottom: 1px solid rgb(59 42 32 / 0.12); margin-bottom: 10px; }
+.phoneAvatar { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pandan); color: #fff; font-size: 12px; }
+.phoneScreen { display: grid; gap: 10px; }
+
+@media (min-width: 761px) {
+  .act3[data-mode="animated"] .act3Stage { height: 100vh; min-height: 640px; }
+  .act3[data-mode="animated"] .act3Track { display: flex; width: max-content; gap: 56px; padding-right: 20vw; will-change: transform; }
+  .act3[data-mode="animated"] .day { width: min(420px, 34vw); flex: none; }
+  .act3[data-mode="animated"] .dayThread { margin-right: -56px; }
+  .act3[data-mode="animated"] .dayCaption { min-height: 3.1em; } /* two lines, so every day's thread sits level */
+  .act3[data-mode="static"] .act3Track { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
+
+/* ---------- Reply for Aminah ---------- */
+.lab { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 72px); align-items: center; padding: 72px clamp(16px, 6vw, 96px) 96px; }
+.labCopy h3 { font-size: clamp(30px, 3.6vw, 44px); margin: 0 0 12px; }
+.labCopy > p { color: var(--teh); line-height: 1.6; max-width: 46ch; }
+.choices { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.choices button {
+  border: 1.5px solid var(--kopi); background: #fff; color: var(--kopi); border-radius: 14px; padding: 12px 18px;
+  font: 600 16px/1.2 inherit; cursor: pointer; transition: transform 0.2s var(--ease-enter), background 0.2s;
+}
+.choices button:hover { transform: translateY(-2px); }
+.choices button[aria-pressed="true"][data-state="ok"] { background: var(--pandan); border-color: var(--pandan); color: #fff; }
+.choices button[aria-pressed="true"][data-state="watch"] { background: #8a5a12; border-color: #8a5a12; color: #fff; }
+.choices button[aria-pressed="true"][data-state="red"] { background: #9e3320; border-color: #9e3320; color: #fff; }
+.outcome { min-height: 5.2em; margin: 0; padding: 14px 16px; border-radius: 14px; background: #fff; border-left: 5px solid var(--pandan-glow); line-height: 1.55; }
+.outcome[data-state="watch"] { border-left-color: var(--amber); }
+.outcome[data-state="red"] { border-left-color: var(--cili); }
+.labPhone { position: relative; }
+.labThread { position: relative; height: 40px; margin-top: 12px; max-width: 360px; }
+
+@media (max-width: 760px) {
+  .act3Stage { padding-top: 56px; }
+  .lab { grid-template-columns: minmax(0, 1fr); padding-top: 48px; }
 }

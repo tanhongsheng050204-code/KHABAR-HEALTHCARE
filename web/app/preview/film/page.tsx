@@ -4,6 +4,7 @@ import { Brand } from "@/components/brand";
 import { FilmProvider } from "@/components/film/film-provider";
 import { fontVariables } from "@/components/film/fonts";
 import { Act0Hero } from "@/components/film/acts/act0-hero";
+import { Act3ThirtyDays } from "@/components/film/acts/act3-thirty-days";
 import styles from "@/components/film/film.module.css";
 
 export const metadata: Metadata = {
@@ -21,7 +22,12 @@ export default function FilmPreviewPage() {
       </header>
       <main id="main-content">
         <Act0Hero />
+        <Act3ThirtyDays />
       </main>
+      <footer className={styles.footer}>
+        <Brand compact />
+        <p>Concept prototype using fictional patient data.</p>
+      </footer>
     </FilmProvider>
   );
 }
