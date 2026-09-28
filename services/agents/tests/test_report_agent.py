@@ -36,3 +36,25 @@ def test_missing_sections_stay_empty_rather_than_invented():
     assert draft.plan == ""
     assert draft.follow_up == ""
     assert len(draft.prescription) == 1
+
+
+# The example placeholder in web/components/clinical/visit-workspace.tsx. Doctors copy its
+# shape, so every line of it must land in a field; keep the two in step.
+NOTES_EXAMPLE_SHOWN_TO_DOCTORS = (
+    "Dx: T2DM, BP stable\n"
+    "T. Metformin 500mg 1/1 BD PC\n"
+    "Plan: continue, keep a home BP log\n"
+    "TCA 2/52 FBS\n"
+    "RTC if chest pain or fainting"
+)
+
+
+def test_the_notes_example_shown_to_doctors_fills_every_field():
+    draft = draft_from_notes(NOTES_EXAMPLE_SHOWN_TO_DOCTORS)
+    assert draft.diagnosis == "T2DM, BP stable"
+    assert draft.plan == "continue, keep a home BP log"
+    assert draft.follow_up_weeks == 2
+    assert draft.warning_signs == ["RTC if chest pain or fainting"]
+    assert [(rx.name, rx.strength_mg, rx.times_per_day, rx.timing) for rx in draft.prescription] == [
+        ("Metformin", 500.0, 2, "after_food")
+    ]
