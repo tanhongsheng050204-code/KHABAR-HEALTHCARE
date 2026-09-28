@@ -12,21 +12,23 @@
 
 **Also verified on the live site on 28 Sep:** the first real Gemini packet-photo read (§3.1), and cross-patient and forged-token denial with read-only requests (#10).
 
-**Open pull requests, all checked, none merged or deployed:**
+**Merged on 28 Sep morning; the web deploy for `71a7777` succeeded and CI is green:**
 
-| PR | What | After merging |
-| --- | --- | --- |
-| #5 | `services/scripts/warm-up.mjs`: wakes the services and refills the patient graph, failing clearly if AuraDB is paused | nothing to deploy |
-| #6 | "Listen to this plan": read-aloud of the approved summary, right-language device voice only (idea L, partial) | web deploys automatically |
-| #7 | Notes placeholder that the parser fully understands (the old example lost the follow-up interval) | web deploys automatically |
-| #9 | Accurate identity-removal wording: only the patient's registered name, IC and phone are removed, and patients are asked not to type names | web deploys automatically |
-| #10 | Checklist record of the deployed denial checks | docs only |
+| PR | What |
+| --- | --- |
+| #5 | `services/scripts/warm-up.mjs`: wakes the services and refills the patient graph, failing clearly if AuraDB is paused |
+| #6 | "Listen to this plan": read-aloud of the approved summary, right-language device voice only (idea L, partial) |
+| #7 | Notes placeholder that the parser fully understands (the old example lost the follow-up interval) |
+| #8 | README and backlog status for 28 Sep |
+| #9 | Accurate identity-removal wording: only the patient's registered name, IC and phone are removed, and patients are asked not to type names |
+
+**Open:** #10 (checklist record of the deployed denial checks, docs only).
 
 **Owner actions (need a person, an account or a decision):**
 
 1. On the live site, continue a check-in to the medicines question and confirm the model mentions the medicines on record.
 2. Continue the packet-photo check: add the reviewed Brand A item, then confirm the doctor's view flags it as the same medicine as the metformin already listed.
-3. Review and merge #5, #6, #7, #9, #10. Run `node scripts/warm-up.mjs` before any live demo.
+3. Merge #10. Run `node scripts/warm-up.mjs` from `services/` before any live demo. On a phone, check that "Listen to this plan" appears under the care plan (it needs a voice for the summary's language).
 4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
 5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
 6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
