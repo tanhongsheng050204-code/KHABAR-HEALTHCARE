@@ -11,7 +11,6 @@ export function Backdrop({ act, priority = false }: { act: ActId; priority?: boo
           <source media="(max-width: 760px)" type="image/avif" srcSet={`/film/${act}-mobile.avif`} />
           <source media="(max-width: 760px)" type="image/webp" srcSet={`/film/${act}-mobile.webp`} />
           <source type="image/avif" srcSet={`/film/${act}-desktop.avif`} />
-          {/* eslint-disable-next-line @next/next/no-img-element -- <picture> art direction needs a plain <img>. */}
           <img
             src={`/film/${act}-desktop.webp`}
             alt=""

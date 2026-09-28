@@ -15,6 +15,9 @@
   font-family: var(--film-body), var(--film-zh), var(--film-ta), system-ui, sans-serif;
   overflow-x: clip;
 }
+/* globals.css scrolls smoothly; ScrollTrigger jumps the scroll position when it re-measures, and a
+   smooth scroll animates or cancels those jumps, so the film page scrolls instantly (GSAP's advice). */
+:global(html):has(.film) { scroll-behavior: auto; }
 .film :where(h1, h2, h3) { font-family: var(--film-display), Georgia, serif; font-weight: 400; letter-spacing: -0.015em; }
 .film :where(h1, h2) em { font-style: italic; color: var(--pandan); }
 .film [lang|="zh"] { font-family: var(--film-zh), var(--film-body), sans-serif; }

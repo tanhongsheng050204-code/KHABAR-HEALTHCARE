@@ -33,3 +33,8 @@ test("without JavaScript the page still shows its words", async ({ browser }) =>
   await expect(page.locator("[data-motion]")).toHaveAttribute("data-motion", "off");
   await context.close();
 });
+
+test("the film turns off CSS smooth scrolling, which fights ScrollTrigger's scroll jumps", async ({ page }) => {
+  await page.goto("/preview/film");
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
+});
