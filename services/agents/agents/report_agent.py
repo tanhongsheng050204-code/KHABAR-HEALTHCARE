@@ -28,9 +28,124 @@ class ReportDraft(BaseModel):
     prescription: list[ParsedRx] = Field(default_factory=list)
 
 
+# Dictated notes arrive as prose ("Tablet metformin 500 mg, twice daily, after meals."). These fixed
+# rules rewrite the common spoken forms into the shorthand below, so dictation is structured by the
+# same deterministic parser as typing. No model reads doses or frequencies.
+_NUMBER_WORDS = {"half": 0.5, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+                 "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12}
+_NUMBER = r"(\d+(?:\.\d+)?|" + "|".join(_NUMBER_WORDS) + ")"
+_ABBREVIATIONS = {"t", "tab", "tabs", "cap", "caps", "syr", "inj", "dr", "mr", "mrs", "ms", "pt", "no", "vs"}
+_SENTENCE_END = re.compile(r"[.!?]\s+")
+_SPOKEN_LABEL = re.compile(r"^\s*(diagnosis|impression|plan)\s*[,:\-]\s*", re.IGNORECASE)
+_FORM_START = re.compile(r"^\s*(?:T\.|Tabs?\b|Caps?\b|Syr\b|Inj\b|tablets?\b|capsules?\b|syrup\b|injection\b)", re.IGNORECASE)
+_SPOKEN_FORMS = [(re.compile(r"^\s*(?:tablets?|tabs?)\b\.?", re.IGNORECASE), "T."),
+                 (re.compile(r"^\s*(?:capsules?|caps?)\b\.?", re.IGNORECASE), "Cap."),
+                 (re.compile(r"^\s*syrup\b\.?", re.IGNORECASE), "Syr."),
+                 (re.compile(r"^\s*injection\b\.?", re.IGNORECASE), "Inj.")]
+_SPOKEN_STRENGTH = [(re.compile(r"(\d+(?:\.\d+)?)\s*(?:milligrams?|mgs?)\b", re.IGNORECASE), r"\1mg"),
+                    (re.compile(r"(\d+(?:\.\d+)?)\s*(?:micrograms?|mcg)\b", re.IGNORECASE), r"\1mcg"),
+                    (re.compile(r"(\d+(?:\.\d+)?)\s*grams?\b", re.IGNORECASE), r"\1g")]
+_SPOKEN_UNITS = re.compile(rf"\b{_NUMBER}\s+(?:tablets?|capsules?|tabs?|caps?)\b", re.IGNORECASE)
+# Longest phrases first, so "twice daily" becomes BD before "daily" could become OD.
+_SPOKEN_CODES = [(r"four times (?:a|per) day|four times daily", "QID"),
+                 (r"three times (?:a|per) day|three times daily|thrice (?:a day|daily)", "TDS"),
+                 (r"twice (?:a|per) day|twice daily|two times (?:a|per) day|two times daily", "BD"),
+                 (r"once (?:a|per) day|once daily|every day|daily", "OD"),
+                 (r"(?:at|every) night|nightly|at bedtime|before bed", "ON"),
+                 (r"every morning|in the morning", "OM"),
+                 (r"(?:as|when|if) (?:needed|necessary|required)", "PRN"),
+                 (r"after (?:meals?|food|eating)", "PC"),
+                 (r"before (?:meals?|food|eating)|on an empty stomach", "AC")]
+_SPOKEN_CODES = [(re.compile(rf"\b(?:{p})\b", re.IGNORECASE), code) for p, code in _SPOKEN_CODES]
+_STRENGTH_PRESENT = re.compile(r"\d\s*(?:mg|mcg|g|milligrams?|micrograms?|grams?)\b", re.IGNORECASE)
+_SPOKEN_FORM_WORD = re.compile(r"^\s*(?:tablets?|capsules?|syrup|injection)\b", re.IGNORECASE)
+_SPOKEN_UNIT_WORD = re.compile(r"\b(?:milligrams?|micrograms?|grams?)\b", re.IGNORECASE)
+
+
+def _is_spoken_order(sentence: str) -> bool:
+    """A medicine order said aloud. Typed shorthand ("Metformin 500 mg BD") is left exactly as written."""
+    looks_like_order = _SPOKEN_FORM_WORD.match(sentence) or _STRENGTH_PRESENT.search(sentence)
+    spoken = (_SPOKEN_FORM_WORD.match(sentence) or _SPOKEN_UNIT_WORD.search(sentence)
+              or _SPOKEN_UNITS.search(sentence) or any(p.search(sentence) for p, _ in _SPOKEN_CODES))
+    return bool(looks_like_order and spoken)
+_SPOKEN_FOLLOW_UP = re.compile(
+    rf"^\s*(?:review|follow[- ]?up|come back|see (?:you|me) again)\b.*?\b(?:in|after)\s+{_NUMBER}\s+(weeks?|days?)\b",
+    re.IGNORECASE)
+_SPOKEN_RETURN = re.compile(r"^\s*return\s+(?:to\s+(?:the\s+)?clinic\s+)?if\b", re.IGNORECASE)
+
+
+def _number(word: str) -> float:
+    return _NUMBER_WORDS.get(word.lower()) or float(word)
+
+
+def _sentences(line: str) -> list[str]:
+    """Splits at sentence ends, but not after abbreviations such as "T." or "Dr."."""
+    parts, start = [], 0
+    for end in _SENTENCE_END.finditer(line):
+        words = line[start:end.start()].split()
+        last = words[-1].lower() if words else ""
+        if len(last) <= 1 or last in _ABBREVIATIONS:
+            continue
+        parts.append(line[start:end.start() + 1].strip())
+        start = end.end()
+    parts.append(line[start:].strip())
+    return [p for p in parts if p]
+
+
+def _from_speech(sentence: str) -> str:
+    """Rewrites one spoken sentence into shorthand; labelled lines keep the doctor's own words."""
+    label = _SPOKEN_LABEL.match(sentence)
+    if label:
+        return ("Dx: " if label.group(1).lower() != "plan" else "Plan: ") + sentence[label.end():]
+    follow_up = _SPOKEN_FOLLOW_UP.match(sentence)
+    if follow_up:
+        per = 52 if follow_up.group(2).lower().startswith("week") else 7
+        return f"Review {_number(follow_up.group(1)):g}/{per}" + sentence[follow_up.end():]
+    if _SPOKEN_RETURN.match(sentence):
+        return "RTC if" + sentence[_SPOKEN_RETURN.match(sentence).end():]
+    if _is_spoken_order(sentence):
+        for pattern, form in _SPOKEN_FORMS:
+            sentence = pattern.sub(form, sentence, count=1)
+        for pattern, unit in _SPOKEN_STRENGTH:
+            sentence = pattern.sub(unit, sentence)
+        sentence = _SPOKEN_UNITS.sub(lambda m: f"{_number(m.group(1)):g}/1", sentence)
+        for pattern, code in _SPOKEN_CODES:
+            sentence = pattern.sub(code, sentence)
+    return sentence
+
+
+def _labelled(sentence: str) -> bool:
+    return any(p.match(sentence) for p in _LABELS.values())
+
+
+def _starts_item(sentence: str, inside_label: bool) -> bool:
+    """Whether a sentence begins a new part of the note rather than continuing the previous one."""
+    if _labelled(sentence) or _FOLLOW_UP.match(sentence) or _FORM_START.match(sentence):
+        return True
+    if inside_label:
+        return False
+    return bool(_RETURN_ADVICE.search(sentence) or parse_line(sentence))
+
+
+def _structured_lines(notes: str) -> list[str]:
+    lines = []
+    for line in notes.splitlines():
+        current, inside_label = None, False
+        for sentence in map(_from_speech, _sentences(line)):
+            if current is not None and not _starts_item(sentence, inside_label):
+                current += " " + sentence
+                continue
+            if current is not None:
+                lines.append(current)
+            current, inside_label = sentence, _labelled(sentence)
+        if current is not None:
+            lines.append(current)
+    return lines
+
+
 def draft_from_notes(notes: str) -> ReportDraft:
     draft = ReportDraft()
-    for line in notes.splitlines():
+    for line in _structured_lines(notes):
         if not line.strip():
             continue
         labelled = False
