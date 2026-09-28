@@ -187,3 +187,17 @@ def test_the_check_endpoint_warns_when_graph_context_is_unavailable(monkeypatch)
     graph_finding = next(f for f in body["findings"] if f["check"] == "patient_graph_context")
     assert graph_finding["severity"] == "WARN"
     assert "Review the patient's current medicines" in graph_finding["detail"]
+
+
+def test_an_unrecognised_drug_name_suggests_the_closest_known_one_without_replacing_it():
+    unrecognised = [f for f in evaluate(draft(prescription=[Rx(name="Mofomin", dose_mg=500, times_per_day=2)]))
+                    if f.check == "unrecognised"]
+    assert len(unrecognised) == 1
+    assert "'Mofomin' is not in the drug list" in unrecognised[0].detail
+    assert "Did you mean Metformin?" in unrecognised[0].detail
+
+
+def test_a_name_unlike_any_known_drug_gets_no_suggestion():
+    unrecognised = [f for f in evaluate(draft(prescription=[Rx(name="Zzqx", dose_mg=5, times_per_day=1)]))
+                    if f.check == "unrecognised"]
+    assert "Did you mean" not in unrecognised[0].detail

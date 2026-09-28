@@ -3,6 +3,7 @@ Evaluator: the safety checks run on every draft report before a doctor can
 finalise it. Every check here uses data and rules, never the LLM's opinion.
 (The grounding check below catches drugs the doctor never wrote, the most dangerous kind of AI slip.)
 """
+import difflib
 import json
 import re
 from functools import lru_cache
@@ -242,6 +243,20 @@ def with_graph(draft: Draft, context: Optional[dict]) -> Draft:
     return draft.model_copy(update={"patient": patient, "current_meds": meds, "herbs": herbs})
 
 
+def _unrecognised(name: str, where: str = "") -> Finding:
+    """An unknown drug name, with the closest known name as a hint. Never substituted automatically:
+    similar-sounding drugs exist, so only the doctor may decide it was a typing or transcription slip."""
+    known = sorted(set(_data()["generics"]) | set(_data()["brands"]))
+    # Misspellings seen in tests score 0.75 or more; the next-best known name stays below 0.6.
+    close = difflib.get_close_matches(_normalise(name), known, n=1, cutoff=0.7)
+    hint = ""
+    if close:
+        generic = _data()["brands"].get(close[0])
+        hint = f" Did you mean {close[0].title()}" + (f" ({generic})" if generic else "") + "?"
+    return Finding(check="unrecognised", severity="WARN",
+                   detail=f"'{name}'{where} is not in the drug list; check it by hand.{hint}")
+
+
 def evaluate(draft: Draft) -> list[Finding]:
     """Run every data-based safety check. CRITICAL findings come first."""
     findings: list[Finding] = []
@@ -249,7 +264,7 @@ def evaluate(draft: Draft) -> list[Finding]:
     for rx in draft.prescription:
         generic = generic_of(rx.name)
         if generic is None:
-            findings.append(Finding(check="unrecognised", severity="WARN", detail=f"'{rx.name}' is not in the drug list; check it by hand."))
+            findings.append(_unrecognised(rx.name))
         else:
             prescribed[generic] = rx
     current: dict[str, list[CurrentMed]] = {}
@@ -281,8 +296,7 @@ def reconcile(current_meds: list[CurrentMed], herbs: list[str], patient: Optiona
     for med in current_meds:
         generic = generic_of(med.name)
         if generic is None:
-            findings.append(Finding(check="unrecognised", severity="WARN",
-                                    detail=f"'{med.name}' from {med.source} is not in the drug list; check it by hand."))
+            findings.append(_unrecognised(med.name, f" from {med.source}"))
         else:
             groups.setdefault(generic, []).append(med)
 

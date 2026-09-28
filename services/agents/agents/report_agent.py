@@ -36,7 +36,14 @@ _NUMBER_WORDS = {"half": 0.5, "one": 1, "two": 2, "three": 3, "four": 4, "five":
 _NUMBER = r"(\d+(?:\.\d+)?|" + "|".join(_NUMBER_WORDS) + ")"
 _ABBREVIATIONS = {"t", "tab", "tabs", "cap", "caps", "syr", "inj", "dr", "mr", "mrs", "ms", "pt", "no", "vs"}
 _SENTENCE_END = re.compile(r"[.!?]\s+")
-_SPOKEN_LABEL = re.compile(r"^\s*(diagnosis|impression|plan)\s*[,:\-]\s*", re.IGNORECASE)
+# "Diagnosis" may be said without a pause ("Diagnosis diabetes"); "Plan" needs one, or "Plan to ..."
+# would be taken as a label.
+_SPOKEN_LABEL = re.compile(r"^\s*(?:(diagnosis|impression)\b\s*[,:\-]?|(plan)\s*[,:\-])\s*", re.IGNORECASE)
+# Speech without pauses comes back as one sentence with commas; a comma followed by the start of a
+# new item ("..., Tablet ...", "..., review in 2 weeks") separates items.
+_ITEM_AFTER_COMMA = re.compile(
+    r",\s+(?=T\.\s|(?:tablets?|capsules?|syrup|injection|tabs?|caps?|review|follow[- ]?up|come back|"
+    r"see (?:you|me) again|return|rtc|tca|plan|diagnosis|impression|dx)\b)", re.IGNORECASE)
 _FORM_START = re.compile(r"^\s*(?:T\.|Tabs?\b|Caps?\b|Syr\b|Inj\b|tablets?\b|capsules?\b|syrup\b|injection\b)", re.IGNORECASE)
 _SPOKEN_FORMS = [(re.compile(r"^\s*(?:tablets?|tabs?)\b\.?", re.IGNORECASE), "T."),
                  (re.compile(r"^\s*(?:capsules?|caps?)\b\.?", re.IGNORECASE), "Cap."),
@@ -96,7 +103,7 @@ def _from_speech(sentence: str) -> str:
     """Rewrites one spoken sentence into shorthand; labelled lines keep the doctor's own words."""
     label = _SPOKEN_LABEL.match(sentence)
     if label:
-        return ("Dx: " if label.group(1).lower() != "plan" else "Plan: ") + sentence[label.end():]
+        return ("Plan: " if label.group(2) else "Dx: ") + sentence[label.end():]
     follow_up = _SPOKEN_FOLLOW_UP.match(sentence)
     if follow_up:
         per = 52 if follow_up.group(2).lower().startswith("week") else 7
@@ -127,20 +134,32 @@ def _starts_item(sentence: str, inside_label: bool) -> bool:
     return bool(_RETURN_ADVICE.search(sentence) or parse_line(sentence))
 
 
+def _chunks(line: str) -> list[tuple[str, str]]:
+    """(text, separator before it): sentences, and comma-separated pieces that start a new item."""
+    out = []
+    for i, sentence in enumerate(_sentences(line)):
+        for j, part in enumerate(_ITEM_AFTER_COMMA.split(sentence)):
+            out.append((part.strip(), ", " if j else " "))
+    return [(text, sep) for text, sep in out if text]
+
+
 def _structured_lines(notes: str) -> list[str]:
-    lines = []
+    """One item per line. Items are grouped from the doctor's original words, then each whole item
+    is rewritten once, so a continuation is never converted apart from the order it belongs to."""
+    items = []
     for line in notes.splitlines():
         current, inside_label = None, False
-        for sentence in map(_from_speech, _sentences(line)):
-            if current is not None and not _starts_item(sentence, inside_label):
-                current += " " + sentence
+        for text, sep in _chunks(line):
+            spoken = _from_speech(text)
+            if current is not None and not _starts_item(spoken, inside_label):
+                current += sep + text
                 continue
             if current is not None:
-                lines.append(current)
-            current, inside_label = sentence, _labelled(sentence)
+                items.append(current)
+            current, inside_label = text, _labelled(spoken)
         if current is not None:
-            lines.append(current)
-    return lines
+            items.append(current)
+    return [_from_speech(item) for item in items]
 
 
 def draft_from_notes(notes: str) -> ReportDraft:

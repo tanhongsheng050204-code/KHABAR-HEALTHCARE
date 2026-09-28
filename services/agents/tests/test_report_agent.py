@@ -119,4 +119,29 @@ def test_spoken_frequency_words_outside_a_medicine_order_do_not_create_a_prescri
 
 def test_typed_shorthand_keeps_the_doctors_exact_text():
     draft = draft_from_notes("Metformin 500 mg BD, TCA 2/52")
-    assert [rx.raw for rx in draft.prescription] == ["Metformin 500 mg BD, TCA 2/52"]
+    assert [rx.raw for rx in draft.prescription] == ["Metformin 500 mg BD"]
+    assert draft.follow_up == "TCA 2/52" and draft.follow_up_weeks == 2
+
+
+# What Whisper returned for a real doctor speaking without pauses on the live site, 28 Sep.
+RUN_ON_DICTATION = "Diagnosis Diabetes, Tablet Mofomin 500mg, twice daily after meals, revealed in 2 weeks."
+
+
+def test_dictation_without_pauses_still_separates_diagnosis_and_medicine():
+    draft = draft_from_notes(RUN_ON_DICTATION)
+    assert draft.diagnosis == "Diabetes"
+    assert [(rx.name, rx.strength_mg, rx.times_per_day, rx.timing) for rx in draft.prescription] == [
+        ("Mofomin", 500.0, 2, "after_food")
+    ]
+
+
+def test_a_comma_before_a_new_item_starts_that_item():
+    draft = draft_from_notes("Tablet metformin 500 mg twice daily after meals, review in 2 weeks, return if chest pain")
+    assert [rx.name for rx in draft.prescription] == ["metformin"]
+    assert draft.follow_up_weeks == 2
+    assert draft.warning_signs == ["RTC if chest pain"]
+
+
+def test_continuation_keeps_the_doctors_original_words():
+    draft = draft_from_notes("Plan: continue, return if worse")
+    assert draft.plan == "continue, return if worse"
