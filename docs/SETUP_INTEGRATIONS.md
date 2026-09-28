@@ -90,19 +90,21 @@ has no test-recipient limit. See [DECISIONS.md](DECISIONS.md).
 
 1. In Telegram, open **@BotFather** → `/newbot`, pick a name and a username ending in `bot`. Keep the
    **token** it gives you private; it controls the bot.
-2. Make a webhook secret on your own machine (letters and digits only, which Telegram requires):
-   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-3. Set the values (paste each when asked, never in a chat):
-   - in `services/`: `npx vercel env add KHABAR_TELEGRAM_BOT_TOKEN production` and
-     `npx vercel env add KHABAR_TELEGRAM_WEBHOOK_SECRET production` (both **Sensitive**);
-   - in `web/`: `npx vercel env add NEXT_PUBLIC_TELEGRAM_BOT_USERNAME production`, the bot's username
-     (not secret; the patient home shows an *Open Telegram* card only when it is set). Set it
-     **before** the web deploy, because Next.js builds it into the page.
-4. Pull `main`, confirm the Telegram files are there, then deploy the API: `cd services` →
-   `npx vercel deploy --prod` → `node scripts/check-health.mjs`.
-5. Register the webhook once: `cd services` → `node scripts/telegram-set-webhook.mjs`. It asks for the
-   token and the same secret with hidden input, and should print `Webhook set` and `pending=0`.
-   Every delivery must then carry that secret in `X-Telegram-Bot-Api-Secret-Token`, or it is refused.
+2. In `web/`: `npx vercel env add NEXT_PUBLIC_TELEGRAM_BOT_USERNAME production`, the bot's username
+   (not secret; the patient home shows an *Open Telegram* card only when it is set). The web app is
+   built with it, so set it before the next web deploy.
+3. Pull `main`, then from `services/` run **`node scripts/telegram-setup.mjs`**. Paste the token once
+   (hidden). The script checks the token with Telegram, makes a new webhook secret, stores both in
+   `khabar-api` as Secret production variables (on stdin, never on the command line), deploys the API,
+   waits until the new deployment accepts the secret, and registers the webhook. It ends with
+   `Done. Telegram reports: ... pending=0`. Nobody sees or copies the secret; running the script again
+   replaces it. Pasting a secret by hand in the VS Code terminal went wrong more than once on 28 Sep
+   (the command was copied instead of its output, and the two copies ended up different).
+4. To re-register without changing anything (for example after `deleteWebhook`), use
+   `node scripts/telegram-set-webhook.mjs`: it needs the token and the current secret, and first checks
+   that the running API accepts that secret.
+5. Every delivery must carry the secret in `X-Telegram-Bot-Api-Secret-Token`, or it is refused with 401.
+   `npx vercel logs khabar-api.vercel.app --since 15m --json` shows the status Telegram's deliveries got.
 6. **Linking:** the patient opens the bot, taps *Start*, then *Share my phone number*. The shared
    number must be the one the clinic registered, and must belong to the Telegram account sharing it.
    A number registered for two patients links neither. Linking sends the latest approved summary.
