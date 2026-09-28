@@ -11,7 +11,7 @@ import java.util.Set;
  * Makes up Malaysian-style patients for demos and tests: Malay, Chinese, Indian and East Malaysian
  * names, the four languages, common long-term conditions, medicines from more than one clinic, some
  * herbal use and some allergies. Nobody here is real. Phone numbers use 03-0000 xxxx, which no real
- * line can have, so a misconfigured WhatsApp can never message a stranger. The same seed always gives
+ * line can have, so no real Telegram account can ever link to a generated patient. The same seed always gives
  * the same people.
  */
 public class FakePatientGenerator {

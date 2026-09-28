@@ -216,7 +216,7 @@ Every clip uses **one camera move**. Append the **style block** and the **negati
 
 ### 4.3 Honesty on the page
 - The footer states that scenes are AI-generated, characters are fictional, the demo uses fake data, and Khabar is not a medical device.
-- No real clinic names or logos, and no WhatsApp logo. Say "on WhatsApp" in text only.
+- No real clinic names or logos, and no Telegram or WhatsApp logo. Say "on Telegram" in text only.
 
 ### 4.4 "Type how you feel" demo (Act 5)
 A client-side keyword demo that shows the triage logic without calling any AI. Label it *"Illustrative demo, not medical advice."*

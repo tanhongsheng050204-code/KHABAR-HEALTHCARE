@@ -29,13 +29,15 @@ interaction for the doctor to assess; a critical finding blocks finalisation unt
 overridden with a reason. Once the doctor approves the visit, Khabar builds a summary from the prescription
 rather than asking a language model to invent instructions. Then we show the follow-up plan and the clinic's
 call list. [If live messaging is not configured: “For this rehearsal, outbound messages are shown in the local
-outbox; this is not a live WhatsApp delivery.”]
+outbox; this is not a live Telegram delivery.”]
 
 **2:15–2:45 | Why this approach**
 
 The clinical record stays in the API. AI services receive de-identified context, and the patient graph uses a
 random identifier rather than names or phone numbers. Some parts are rules-based on purpose: medicine safety
-checks and medication instructions need to be inspectable, not just fluent.
+checks and medication instructions need to be inspectable, not just fluent. Messages go through a Telegram bot:
+it is less common than WhatsApp among our older patients, but it needs no business approval, and patients link it
+by sharing their own number, which doubles as consent.
 
 **2:45–3:00 | Close**
 
@@ -139,7 +141,7 @@ whether this is a local outbox simulation or a real provider test.
 **5:20–6:10 | What is and is not proven**
 
 The core local suites currently pass, but passing software tests is not the same as proving patient
-understanding or clinical effectiveness. Deployed sign-in for every role, live WhatsApp and device-provider
+understanding or clinical effectiveness. Deployed sign-in for every role, live Telegram and device-provider
 loops, and user comprehension testing are still open. Packet-photo extraction has automated boundary tests but
 has not yet been evaluated against a set of real-world packet images. We will not present those items as done.
 

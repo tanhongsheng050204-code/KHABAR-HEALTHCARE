@@ -100,7 +100,7 @@ Without `GEMINI_API_KEY`, intake uses a scripted four-question interview and tri
 | POST | `/dev/clock/advance?days=N` | Fast-forward the app's clock, e.g. to day 7 of follow-up |
 | POST | `/dev/clock/reset` | Back to the real date |
 | POST | `/dev/check-ins/run` | Send every check-in that is due now |
-| GET | `/dev/outbox` | Messages that would have gone out on WhatsApp |
+| GET | `/dev/outbox` | Messages that would have gone out on Telegram |
 | POST | `/dev/demo/reset` | Puts the demo back as seeded: clock to today, the four story patients back on their follow-up day with their four replies, readings cleared, and Aminah's story restored (intake with her conditions, exactly her three items, her daughter's consent, a booked appointment). Also repairs data seeded by an older version |
 | POST | `/dev/graph/sync` | Writes every patient to the patient graph (after emptying it, or if it was down) |
 | GET | `/dev/graph/patients/{patientId}` | That patient's graph context, fetched through the agents service exactly as the agents read it |
@@ -119,17 +119,19 @@ Or `scripts/run-local.ps1 -WithGraph`. Then `curl -s localhost:8080/dev/graph/pa
 metformin twice (once as "Brand A"), bitter gourd and "pening", read back by graph ID alone. If the API started before Neo4j was up,
 `POST /dev/graph/sync` fills it. For AuraDB, set `NEO4J_URI=neo4j+s://<id>.databases.neo4j.io` and its username and password in both services.
 
-### Try the WhatsApp webhook locally
+### Try the Telegram webhook locally
 
-The local profile sets the verify token to `local-verify-token` and the app secret to `local-app-secret`. Meta signs each delivery with the app secret; you can do the same:
+The local profile sets the webhook secret to `local-telegram-secret`. Without a bot token nothing is sent to
+Telegram; messages to a linked patient appear in `/dev/outbox`. Link a chat by sharing Aminah's demo number,
+then reply from it:
 
 ```bash
-BODY='{"entry":[{"changes":[{"value":{"messages":[{"from":"60300000001","type":"text","text":{"body":"pening sikit"}}]}}]}]}'
-SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac local-app-secret | sed 's/^.* //')"
-curl -s -X POST localhost:8080/api/webhooks/whatsapp -H "X-Hub-Signature-256: $SIG" -H "Content-Type: application/json" -d "$BODY"
+H='X-Telegram-Bot-Api-Secret-Token: local-telegram-secret'
+curl -s -X POST localhost:8080/api/webhooks/telegram -H "$H" -H "Content-Type: application/json"   -d '{"update_id":1,"message":{"message_id":1,"from":{"id":5},"chat":{"id":5,"type":"private"},"contact":{"phone_number":"+60300000001","user_id":5}}}'
+curl -s -X POST localhost:8080/api/webhooks/telegram -H "$H" -H "Content-Type: application/json"   -d '{"update_id":2,"message":{"message_id":2,"from":{"id":5},"chat":{"id":5,"type":"private"},"text":"pening sikit"}}'
 ```
 
-`60300000001` is Aminah's demo number (03-0000 0001; every demo number uses 03-0000, which no real line has), so the reply lands on the doctor's call list.
+`+60300000001` is Aminah's demo number (03-0000 0001; every demo number uses 03-0000, which no real line has), so the reply lands on the doctor's call list.
 
 ### Try a home device reading locally
 
@@ -225,7 +227,7 @@ After the visit
 | POST | `/api/followup/replies` | patient | A follow-up reply from the app. Routed (identity removed first) and stored encrypted; items needing review go to the clinic queue. No staff notification is sent by this endpoint. The patient hears only approved words: a red label gets precautionary fixed advice to call 999 and is told the clinic may not have seen the reply; a question with an approved answer gets the doctor's answer; anything else gets a cautious acknowledgement (with 999 advice if triage could not run). Returns `level`, `answer` (an approved answer, if one matched) and `message` (what the patient was sent) |
 | GET / POST | `/api/clinic/answers` · DELETE `/api/clinic/answers/{id}` | doctor | The clinic's approved answers: a title, trigger phrases, and the answer in ms / en / zh / ta. Retiring keeps the record |
 | POST | `/api/webhooks/favoriot` | a home device via Favoriot (no sign-in; checked by the `X-Khabar-Device-Secret` header) | A reading from a linked device. Unknown devices are acknowledged and ignored |
-| GET / POST | `/api/webhooks/whatsapp` | Meta (no sign-in; checked by verify token and signature) | The webhook handshake, and replies arriving on WhatsApp. Matched to a patient by a keyed hash of the phone number |
+| POST | `/api/webhooks/telegram` | Telegram (no sign-in; checked by the `X-Telegram-Bot-Api-Secret-Token` header) | Updates from the Khabar bot, private chats only. A shared contact links the chat when it is the sender's own number and matches exactly one patient (by a keyed hash of the phone number); after that, the patient's texts are follow-up replies. Always answers 200, so Telegram does not retry |
 | GET | `/api/clinic/call-list` | doctor | "Call these patients today", most urgent first. Within a level: replies, then home readings, then missed doses, then patients with no reply for 48 hours |
 | GET | `/api/clinic/cases/assignees` | doctor or nurse | Doctors and nurses a case can be assigned to |
 | GET | `/api/clinic/cases/{id}` | doctor or nurse at the clinic | The case and its full history |
@@ -274,11 +276,9 @@ The API has **no working defaults for secrets** and refuses to start without the
 | `KHABAR_TIME_ZONE` | Default `Asia/Kuala_Lumpur`; decides when check-ins are due |
 | `KHABAR_AUTO_ESCALATION_ENABLED` | Defaults to `false`. After clinician approval, `true` routes overdue unacknowledged cases to today's rostered backup in the clinic queue; it does not notify staff or count as an acknowledgement |
 | `KHABAR_AUTO_ESCALATION_POLL_MS` | Scheduler interval in milliseconds; defaults to 60000 |
-| `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TOKEN` | Leave empty to keep outgoing messages in the outbox table |
-| `WHATSAPP_CHECKIN_TEMPLATE` | Your approved check-in template (WhatsApp requires a template to start a conversation) |
-| `WHATSAPP_SUMMARY_TEMPLATE` | Your approved summary template with one body parameter `{{1}}`. Long summaries are split between lines into several messages |
+| `KHABAR_TELEGRAM_BOT_TOKEN` | From @BotFather. Leave empty to keep outgoing messages in the outbox table. Long summaries are split between lines into several messages |
+| `KHABAR_TELEGRAM_WEBHOOK_SECRET` | The secret given to `setWebhook` (letters, digits, `_` and `-`); every delivery must carry it. Register with `node scripts/telegram-set-webhook.mjs` |
 | `FAVORIOT_DEVICE_SECRET` | The header value your Favoriot forwarding rule sends. Leave empty to switch device readings off |
-| `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | For the webhook handshake and signature check |
 | `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | The patient graph (AuraDB: `neo4j+s://...`). Leave `NEO4J_URI` empty to switch it off. Set the same values in the agents service |
 
 Agents: `INTERNAL_SERVICE_KEY`, `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` (read-only use of the patient graph; empty means none), `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.6-flash`), `GEMINI_API_BASE` (only to point the packet reader at a local stand-in when testing), `GROQ_API_KEY` (speech to text; recordings can contain names, so use it only with fake patients until you have an agreement with a transcription provider).

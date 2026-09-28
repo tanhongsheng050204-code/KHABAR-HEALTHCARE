@@ -23,7 +23,7 @@ import java.util.UUID;
  * Neo4j know the patient only by graphId, which carries no personal information.
  */
 @Entity
-@Table(name = "patient", indexes = @Index(columnList = "phone_index"))
+@Table(name = "patient", indexes = {@Index(columnList = "phone_index"), @Index(columnList = "telegram_chat_index")})
 @EntityListeners(PhoneIndexListener.class)
 public class Patient {
 
@@ -48,9 +48,18 @@ public class Patient {
     @Column(name = "phone_enc", length = 512)
     private String phone;
 
-    /** Keyed hash of the normalised phone, so incoming WhatsApp messages can find the patient. */
+    /** Keyed hash of the normalised phone, so a number shared with the Telegram bot can find the patient. */
     @Column(name = "phone_index", length = 64)
     private String phoneIndex;
+
+    /** The patient's Telegram chat, set when they share their own number with the bot. Stored encrypted. */
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "telegram_chat_enc", length = 512)
+    private String telegramChatId;
+
+    /** Keyed hash of the chat ID, so an incoming Telegram message can find the patient. */
+    @Column(name = "telegram_chat_index", length = 64)
+    private String telegramChatIndex;
 
     /** ms, en, zh or ta */
     @Column(nullable = false)
@@ -91,6 +100,20 @@ public class Patient {
 
     void setPhoneIndex(String phoneIndex) {
         this.phoneIndex = phoneIndex;
+    }
+
+    public void linkTelegram(String chatId, String chatIndex) {
+        this.telegramChatId = chatId;
+        this.telegramChatIndex = chatIndex;
+    }
+
+    public void unlinkTelegram() {
+        this.telegramChatId = null;
+        this.telegramChatIndex = null;
+    }
+
+    public String getTelegramChatId() {
+        return telegramChatId;
     }
 
     public void setPregnant(boolean pregnant) {

@@ -52,12 +52,13 @@ Everything from "before the visit" to "30 days after" now runs end to end on a l
 
 Built from a template per language (BM, English, Chinese, Tamil), never free text from the LLM, so the dose in the summary is exactly the dose prescribed. When fasting, morning maps to sahur and night to berbuka; anything that doesn't fit (three times a day) says "ask your doctor" instead of guessing.
 
-### 4. Follow-up and WhatsApp (`followup/`, `messaging/`)
+### 4. Follow-up and Telegram (`followup/`, `messaging/`)
 
 - Finalising plans check-ins for days 1, 3, 7, 14 and 30. A scheduler sends the ones that are due.
-- **Sending:** WhatsApp Cloud API when configured (check-ins use an approved template, as WhatsApp requires for messages the clinic starts); otherwise messages go to an outbox table you can read at `/dev/outbox`.
-- **Receiving:** the webhook checks Meta's `X-Hub-Signature-256` (an HMAC of the body with the app secret), so nobody can post fake replies.
-- **Finding the patient by phone:** phone numbers are encrypted, so the database can't search them. Each patient also stores a **blind index**: an HMAC of the normalised number. The webhook computes the same HMAC and looks that up. The number itself is never stored in plain text.
+- **Sending:** a Telegram bot when its token is set (`TelegramBotClient`, which never puts the token in an error message); otherwise messages go to an outbox table you can read at `/dev/outbox`. A message goes to the patient's linked chat ID, stored encrypted; a patient who has not linked gets nothing, and the outbox records "Telegram not linked". WhatsApp was replaced on 28 Sep because Meta's template approval and five-recipient test limit blocked a live loop.
+- **Receiving:** Telegram sends every update with the secret we gave `setWebhook` in `X-Telegram-Bot-Api-Secret-Token`. The webhook compares it in constant time and refuses anything else, so nobody can post fake replies. Only private chats count, and the webhook always answers 200 so Telegram doesn't retry; a retry that does arrive is recognised by its message ID and triaged only once.
+- **Linking:** the patient taps *Share my phone number* in the bot. The contact must be the sender's own (`contact.user_id` equals `from.id`), so nobody can link someone else's record, and it must match exactly one patient. Linking sends the latest approved summary.
+- **Finding the patient by phone:** phone numbers are encrypted, so the database can't search them. Each patient also stores a **blind index**: an HMAC of the normalised number. The webhook computes the same HMAC of the shared number and looks that up. The chat ID gets its own blind index the same way. The number itself is never stored in plain text.
 - **Triage:** word lists in four languages always run. When Gemini is configured it reads the reply too, and **the more urgent level wins**: the model can raise a reply but never lower one. If the model is down, the word lists still decide.
 - **Call list:** unhandled replies, plus patients who haven't replied to a check-in for 48 hours.
 

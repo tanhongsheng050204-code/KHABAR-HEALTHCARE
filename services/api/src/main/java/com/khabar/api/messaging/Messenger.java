@@ -1,6 +1,6 @@
 package com.khabar.api.messaging;
 
-/** Sends a message to a patient's phone. WhatsApp in production; an outbox table locally. */
+/** Sends a message to a patient. Telegram in production; an outbox table locally. */
 public interface Messenger {
 
     /** SAFETY is the fixed emergency advice after a red flag; ANSWER is a doctor-approved answer; NOTICE is an acknowledgement. */
@@ -16,8 +16,11 @@ public interface Messenger {
         }
     }
 
-    /** Never throws: a failure is reported in the result so a follow-up run can carry on. */
-    Result send(String toPhone, String text, String language, Kind kind);
+    /**
+     * Never throws: a failure is reported in the result so a follow-up run can carry on.
+     * recipient is the patient's linked Telegram chat ID, or null if they have not linked one.
+     */
+    Result send(String recipient, String text, String language, Kind kind);
 
     String channel();
 }

@@ -83,27 +83,35 @@ signs in with an email code and enters the invitation code once. A patient invit
 **Check it:** one real sign-in per role, and then withdraw a caregiver and confirm their next request is
 refused (backlog 1.2).
 
-## 3. WhatsApp Cloud API
+## 3. Telegram bot (patient messages)
 
-1. developers.facebook.com → Create app → Business → add **WhatsApp**. Note the test number's
-   **Phone number ID**, and add up to five of your own phones as recipients.
-2. Create a **permanent token** with a System User in Business settings (the temporary one expires in 24 h).
-3. **Templates** (WhatsApp Manager → Message templates), one per language: `ms`, `en`, `zh_CN`, `ta`.
-   Category *Utility*.
-   - Check-in, no parameters, e.g. `khabar_checkin`: the text in `PatientMessages.CHECK_IN`
-     ("Apa khabar hari ini? Dah makan ubat? Balas mesej ini untuk beritahu klinik.").
-   - Summary, one body parameter `{{1}}`, e.g. `khabar_summary`: "Ringkasan lawatan anda: {{1}}"
-     (and the same in each language).
-4. Set on `khabar-api`: `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TOKEN`, `WHATSAPP_CHECKIN_TEMPLATE`,
-   `WHATSAPP_SUMMARY_TEMPLATE`, `WHATSAPP_APP_SECRET` (App settings → Basic), and a random
-   `WHATSAPP_VERIFY_TOKEN` you make up. Redeploy.
-5. Webhook (WhatsApp → Configuration): callback URL `https://khabar-api.vercel.app/api/webhooks/whatsapp`,
-   verify token = the one you made up. Subscribe to **messages**. Every delivery is checked against
-   `X-Hub-Signature-256`.
-6. **Check it:** give a fictional patient your test phone's number, finalise a visit (summary arrives),
-   send a check-in, reply "sakit dada", and confirm the patient tops the call list and gets the 999 advice.
+Telegram replaced WhatsApp on 28 Sep 2026: a bot needs no business approval or message templates and
+has no test-recipient limit. See [DECISIONS.md](DECISIONS.md).
 
-Until this is set, messages go to the local outbox, which is fine for the demo.
+1. In Telegram, open **@BotFather** → `/newbot`, pick a name and a username ending in `bot`. Keep the
+   **token** it gives you private; it controls the bot.
+2. Make a webhook secret on your own machine (letters and digits only, which Telegram requires):
+   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+3. Set the values (paste each when asked, never in a chat):
+   - in `services/`: `npx vercel env add KHABAR_TELEGRAM_BOT_TOKEN production` and
+     `npx vercel env add KHABAR_TELEGRAM_WEBHOOK_SECRET production` (both **Sensitive**);
+   - in `web/`: `npx vercel env add NEXT_PUBLIC_TELEGRAM_BOT_USERNAME production`, the bot's username
+     (not secret; the patient home shows an *Open Telegram* card only when it is set). Set it
+     **before** the web deploy, because Next.js builds it into the page.
+4. Pull `main`, confirm the Telegram files are there, then deploy the API: `cd services` →
+   `npx vercel deploy --prod` → `node scripts/check-health.mjs`.
+5. Register the webhook once: `cd services` → `node scripts/telegram-set-webhook.mjs`. It asks for the
+   token and the same secret with hidden input, and should print `Webhook set` and `pending=0`.
+   Every delivery must then carry that secret in `X-Telegram-Bot-Api-Secret-Token`, or it is refused.
+6. **Linking:** the patient opens the bot, taps *Start*, then *Share my phone number*. The shared
+   number must be the one the clinic registered, and must belong to the Telegram account sharing it.
+   A number registered for two patients links neither. Linking sends the latest approved summary.
+7. **Check it:** register a fictional patient with your own Telegram number, finalise a short visit,
+   link the bot (the summary arrives), reply "sakit dada", and confirm the 999 advice arrives in
+   Telegram and the patient tops the call list.
+
+Until the bot token is set, messages go to the local outbox, which is fine for the demo. Bot chats are
+not end-to-end encrypted, so use fictional data only.
 
 ## 4. Favoriot (home readings)
 

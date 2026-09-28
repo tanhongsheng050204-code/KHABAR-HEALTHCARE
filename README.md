@@ -70,7 +70,7 @@ Khabar is an AI platform for Malaysian clinics that follows the patient home. It
 |---|---|
 | **Before the visit** | Self-booking from the clinic's calendar · a guided intake chat in the patient's language that already knows their history · a pre-visit page for the doctor · a shared **"everything I take"** list (medicines from every clinic, supplements, jamu, herbs) · reading a **medicine-packet photo**, with consent, into that list |
 | **During the visit** | The doctor types shorthand or speaks, and deterministic parsing structures those clinician-authored notes into a draft report · a **safety check** (allergy, interaction, duplicate across clinics and brands, herb clash, dose, pregnancy, invented drugs or symptoms, missing fields) · a **critical finding cannot be finalised** without a written reason, enforced in the screen, the API **and** the database |
-| **After the visit** | A summary in **BM, English, Chinese or Tamil**, sent on WhatsApp · **Ramadan fasting mode** (sahur and berbuka timings) · **caregiver access** that the patient grants and can revoke |
+| **After the visit** | A summary in **BM, English, Chinese or Tamil**, sent on Telegram · **Ramadan fasting mode** (sahur and berbuka timings) · **caregiver access** that the patient grants and can revoke |
 | **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · prototype reply routing in four languages · precautionary 999 wording for replies needing review · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
 | **Privacy** | Access rules per role · encrypted sensitive fields · the patient's registered name, IC and phone numbers removed before text reaches the AI (other names typed in free text are not detected, so patients are asked not to type them) · a **"who viewed my record"** audit trail |
 
@@ -85,7 +85,7 @@ Chosen ideas are listed first.
 |---|---|
 | **A (Chosen)** Clinic workflow with "after the visit" as the main story | Market research found the spaces before and during the visit crowded (scribes, booking, telemedicine), but almost nobody follows the patient home in Malaysia. |
 | **B (Chosen)** Summaries in BM, English, Chinese and Tamil | Plain-language rewrites improve understanding, and Malaysia is multilingual. AI translation still lags for non-English languages, so wording is constrained to what the doctor approved. |
-| **C (Chosen)** Two-way follow-up with clinic review routing | Adherence is about 50%. WhatsApp is where Malaysian patients already are. Memora proved the model in the US. Reply routing is a prototype and does not provide staff alerts or validated emergency detection. |
+| **C (Chosen)** Two-way follow-up with clinic review routing | Adherence is about 50%. A chat app on the patient's own phone keeps follow-up where they already are (Telegram for now; see Messaging below). Memora proved the model in the US. Reply routing is a prototype and does not provide staff alerts or validated emergency detection. |
 | **D (Chosen)** "Who needs you first" call list for the clinic | Gives the paying customer, the clinic, a daily reason to open the product. |
 | **E (Chosen)** "Everything I take" list and packet photo | Fragmented records plus 69.4% traditional-medicine use means duplicates and herb clashes go unseen. |
 | **F (Chosen)** Family caregiver access, with consent | 79.6% of older Malaysians rely on their children. |
@@ -273,14 +273,14 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 
 | Layer | Choice | Why we chose it | Constraints we expect |
 |---|---|---|---|
-| **Frontend** | **Next.js 16**, React 19, TypeScript. A web app that installs on phones. | One codebase for doctor, patient and caregiver. Reviewers open a link, with nothing to install. The camera works in the browser for packet photos. | No push notifications without a native app, so reminders go through WhatsApp instead. |
+| **Frontend** | **Next.js 16**, React 19, TypeScript. A web app that installs on phones. | One codebase for doctor, patient and caregiver. Reviewers open a link, with nothing to install. The camera works in the browser for packet photos. | No push notifications without a native app, so reminders go through Telegram instead. |
 | **Clinical API** | **Spring Boot 3.3** (Java 21) | Strong typing and structure for clinical data, access checks and encryption. It is the only service that holds the encryption key and the only one that touches the database. | A steep learning curve for a first backend. Cold starts on serverless hosting (~15 s after idle). |
 | **AI service** | **FastAPI + LangGraph** (Python) | Agents with explicit control flow: intake, report, evaluator, triage, summary, packet reader. Python has the best AI libraries. | A second language and service to deploy and secure (it only accepts calls signed with an internal service key). |
 | **Database and sign-in** | **Supabase** (Postgres + Auth) | Free tier; built-in email one-time codes and passwords; managed Postgres. | Free projects pause when idle. Its built-in email only reaches team members and its links are meant for local development, so patient codes go through a custom SMTP sender (currently a Gmail account, with Gmail's daily sending limit). The connection pool is small, so the API uses the transaction pooler. |
 | **Patient graph** | **Neo4j AuraDB** (Free) | Multi-step questions ("which drug, from which clinic, clashes with which herb") are natural in a graph. Stores no names. | The free instance pauses when idle, and its password cannot be changed, so a leak means recreating it. The graph can be rebuilt from Postgres in one call. |
 | **LLM** | **Google Gemini** (Flash), swappable in one setting | Low cost, multilingual, and it can read photos, so one provider covers text and packet images. | On the free tier Google may use the data, which is acceptable only because every record here is fictional. The final model is still to be chosen by the planted-error test. |
 | **Transcription** | **Groq Whisper large-v3-turbo** | About US$0.04 per hour of audio; supports Malay and Tamil. | First measurement (28 Sep, one speaker, three fictional notes): 2 of 3 drug names right, the dosage-form word ("tablet", "capsule") wrong every time, and once a dose misheard nine-fold. Neither a different prompt nor the full `large-v3` model did better. The doctor reviews every transcript; typed shorthand stays the primary input. More speakers and languages are still to be tested. |
-| **Messaging** | **WhatsApp Cloud API** | Where Malaysian patients already are. Webhook signatures are verified. | The test number reaches only 5 phones, and clinic-started messages need Meta-approved templates. Until then, messages go to a local outbox. |
+| **Messaging** | **Telegram Bot API** (replaced WhatsApp on 28 Sep) | A bot needs no business approval or message templates and has no test-recipient limit, so the full two-way loop works the same day. Patients link by sharing their own Telegram-verified phone number, which doubles as consent. Every webhook delivery must carry our secret token. | Telegram is less used than WhatsApp in Malaysia, especially by older adults. Bot chats are not end-to-end encrypted, so fictional data only. Patients who have not linked the bot get nothing on their phone. Without a bot token, messages go to a local outbox. |
 | **Drug data** | **DDInter 2.0** subset + our own brand-name and herb tables | Free, peer-reviewed interaction data (70 pairs cover the demo medicines), with a reproducible import script. | Non-commercial licence (CC BY-NC-SA 4.0). Brand names are mapped by hand, and the herb list needs a pharmacist's review. Missing data is never treated as "safe". |
 | **IoT (stretch)** | **Favoriot** | A Malaysian IoT platform with a REST API and per-device secrets. | Its 25 Sep 2026 pricing page lists a limited lifetime free plan (1 device, 500 daily data points, 1-month retention); the separate signup page shows older conflicting limits. The demo uses simulated readings until an account and live test confirm availability. See [`UNDONE_WORK.md`](UNDONE_WORK.md) §2.2. |
 | **Hosting** | **Vercel**: `khabar-landing` for the web app; `khabar-api` in Singapore (`sin1`) running the API as a container and the agents as a Python service | Free tier, low latency from Malaysia, one place to deploy. A push to `main` that changes the web app is checked (lint, types) and deployed automatically by GitHub Actions. | Serverless cold starts, and the free Supabase and AuraDB tiers pause when idle. Before a live demo we warm everything up or move the API to an always-on host. |
@@ -292,7 +292,7 @@ flowchart LR
     D[Doctor]
     P[Patient]
     C[Caregiver]
-    WA[WhatsApp]
+    TG[Telegram]
   end
   D & P & C --> WEB[Next.js web app<br/>Vercel]
   WEB --> API[Spring Boot API<br/>access rules · encryption · audit]
@@ -301,7 +301,7 @@ flowchart LR
   API <--> AG[FastAPI + LangGraph agents<br/>intake · report · evaluator · triage · summary]
   AG -- reads only --> NEO
   AG --> LLM[Gemini] & STT[Groq Whisper]
-  API <--> WAC[WhatsApp Cloud API] <--> WA
+  API <--> TGB[Telegram Bot API] <--> TG
   FAV[Favoriot] -- readings --> API
   SB[Supabase Auth] -. signed tokens .-> API
 ```
@@ -320,7 +320,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 |---|---|---|
 | **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · structured report draft from clinician notes · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · prototype reply routing · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built; the full core story was rehearsed on the live site with real accounts on 28 Sep ([record](docs/DEMO_RUN_2026-09-28_DEPLOYED.md)) |
 | **Tier 2: planned** | Packet photo · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking · Neo4j graph | ✅ Built. Packet photos passed their first real Gemini test on the live site (28 Sep, one fictional packet); real-world photo quality is untested. |
-| **Tier 3: stretch** | Speaking instead of typing in the visit · Favoriot readings · voice-note summaries · learning each doctor's writing style | Speech-to-text is live (28 Sep) and spoken notes are structured like typed ones, but transcription errors on drug and dosage-form words mean the doctor reviews every transcript. Favoriot is built, with simulated readings. Voice notes: an in-app read-aloud of the approved summary is in review; audio over WhatsApp is not built. Writing style is **not built** and first to drop. |
+| **Tier 3: stretch** | Speaking instead of typing in the visit · Favoriot readings · voice-note summaries · learning each doctor's writing style | Speech-to-text is live (28 Sep) and spoken notes are structured like typed ones, but transcription errors on drug and dosage-form words mean the doctor reviews every transcript. Favoriot is built, with simulated readings. Voice notes: an in-app read-aloud of the approved summary is in review; audio over Telegram is not built. Writing style is **not built** and first to drop. |
 
 **What's live, and what's left**
 
@@ -328,7 +328,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 |---|---|---|
 | Sign-in and access | Doctor and patient access rules; caregiver `SUMMARY` is limited to the approved summary, while `SUMMARY_AND_ALERTS` permits shared patient details, medicines and readings; revoking consent blocks the next API request. On 27 Sep, real doctor, patient and caregiver accounts signed in on the live site, and revoking a caregiver blocked their open session on refresh. Patient and caregiver email codes go through a custom SMTP sender. | Cross-clinic and cross-patient denial checked on the deployment (covered by automated tests locally) |
 | Visit and safety | Notes or speech → structured draft; the ten-mistake planted-error set is a test, and all ten are caught | Pharmacist review of dose limits and herb evidence |
-| Follow-up | Check-ins, prototype four-language reply routing, approved-words-only replies, missed doses, home readings, the ranked call list | Validate triage on clinician-authored held-out replies; live WhatsApp loop with approved templates; a real Favoriot device |
+| Follow-up | Check-ins, prototype four-language reply routing, approved-words-only replies, missed doses, home readings, the ranked call list | Validate triage on clinician-authored held-out replies; live Telegram loop with a fictional patient; a real Favoriot device |
 | Patient graph | Live on AuraDB, read back by random ID only; re-synced on 28 Sep (32 fictional patients) | The free instance pauses when idle and graph writes made meanwhile are dropped, so resume it and re-sync before a demo (a warm-up script is in review). Verify Aminah's `Condition` nodes after a demo reset. |
 | Evidence | Automated tests and bug bash (below) | Clinician-authored triage evaluation; the transcription test; the 5-person understanding pilot |
 
@@ -377,7 +377,7 @@ Details, environment variables and tests: [services/README.md](services/README.m
 
 - **Inspiration:** CliniFlow AI (UM Hackathon 2026 champion), for the clinic workflow and the safety-gate pattern. Khabar is a practice build ahead of SDC Hackathon 2026 and is **not** a competition entry.
 - **Drug interaction data:** DDInter 2.0 (*Nucleic Acids Research*, 2025), licensed **CC BY-NC-SA 4.0**. The checker uses a generated subset for the demo medicines; see [import_ddinter.py](services/agents/scripts/import_ddinter.py) and [ddinter_interactions.json](services/agents/data/ddinter_interactions.json). Source: [DDInter downloads](https://ddinter.scbdd.com/download/). The non-commercial licence limits commercial use.
-- **External services:** Google Gemini, Groq, Meta WhatsApp Cloud API, Supabase, Neo4j AuraDB, Vercel, Favoriot.
+- **External services:** Google Gemini, Groq, Telegram Bot API, Supabase, Neo4j AuraDB, Vercel, Favoriot.
 - **AI tools used in development:** Claude Code (Anthropic) for planning, research, the backend services and the web app; Google Antigravity for the earlier static screens in `docs/`. All AI-written code is reviewed, and explained in plain language in [docs/EXPLAIN.md](docs/EXPLAIN.md).
 - **Data:** every patient in this repository and in the live demo is fictional. No real patient data is used or stored. Please don't enter real health information into the demo.
 - **Not a medical device:** Khabar does not diagnose or treat. Every clinical decision stays with a clinician.

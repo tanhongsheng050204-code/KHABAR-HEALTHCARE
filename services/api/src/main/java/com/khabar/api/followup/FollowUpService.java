@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * A patient's reply, from the app or WhatsApp: triaged (identity removed first), stored encrypted,
+ * A patient's reply, from the app or Telegram: triaged (identity removed first), stored encrypted,
  * and counted as the answer to their latest check-in. Replies needing review enter the clinic queue;
  * this service does not notify staff. The patient hears only approved wording: a red label gets fixed
  * precautionary emergency advice, a question with an approved clinic answer gets that answer, and

@@ -32,6 +32,7 @@ import type {
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
+import { TelegramCard } from "./telegram-card";
 import styles from "@/app/home/home.module.css";
 import { greetingName } from "@/lib/names";
 import { useWorkspaceNavigation } from "./workspace-navigation";
@@ -322,6 +323,7 @@ export function PatientHome({
           <ChevronRight size={17} />
         </button>
       </section>
+      <TelegramCard linked={Boolean(me.telegramLinked)} />
       <div
         className={styles.patientTabs}
         role="group"
