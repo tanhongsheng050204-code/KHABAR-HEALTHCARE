@@ -1,10 +1,37 @@
 ﻿# Khabar — Remaining Work
 
-**Reviewed:** 25 September 2026
+**Reviewed:** 25 September 2026; status updated 28 September 2026
 **Source of truth:** [`plan.md`](plan.md), checked against the current codebase and project documentation.  
 **Scope:** This is an implementation and readiness backlog. It does not replace the SDC planning decisions in `plan.md`.
 
-## Current position
+## Status on 28 September 2026
+
+**Verified on the live site with real accounts (27–28 Sep):** all three roles sign in with real Supabase accounts; caregiver scope and immediate revocation; the full core story (intake → pre-visit → draft → safety gate → finalise → summary → urgent reply → call list); AuraDB resumed and re-synced. Records: §1.2, §1.3 and [`docs/DEMO_RUN_2026-09-28_DEPLOYED.md`](docs/DEMO_RUN_2026-09-28_DEPLOYED.md).
+
+**Merged to `main`:** #1 pilot foundations (web deployed), #2 time-zone test fix, #3 clearer invitation-code errors (web deployed), #4 intake first-turn fix for Gemini (**API not yet redeployed**).
+
+**Open pull requests, all checked locally, none merged or deployed:**
+
+| PR | What | After merging |
+| --- | --- | --- |
+| #5 | `services/scripts/warm-up.mjs`: wakes the services and refills the patient graph, failing clearly if AuraDB is paused | nothing to deploy |
+| #6 | "Listen to this plan": read-aloud of the approved summary, right-language device voice only (idea L, partial) | web deploys automatically |
+| #7 | Notes placeholder that the parser fully understands (the old example lost the follow-up interval) | web deploys automatically |
+
+**Owner actions (need a person, an account or a decision):**
+
+1. Redeploy the API so the #4 intake fix goes live: `npx vercel deploy --prod` from `services/` after `git pull` on `main`. Until then, **Begin check-in fails on the live site**, because `GEMINI_API_KEY` is set but the crash fix is not deployed.
+2. Then on the live site: start a patient check-in and confirm the model asks questions and later confirms the medicines on record; try a fictional packet photo (§3.1).
+3. Review and merge #5, #6, #7. Run `node scripts/warm-up.mjs` before any live demo.
+4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
+5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
+6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
+7. Providers: Groq key for speech-to-text (§2.3), WhatsApp app and template approval (§2.1), Favoriot device (§2.2).
+8. SDC administration (§5): publish `starter-skeleton` (committed locally, no remote), confirm AI tools used, submit declarations.
+
+**Not started, by decision:** doctor writing-style learning (§3.4, first in the drop order) and notifying the on-duty staff member (needs a provider and clinician approval).
+
+## Current position (25 September 2026)
 
 The local core product is largely implemented and tested:
 
@@ -88,7 +115,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [x] Deploy and verify the current backend after current V1–V6 migrations pass hosted PostgreSQL/backup checks. Redeployed 27 Sep 2026 from commit `f12cc9b` (hosted CI green on run [36320590174](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE/actions/runs/36320590174), including the PostgreSQL 16 migration/backup steps inside the API test job); `node scripts/check-health.mjs` confirmed `API: healthy` and `Agents: healthy` post-deploy, resolving the earlier `/agents/health` 404. Vercel project build settings (Framework Preset/root directory) have not been separately re-verified since the 25 Sep CLI inspection recorded them as differing from the documented Services/root expectation — recheck before relying on them.
 - [x] Perform an end-to-end rehearsal using fake data on the public URLs, with demo sign-in: pre-visit → draft → safety review → finalise → summary → follow-up reply → call list (booking and intake were run locally the same day).
 - [ ] Repeat the rehearsal for doctor, patient, and caregiver permissions. **Mostly done 27–28 Sep 2026:** full core story (intake → pre-visit → shorthand notes → draft → safety check with CRITICAL gate → override → finalise → patient summary → urgent Malay reply → call list position 01) passed on the public deployment with real Supabase doctor and patient accounts; see [`docs/DEMO_RUN_2026-09-28_DEPLOYED.md`](docs/DEMO_RUN_2026-09-28_DEPLOYED.md). Still open: caregiver view of a populated summary, and cross-clinic / cross-patient denial on the deployment.
-- [ ] Record defects and fix only issues that affect the core demo. Five findings recorded in [`docs/DEMO_RUN_2026-09-28_DEPLOYED.md`](docs/DEMO_RUN_2026-09-28_DEPLOYED.md): AuraDB unreachable (**fixed 28 Sep**: the free instance had auto-paused; resumed and re-synced, 32 patients written; graph writes made while paused are dropped without retry, so resume and re-sync before any demo), patient summary omits the free-text plan and specific warning signs (needs a clinician decision), misleading "draft ready" message (**fixed and live 28 Sep** via PR #1), invitation-code errors shown as if the email code failed (**fixed in PR #3**), and a caregiver-home toast (likely the `404` returned when a patient has no summary yet; to confirm). The summary-content finding still needs a clinician decision. Separately, `main` CI went red after PR #1 because three tests seeded dates in the machine's time zone instead of the clinic clock; fixed in PR #2 (production logic was unaffected).
+- [ ] Record defects and fix only issues that affect the core demo. Five findings recorded in [`docs/DEMO_RUN_2026-09-28_DEPLOYED.md`](docs/DEMO_RUN_2026-09-28_DEPLOYED.md): AuraDB unreachable (**fixed 28 Sep**: the free instance had auto-paused; resumed and re-synced, 32 patients written; graph writes made while paused are dropped without retry, so resume and re-sync before any demo), patient summary omits the free-text plan and specific warning signs (needs a clinician decision), misleading "draft ready" message (**fixed and live 28 Sep** via PR #1), invitation-code errors shown as if the email code failed (**fixed in PR #3**), and a caregiver-home toast (not reproduced locally; the earlier "summary 404" guess is ruled out; reproduce on the live site and read the logs within the hour). The summary-content finding still needs a clinician decision. Separately, `main` CI went red after PR #1 because three tests seeded dates in the machine's time zone instead of the clinic clock; fixed in PR #2 (production logic was unaffected).
 - [x] Keep a concise demo-run checklist and result: [`docs/DEMO_RUN_CHECKLIST.md`](docs/DEMO_RUN_CHECKLIST.md) and [`docs/BUG_BASH_2026-09-23.md`](docs/BUG_BASH_2026-09-23.md).
 - [x] Add a repeatable public API/agents health check (`services/scripts/check-health.mjs`) so a deploy is not considered healthy when the agents route returns 404.
 
@@ -130,7 +157,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ### 2.3 LLM and transcription evaluation
 
-**Status:** Gemini and Groq integration points exist, but the formal selection experiments in `plan.md` are not documented as complete.
+**Status:** Gemini and Groq integration points exist, but the formal selection experiments in `plan.md` are not documented as complete. **28 Sep:** a Gemini key was checked locally (key accepted, `gemini-3.6-flash` available, test call answered) and set as a Secret `GEMINI_API_KEY` on the `khabar-api` production project. The first live check-in then failed on every opening turn (`ValueError: contents are required`: the model received only a system message); fixed with a regression test and verified against the real API in PR #4, merged, **awaiting an API redeploy**. `GROQ_API_KEY` is still unset, so speech-to-text is unavailable in production.
 
 **Required work**
 
@@ -167,18 +194,18 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [x] Map extracted ingredient/brand text against known generics; present confidence/evidence and require explicit review before adding.
 - [x] Connect reviewed candidate selection to the existing medication list.
 - [x] Test duplicate and herb-clash findings end-to-end from a photo-derived item (`services/agents/tests/test_packet_to_findings.py`), and once by hand through the real API and agents with a local stand-in for Gemini (`GEMINI_API_BASE`): the doctor's pre-visit check named the packet photo in the CRITICAL duplicate.
-- [ ] Run a real Gemini test on fictional packet images and confirm OCR quality/limitations.
+- [ ] Run a real Gemini test on fictional packet images and confirm OCR quality/limitations. The production key is set (28 Sep); test after the API redeploy.
 
 **Scope note:** This is a P1 feature and may be reduced to the existing typed medicine list if time is limited.
 
 ### 3.2 Voice-note summaries (A3)
 
-**Status:** Not implemented. There is no text-to-speech or WhatsApp audio-message implementation.
+**Status:** Partial, in PR #6 (open). A "Listen to this plan" button on the patient and caregiver homes reads the approved summary aloud with the device's own speech engine. It speaks the approved text only, and only with a voice in the summary's language; with no such voice it says so instead of using another language's voice. Checked locally with a fictional Malay summary (no-voice note; stub engine chose `ms-MY` over `id-ID`; stop and end handling). There is no provider-generated audio and no WhatsApp audio message.
 
 **Required work**
 
-- [ ] Select a text-to-speech provider after testing BM, Chinese, and Tamil quality.
-- [ ] Generate a voice version of the doctor-approved summary only.
+- [ ] Select a text-to-speech provider after testing BM, Chinese, and Tamil quality. (Device voices are used for now; their quality varies by phone.)
+- [x] Speak the doctor-approved summary only (in-app read-aloud, PR #6). A generated audio file for messaging is still open.
 - [ ] Send audio through the selected messaging channel.
 - [ ] Test readability, correct medicine pronunciation, and language quality with fake cases.
 
