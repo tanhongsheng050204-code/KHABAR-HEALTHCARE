@@ -56,15 +56,11 @@ khabar:
     # Where to send people who open the API's own address in a browser (optional)
     app-url: ${WEB_APP_URL:}
   time-zone: ${KHABAR_TIME_ZONE:Asia/Kuala_Lumpur}
-  # WhatsApp Cloud API. Leave the phone number id or token empty to keep messages in the outbox table.
+  telegram:
+    # From @BotFather. Unset: messages are only recorded in the outbound_message table.
+    bot-token: ${KHABAR_TELEGRAM_BOT_TOKEN:}
+    api-base-url: ${KHABAR_TELEGRAM_API_BASE_URL:https://api.telegram.org}
   whatsapp:
-    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
-    access-token: ${WHATSAPP_TOKEN:}
-    api-version: ${WHATSAPP_API_VERSION:v21.0}
-    # Approved template for check-ins (they start the conversation, so WhatsApp requires a template)
-    checkin-template: ${WHATSAPP_CHECKIN_TEMPLATE:}
-    # Approved template for visit summaries, with one body parameter {{1}} that carries the summary
-    summary-template: ${WHATSAPP_SUMMARY_TEMPLATE:}
     # Webhook: the token you type into Meta's dashboard, and the app secret that signs deliveries
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}

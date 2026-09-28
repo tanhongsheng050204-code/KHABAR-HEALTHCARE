@@ -32,12 +32,9 @@ khabar:
   checkins:
     # No patient messages are sent until the clinic explicitly enables the scheduler.
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:false}
+  telegram:
+    bot-token: ${KHABAR_TELEGRAM_BOT_TOKEN:}
   whatsapp:
-    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
-    access-token: ${WHATSAPP_TOKEN:}
-    api-version: ${WHATSAPP_API_VERSION:v21.0}
-    checkin-template: ${WHATSAPP_CHECKIN_TEMPLATE:}
-    summary-template: ${WHATSAPP_SUMMARY_TEMPLATE:}
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}
   favoriot:

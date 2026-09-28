@@ -101,7 +101,7 @@ public class PatientMessages {
     }
 
     public Messenger.Result send(Patient patient, String text, Messenger.Kind kind) {
-        Messenger.Result result = messenger.send(patient.getPhone(), text, patient.getPreferredLanguage(), kind);
+        Messenger.Result result = messenger.send(patient.getTelegramChatId(), text, patient.getPreferredLanguage(), kind);
         outbox.save(new OutboundMessage(patient.getId(), kind, messenger.channel(), text, result, clock.instant()));
         return result;
     }
