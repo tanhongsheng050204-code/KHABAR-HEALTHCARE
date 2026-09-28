@@ -44,6 +44,12 @@ database (connected from the Marketplace with the `DB_` prefix), `INTERNAL_SERVI
 `WEB_APP_URL`. `services/api/src/main/resources/application-demo.yml` explains what the demo profile
 changes; `services/vercel.json` and `services/api/Dockerfile.vercel` are how Vercel builds it.
 
+**Before a live demo**, run `node scripts/warm-up.mjs` from `services/`. It wakes the API and agents
+(cold starts take ~15 s), then refills the patient graph with `POST /dev/graph/sync`. If it reports
+0 patients written, the free AuraDB instance has paused: resume it at console.neo4j.io and run the
+script again. Graph writes made while AuraDB is paused are dropped, so skipping this step can leave
+the safety check without graph context.
+
 After an API/agents deployment, run `node scripts/check-health.mjs` from `services/`. It checks that the
 API returns JSON status `UP` at `/api/health` and agents return `healthy` at `/agents/health`. To check
 local services, pass the API base URL and agents health URL separately, for example:
