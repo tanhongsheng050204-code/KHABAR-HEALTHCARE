@@ -2387,3 +2387,20 @@
 
 /* Hovering the current page's link must not turn its text white on the pale highlight. */
 .rail nav a.activeNav:hover { color: #102f2f; }
+
+.telegramCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+}
+.telegramCard > div { flex: 1; display: grid; gap: 2px; }
+.telegramCard small { color: var(--ink-soft); }
+@media (max-width: 560px) {
+  .telegramCard { flex-wrap: wrap; }
+  .telegramCard > a { flex-basis: 100%; justify-content: center; text-align: center; }
+}

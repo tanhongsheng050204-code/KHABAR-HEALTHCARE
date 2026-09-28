@@ -2,7 +2,7 @@ export type Role = "DOCTOR" | "NURSE" | "CLINIC_ADMIN" | "PATIENT" | "CAREGIVER"
 export type ClinicStaffRole = "DOCTOR" | "NURSE" | "CLINIC_ADMIN"
 export type TriageLevel = "RED" | "WATCH" | "REVIEW" | "OK"
 
-export type Me = { id: string; role: Role; clinicRoles?: ClinicStaffRole[]; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[]; patientScopes?: Record<string, "SUMMARY" | "SUMMARY_AND_ALERTS"> }
+export type Me = { id: string; role: Role; clinicRoles?: ClinicStaffRole[]; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[]; patientScopes?: Record<string, "SUMMARY" | "SUMMARY_AND_ALERTS">; telegramLinked?: boolean }
 export type ClinicStaff = { grantId: string; userId: string; displayName: string; role: ClinicStaffRole; grantedAt: string; grantedBy: string | null }
 export type Patient = { id: string; fullName: string; icMasked: string; preferredLanguage: string; clinicName?: string; followUpDay?: number | null; hasAccount?: boolean }
 export type CaseStatus = "NEW" | "ASSIGNED" | "ACKNOWLEDGED" | "IN_PROGRESS" | "ESCALATED" | "UNABLE_TO_CONTACT" | "RESOLVED"
