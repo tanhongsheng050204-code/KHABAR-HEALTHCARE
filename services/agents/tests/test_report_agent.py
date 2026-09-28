@@ -145,3 +145,21 @@ def test_a_comma_before_a_new_item_starts_that_item():
 def test_continuation_keeps_the_doctors_original_words():
     draft = draft_from_notes("Plan: continue, return if worse")
     assert draft.plan == "continue, return if worse"
+
+
+# A second live dictation, 28 Sep. Whisper also turned "Tablet metformin 500mg" into
+# "Table number 4500mg": that must never become a prescription.
+SECOND_LIVE_DICTATION = ("Diagnosis Diabetes Table number 4500mg, twice daily after meals. "
+                         "Reviewed in 2 weeks. Return if chest pain.")
+
+
+def test_new_sentences_after_a_spoken_diagnosis_are_their_own_items():
+    draft = draft_from_notes(SECOND_LIVE_DICTATION)
+    assert draft.diagnosis.startswith("Diabetes")
+    assert draft.follow_up_weeks == 2
+    assert draft.warning_signs == ["RTC if chest pain."]
+    assert draft.prescription == []
+
+
+def test_a_typed_plan_with_a_second_sentence_keeps_it():
+    assert draft_from_notes("Plan: continue. Monitor BP OD").plan == "continue. Monitor BP OD"
