@@ -35,18 +35,28 @@ function vercel(args, input) {
   });
 }
 
+/**
+ * Calls the Bot API, retrying network failures: after the minutes-long deploy, the connection kept open
+ * from the first call can be dead, and the next request fails once before a fresh one succeeds.
+ */
 async function botCall(token, method, body) {
-  try {
-    const response = await fetch(`${telegram}/bot${token}/${method}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body ?? {}),
-      signal: AbortSignal.timeout(30_000),
-    });
-    return await response.json().catch(() => ({ ok: false, description: `HTTP ${response.status}` }));
-  } catch (error) {
-    return { ok: false, description: `Telegram not reachable (${error.name})` };
+  let failure = "";
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      const response = await fetch(`${telegram}/bot${token}/${method}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body ?? {}),
+        signal: AbortSignal.timeout(30_000),
+      });
+      return await response.json().catch(() => ({ ok: false, description: `HTTP ${response.status}` }));
+    } catch (error) {
+      // The error's code (e.g. ECONNRESET) says what went wrong; its message could contain the URL, so it is not shown.
+      failure = `${error.name}${error.cause?.code ? ` ${error.cause.code}` : ""}`;
+      await sleep(attempt * 2_000);
+    }
   }
+  return { ok: false, description: `Telegram not reachable after 4 tries (${failure})` };
 }
 
 /** The status our webhook gives a test delivery carrying this secret; 0 if it could not be reached. */
