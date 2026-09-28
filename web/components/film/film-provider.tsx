@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -19,7 +27,11 @@ type Film = {
   setLang: (lang: Lang) => void;
 };
 
-const FilmContext = createContext<Film>({ motion: false, lang: "ms", setLang: () => {} });
+const FilmContext = createContext<Film>({
+  motion: false,
+  lang: "ms",
+  setLang: () => {},
+});
 export const useFilm = () => useContext(FilmContext);
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
@@ -29,10 +41,20 @@ function subscribe(onChange: () => void) {
   return () => list.removeEventListener("change", onChange);
 }
 
-export function FilmProvider({ children, className }: { children: ReactNode; className?: string }) {
+export function FilmProvider({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   // The server cannot see the device setting, so it renders every act's static end frame (motion off);
   // the scenes switch to their animated layout once the browser confirms motion is allowed.
-  const reduced = useSyncExternalStore(subscribe, () => window.matchMedia(REDUCED).matches, () => true);
+  const reduced = useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(REDUCED).matches,
+    () => true,
+  );
   const [paused, setPaused] = useState(false);
   const [lang, setLang] = useState<Lang>("ms");
   const motion = !reduced && !paused;
@@ -43,7 +65,9 @@ export function FilmProvider({ children, className }: { children: ReactNode; cla
   // scroll to the target again.
   useEffect(() => {
     if (!motion || !window.location.hash) return;
-    const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+    const target = document.getElementById(
+      decodeURIComponent(window.location.hash.slice(1)),
+    );
     if (!target) return;
     ScrollTrigger.refresh();
     target.scrollIntoView({ block: "start" });
@@ -51,7 +75,10 @@ export function FilmProvider({ children, className }: { children: ReactNode; cla
 
   return (
     <FilmContext.Provider value={value}>
-      <div className={`${styles.film} ${className ?? ""}`} data-motion={motion ? "on" : "off"}>
+      <div
+        className={`${styles.film} ${className ?? ""}`}
+        data-motion={motion ? "on" : "off"}
+      >
         {children}
         <button
           type="button"
@@ -60,7 +87,11 @@ export function FilmProvider({ children, className }: { children: ReactNode; cla
           disabled={reduced}
           aria-pressed={!motion}
         >
-          {motion ? <Pause size={13} aria-hidden /> : <Play size={13} aria-hidden />}
+          {motion ? (
+            <Pause size={13} aria-hidden />
+          ) : (
+            <Play size={13} aria-hidden />
+          )}
           <span>Pause motion</span>
           {reduced ? <small>Reduced motion is on</small> : null}
         </button>

@@ -9,9 +9,22 @@ export type ThreadState = "ok" | "watch" | "red";
  * green, amber or red; with pulse, the glow breathes.
  */
 export function Thread({
-  d, viewBox, state, name, pulse = false, svgRef,
+  d,
+  viewBox,
+  state,
+  name,
+  pulse = false,
+  shape,
+  svgRef,
 }: {
-  d: string; viewBox: string; state: ThreadState; name: string; pulse?: boolean; svgRef?: Ref<SVGSVGElement>;
+  d: string;
+  viewBox: string;
+  state: ThreadState;
+  name: string;
+  pulse?: boolean;
+  /** For a thread drawn twice, once per screen shape: CSS shows only the one that fits. */
+  shape?: "wide" | "tall";
+  svgRef?: Ref<SVGSVGElement>;
 }) {
   return (
     <svg
@@ -22,6 +35,7 @@ export function Thread({
       data-thread={name}
       data-state={state}
       data-pulse={pulse || undefined}
+      data-shape={shape}
       aria-hidden="true"
       focusable="false"
     >

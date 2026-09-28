@@ -15,10 +15,14 @@ export const metadata: Metadata = {
 export default function FilmPreviewPage() {
   return (
     <FilmProvider className={fontVariables}>
-      <a className={styles.skipLink} href="#act3">Skip to the thirty days at home</a>
+      <a className={styles.skipLink} href="#act3">
+        Skip to the thirty days at home
+      </a>
       <header className={styles.header}>
         <Brand />
-        <Link className="button-secondary" href="/login">Sign in</Link>
+        <Link className="button-secondary" href="/login">
+          Sign in
+        </Link>
       </header>
       <main id="main-content">
         <Act0Hero />

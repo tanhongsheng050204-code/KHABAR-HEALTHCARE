@@ -12,7 +12,12 @@ export const LANGS: { id: Lang; label: string }[] = [
   { id: "en", label: "EN" },
 ];
 
-const HTML_LANG: Record<Lang, string> = { ms: "ms", en: "en", zh: "zh-Hans", ta: "ta" };
+const HTML_LANG: Record<Lang, string> = {
+  ms: "ms",
+  en: "en",
+  zh: "zh-Hans",
+  ta: "ta",
+};
 export const htmlLang = (lang: Lang) => HTML_LANG[lang];
 
 /** The hero's short greeting (page copy, not a product message). */
@@ -35,19 +40,43 @@ export type Reply = "ok" | "dizzy" | "chest";
 
 /** What Aminah types (fictional replies). */
 export const REPLY_TEXT: Record<Reply, Record<Lang, string>> = {
-  ok: { ms: "Okay, sihat.", en: "I'm okay.", zh: "我很好。", ta: "நான் நலமாக இருக்கிறேன்." },
-  dizzy: { ms: "Pening sikit hari ini.", en: "A bit dizzy today.", zh: "今天有点头晕。", ta: "இன்று கொஞ்சம் தலைச்சுற்றல்." },
-  chest: { ms: "Sakit dada.", en: "Chest pain.", zh: "胸口痛。", ta: "நெஞ்சு வலி." },
+  ok: {
+    ms: "Okay, sihat.",
+    en: "I'm okay.",
+    zh: "我很好。",
+    ta: "நான் நலமாக இருக்கிறேன்.",
+  },
+  dizzy: {
+    ms: "Pening sikit hari ini.",
+    en: "A bit dizzy today.",
+    zh: "今天有点头晕。",
+    ta: "இன்று கொஞ்சம் தலைச்சுற்றல்.",
+  },
+  chest: {
+    ms: "Sakit dada.",
+    en: "Chest pain.",
+    zh: "胸口痛。",
+    ta: "நெஞ்சு வலி.",
+  },
 };
 
 export const MEDICINE_TAKEN: Record<Lang, string> = {
-  ms: "Dah makan ubat.", en: "I've taken my medicine.", zh: "药已经吃了。", ta: "மருந்து சாப்பிட்டேன்.",
+  ms: "Dah makan ubat.",
+  en: "I've taken my medicine.",
+  zh: "药已经吃了。",
+  ta: "மருந்து சாப்பிட்டேன்.",
 };
 export const FEELING_BETTER: Record<Lang, string> = {
-  ms: "Dah okay, terima kasih.", en: "Better now, thank you.", zh: "好多了，谢谢。", ta: "இப்போது பரவாயில்லை, நன்றி.",
+  ms: "Dah okay, terima kasih.",
+  en: "Better now, thank you.",
+  zh: "好多了，谢谢。",
+  ta: "இப்போது பரவாயில்லை, நன்றி.",
 };
 export const THANK_YOU: Record<Lang, string> = {
-  ms: "Terima kasih, Khabar.", en: "Thank you, Khabar.", zh: "谢谢你，Khabar。", ta: "நன்றி, Khabar.",
+  ms: "Terima kasih, Khabar.",
+  en: "Thank you, Khabar.",
+  zh: "谢谢你，Khabar。",
+  ta: "நன்றி, Khabar.",
 };
 
 /** PatientMessages.THANKS */
