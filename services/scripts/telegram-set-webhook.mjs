@@ -91,6 +91,36 @@ if (!/^[A-Za-z0-9_-]{1,256}$/.test(secret)) {
 }
 
 const url = new URL("/api/webhooks/telegram", apiBaseUrl).toString();
+
+// Ask our own webhook first whether it accepts this secret, so a mismatch shows up here and not as a
+// silent bot. An update with no message is acknowledged and ignored. The first call may wait out a cold start.
+let check;
+try {
+  check = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Telegram-Bot-Api-Secret-Token": secret },
+    body: "{}",
+    signal: AbortSignal.timeout(60_000),
+  });
+} catch (error) {
+  console.error(`Could not reach ${url} (${error.name}). Check the API is up, then try again.`);
+  process.exit(1);
+}
+if (check.status === 401) {
+  console.error("The API refused this secret: it is not the KHABAR_TELEGRAM_WEBHOOK_SECRET of the running deployment.\n" +
+    "Either the value in Vercel differs from the one typed here, or the API was not redeployed after changing it.");
+  process.exit(1);
+}
+if (check.status === 503) {
+  console.error("The API has no KHABAR_TELEGRAM_WEBHOOK_SECRET yet. Set it in Vercel and redeploy.");
+  process.exit(1);
+}
+if (!check.ok) {
+  console.error(`The API answered HTTP ${check.status} to a test delivery; not registering.`);
+  process.exit(1);
+}
+console.log("The API accepts this secret.");
+
 const call = async (method, body) => {
   const response = await fetch(`${telegram}/bot${token}/${method}`, {
     method: "POST",
