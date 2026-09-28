@@ -27,13 +27,12 @@
 **Owner actions (need a person, an account or a decision):**
 
 1. On the live site, continue a check-in to the medicines question and confirm the model mentions the medicines on record.
-2. Continue the packet-photo check: add the reviewed Brand A item, then confirm the doctor's view flags it as the same medicine as the metformin already listed.
-3. Merge #10. Run `node scripts/warm-up.mjs` from `services/` before any live demo. On a phone, check that "Listen to this plan" appears under the care plan (it needs a voice for the summary's language).
-4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
-5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
-6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
-7. Providers: Groq key for speech-to-text (§2.3), WhatsApp app and template approval (§2.1), Favoriot device (§2.2).
-8. SDC administration (§5): publish `starter-skeleton` (committed locally, no remote), confirm AI tools used, submit declarations.
+2. Merge #10. Run `node scripts/warm-up.mjs` from `services/` before any live demo. On a phone, check that "Listen to this plan" appears under the care plan (it needs a voice for the summary's language).
+3. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
+4. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
+5. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
+6. Providers: Groq key for speech-to-text (§2.3), WhatsApp app and template approval (§2.1), Favoriot device (§2.2).
+7. SDC administration (§5): publish `starter-skeleton` (committed locally, no remote), confirm AI tools used, submit declarations.
 
 **Not started, by decision:** doctor writing-style learning (§3.4, first in the drop order) and notifying the on-duty staff member (needs a provider and clinician approval).
 
@@ -200,7 +199,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [x] Map extracted ingredient/brand text against known generics; present confidence/evidence and require explicit review before adding.
 - [x] Connect reviewed candidate selection to the existing medication list.
 - [x] Test duplicate and herb-clash findings end-to-end from a photo-derived item (`services/agents/tests/test_packet_to_findings.py`), and once by hand through the real API and agents with a local stand-in for Gemini (`GEMINI_API_BASE`): the doctor's pre-visit check named the packet photo in the CRITICAL duplicate.
-- [x] Run a real Gemini test on a fictional packet image (28 Sep, live site, patient account). A rendered fictional box ("BRAND A", "Metformin Hydrochloride Tablets 500 mg", "FICTIONAL DEMO PACKET - NOT A REAL PRODUCT") was uploaded after the consent tick. The label was read verbatim, "Brand A" was mapped to the generic metformin, and the result showed 500 mg, film-coated tablets and high confidence, with "this is not a safety check" and nothing added until *Add after review*. One clean, printed, fictional image is not an OCR quality measurement; photos of real packets (glare, curved boxes, handwriting, Chinese/Tamil text) are still untested.
+- [x] Run a real Gemini test on a fictional packet image (28 Sep, live site, patient account). A rendered fictional box ("BRAND A", "Metformin Hydrochloride Tablets 500 mg", "FICTIONAL DEMO PACKET - NOT A REAL PRODUCT") was uploaded after the consent tick. The label was read verbatim, "Brand A" was mapped to the generic metformin, and the result showed 500 mg, film-coated tablets and high confidence, with "this is not a safety check" and nothing added until *Add after review*. After adding it, the doctor's record listed it as "metformin 500 mg · Packet photo — please verify" and showed **Critical · duplicate**: "Metformin is taken 2 times: 'metformin 500mg' from Told Khabar at intake and 'metformin 500 mg' from Packet photo — please verify", alongside the bitter gourd herb check. The photo → review → list → duplicate warning chain is confirmed with the real provider. One clean, printed, fictional image is not an OCR quality measurement; photos of real packets (glare, curved boxes, handwriting, Chinese/Tamil text) are still untested.
 
 **Scope note:** This is a P1 feature and may be reduced to the existing typed medicine list if time is limited.
 
