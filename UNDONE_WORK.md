@@ -8,21 +8,25 @@
 
 **Verified on the live site with real accounts (27–28 Sep):** all three roles sign in with real Supabase accounts; caregiver scope and immediate revocation; the full core story (intake → pre-visit → draft → safety gate → finalise → summary → urgent reply → call list); AuraDB resumed and re-synced. Records: §1.2, §1.3 and [`docs/DEMO_RUN_2026-09-28_DEPLOYED.md`](docs/DEMO_RUN_2026-09-28_DEPLOYED.md).
 
-**Merged to `main`:** #1 pilot foundations (web deployed), #2 time-zone test fix, #3 clearer invitation-code errors (web deployed), #4 intake first-turn fix for Gemini (**API not yet redeployed**).
+**Merged to `main`:** #1 pilot foundations (web deployed), #2 time-zone test fix, #3 clearer invitation-code errors (web deployed), #4 intake first-turn fix for Gemini (deployed 28 Sep 01:31; **the live check-in now runs on Gemini**, confirmed at 10:03).
 
-**Open pull requests, all checked locally, none merged or deployed:**
+**Also verified on the live site on 28 Sep:** the first real Gemini packet-photo read (§3.1), and cross-patient and forged-token denial with read-only requests (#10).
+
+**Open pull requests, all checked, none merged or deployed:**
 
 | PR | What | After merging |
 | --- | --- | --- |
 | #5 | `services/scripts/warm-up.mjs`: wakes the services and refills the patient graph, failing clearly if AuraDB is paused | nothing to deploy |
 | #6 | "Listen to this plan": read-aloud of the approved summary, right-language device voice only (idea L, partial) | web deploys automatically |
 | #7 | Notes placeholder that the parser fully understands (the old example lost the follow-up interval) | web deploys automatically |
+| #9 | Accurate identity-removal wording: only the patient's registered name, IC and phone are removed, and patients are asked not to type names | web deploys automatically |
+| #10 | Checklist record of the deployed denial checks | docs only |
 
 **Owner actions (need a person, an account or a decision):**
 
-1. Redeploy the API so the #4 intake fix goes live: `npx vercel deploy --prod` from `services/` after `git pull` on `main`. Until then, **Begin check-in fails on the live site**, because `GEMINI_API_KEY` is set but the crash fix is not deployed.
-2. Then on the live site: start a patient check-in and confirm the model asks questions and later confirms the medicines on record; try a fictional packet photo (§3.1).
-3. Review and merge #5, #6, #7. Run `node scripts/warm-up.mjs` before any live demo.
+1. On the live site, continue a check-in to the medicines question and confirm the model mentions the medicines on record.
+2. Continue the packet-photo check: add the reviewed Brand A item, then confirm the doctor's view flags it as the same medicine as the metformin already listed.
+3. Review and merge #5, #6, #7, #9, #10. Run `node scripts/warm-up.mjs` before any live demo.
 4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
 5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
 6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
@@ -185,7 +189,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ### 3.1 Medicine-packet photo reading (B4)
 
-**Status:** Implemented locally and tested end to end with a stand-in model (23 Sep 2026); a real Gemini test is open. Patient/clinic-authorized users can upload an explicitly consented packet image through the API to the configured Gemini service for ephemeral label extraction. Results are mapped to known generics where possible and require user review before the existing medication-list add flow. The API and agent do not persist the image. A real-provider test remains open.
+**Status:** Implemented locally and tested end to end with a stand-in model (23 Sep 2026); first real Gemini read on the live site passed on 28 Sep (see below). Patient/clinic-authorized users can upload an explicitly consented packet image through the API to the configured Gemini service for ephemeral label extraction. Results are mapped to known generics where possible and require user review before the existing medication-list add flow. The API and agent do not persist the image. A real-provider test remains open.
 
 **Required work**
 
@@ -194,7 +198,7 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 - [x] Map extracted ingredient/brand text against known generics; present confidence/evidence and require explicit review before adding.
 - [x] Connect reviewed candidate selection to the existing medication list.
 - [x] Test duplicate and herb-clash findings end-to-end from a photo-derived item (`services/agents/tests/test_packet_to_findings.py`), and once by hand through the real API and agents with a local stand-in for Gemini (`GEMINI_API_BASE`): the doctor's pre-visit check named the packet photo in the CRITICAL duplicate.
-- [ ] Run a real Gemini test on fictional packet images and confirm OCR quality/limitations. The production key is set (28 Sep); test after the API redeploy.
+- [x] Run a real Gemini test on a fictional packet image (28 Sep, live site, patient account). A rendered fictional box ("BRAND A", "Metformin Hydrochloride Tablets 500 mg", "FICTIONAL DEMO PACKET - NOT A REAL PRODUCT") was uploaded after the consent tick. The label was read verbatim, "Brand A" was mapped to the generic metformin, and the result showed 500 mg, film-coated tablets and high confidence, with "this is not a safety check" and nothing added until *Add after review*. One clean, printed, fictional image is not an OCR quality measurement; photos of real packets (glare, curved boxes, handwriting, Chinese/Tamil text) are still untested.
 
 **Scope note:** This is a P1 feature and may be reduced to the existing typed medicine list if time is limited.
 

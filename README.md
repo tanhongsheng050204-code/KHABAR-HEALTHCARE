@@ -319,7 +319,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 | Tier | Scope | Status (28 Sep) |
 |---|---|---|
 | **Tier 1: committed** | Sign-in and access rules · intake chat and pre-visit page · structured report draft from clinician notes · safety checks with the three-layer gate · multilingual summary · 30-day check-ins · prototype reply routing · clinic call list · de-identification · 30 fictional patients · demo clock | ✅ Built; the full core story was rehearsed on the live site with real accounts on 28 Sep ([record](docs/DEMO_RUN_2026-09-28_DEPLOYED.md)) |
-| **Tier 2: planned** | Packet photo · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking · Neo4j graph | ✅ Built. The Gemini key is now set in production; a real packet-photo test is still open. |
+| **Tier 2: planned** | Packet photo · caregiver access · Ramadan mode · field encryption · "who viewed my record" · self-booking · Neo4j graph | ✅ Built. Packet photos passed their first real Gemini test on the live site (28 Sep, one fictional packet); real-world photo quality is untested. |
 | **Tier 3: stretch** | Speaking instead of typing in the visit · Favoriot readings · voice-note summaries · learning each doctor's writing style | Speech-to-text is built but has no provider key in production yet. Favoriot is built, with simulated readings. Voice notes: an in-app read-aloud of the approved summary is in review; audio over WhatsApp is not built. Writing style is **not built** and first to drop. |
 
 **What's live, and what's left**
