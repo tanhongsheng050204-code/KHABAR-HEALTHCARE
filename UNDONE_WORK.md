@@ -32,7 +32,7 @@
 4. Reproduce the caregiver-home toast (finding 5 in the run record) and read the Vercel logs within the hour.
 5. Clinician decision: the patient summary omits the doctor's free-text plan and specific warning signs (finding 2).
 6. Listen to "Listen to this plan" on real phones in BM, Chinese and Tamil with fluent readers, including medicine names (§3.2).
-7. Providers: Groq key for speech-to-text (§2.3), WhatsApp app and template approval (§2.1), Favoriot device (§2.2).
+7. Providers: WhatsApp app and template approval (§2.1), Favoriot device (§2.2). (Groq speech-to-text is live; more recorded speakers and languages are still needed, §2.3.)
 8. SDC administration (§5): publish `starter-skeleton` (committed locally, no remote), confirm AI tools used, submit declarations.
 
 **Not started, by decision:** doctor writing-style learning (§3.4, first in the drop order) and notifying the on-duty staff member (needs a provider and clinician approval).
@@ -163,15 +163,15 @@ See [`docs/UI_REDESIGN_2026-09-24.md`](docs/UI_REDESIGN_2026-09-24.md) for the i
 
 ### 2.3 LLM and transcription evaluation
 
-**Status:** Gemini and Groq integration points exist, but the formal selection experiments in `plan.md` are not documented as complete. **28 Sep:** a Gemini key was checked locally (key accepted, `gemini-3.6-flash` available, test call answered) and set as a Secret `GEMINI_API_KEY` on the `khabar-api` production project. The first live check-in then failed on every opening turn (`ValueError: contents are required`: the model received only a system message); fixed with a regression test and verified against the real API in PR #4, merged, **awaiting an API redeploy**. `GROQ_API_KEY` is still unset, so speech-to-text is unavailable in production.
+**Status:** Gemini and Groq integration points exist, but the formal selection experiments in `plan.md` are not documented as complete. **28 Sep:** a Gemini key was checked locally (key accepted, `gemini-3.6-flash` available, test call answered) and set as a Secret `GEMINI_API_KEY` on the `khabar-api` production project. The first live check-in then failed on every opening turn (`ValueError: contents are required`: the model received only a system message); fixed with a regression test and verified against the real API in PR #4, merged and deployed (the live check-in runs on Gemini). **Groq:** the key was checked with a synthetic-voice note (transcribed word for word) and set as a Secret `GROQ_API_KEY`; dictation is live, and the report parser now structures spoken notes (PRs #12–#14, deployed 28 Sep 11:21). See the transcription measurements below.
 
 **Required work**
 
 - [x] Re-run the independent held-out word-list baseline locally (25 Sep 2026): **2/12 red replies caught, 16/22 replies under-triaged, 0 false alarms on expected-ok replies**. This is not the planned model comparison and does not validate emergency detection; report: [`docs/evals/triage-wordlist-current.md`](docs/evals/triage-wordlist-current.md).
 - [x] Clarify the planned evaluation: the ten-case planted-error suite checks the deterministic evaluator and cannot select a model. The suite and clean-draft check remain automated regression coverage (`services/agents/tests/test_planted_errors.py`).
 - [ ] Compare candidate models only on tasks where they are used, including the independent holdout plus clinician-authored triage set; requires a provider key and qualified clinician-authored examples. Do not claim emergency detection performance before this work and review are complete.
-- [ ] Run the one-hour transcription comparison on five Manglish recordings.
-- [ ] Count clinically important drug-name errors, not only general transcription quality.
+- [ ] Run the one-hour transcription comparison on five Manglish recordings. **Partial, 28 Sep:** one speaker, one laptop microphone, three fictional English notes (metformin, amlodipine, omeprazole), `language=en`, compared in two rounds. (1) Prompt: the current word-list prompt against an example-note prompt on `whisper-large-v3-turbo`; the example prompt was no better and made one error worse, so the prompt is unchanged. (2) Model: `whisper-large-v3-turbo` against `whisper-large-v3` with the current prompt; neither was clearly better, so turbo stays. Still open: more speakers, BM/Chinese/Tamil and code-switched Manglish, and a phone microphone.
+- [x] Count clinically important drug-name errors, not only general transcription quality (first count, 28 Sep, same three clips). Both models got **metformin** and **omeprazole** right and **amlodipine** wrong ("Law D.Pine", "law D-5"). The dosage-form word was wrong in every run: "Tablet" → "table of", "tabled at", "tailored"; "Capsule" → "Cepso", "Pepsol". "Review" came back as "Reviewed", "Reveal" or "revealed" in some runs. Strengths, frequencies and "after/before meals" came through correctly. In earlier live dictation Whisper also produced "Mofomin" for metformin and "**Table number 4500mg**" for "Tablet metformin 500mg", a nine-fold dose change. Such text stays in the draft's diagnosis rather than becoming a prescription (a test asserts this), and unknown drug names are flagged with a "Did you mean …?" hint, but **every transcript must be reviewed by the doctor**. Treat dictation as an aid; typed shorthand remains the primary input.
 - [ ] Record the selected LLM, transcription model, results, date, and rationale in `plan.md` or `docs/EXPLAIN.md`.
 
 ### 2.4 Triage limitations and clinician-authored evaluation
