@@ -60,10 +60,8 @@ khabar:
     # From @BotFather. Unset: messages are only recorded in the outbound_message table.
     bot-token: ${KHABAR_TELEGRAM_BOT_TOKEN:}
     api-base-url: ${KHABAR_TELEGRAM_API_BASE_URL:https://api.telegram.org}
-  whatsapp:
-    # Webhook: the token you type into Meta's dashboard, and the app secret that signs deliveries
-    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
-    app-secret: ${WHATSAPP_APP_SECRET:}
+    # Random secret given to setWebhook; Telegram sends it back on every delivery.
+    webhook-secret: ${KHABAR_TELEGRAM_WEBHOOK_SECRET:}
   checkins:
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:true}
     poll-ms: ${CHECKINS_POLL_MS:60000}

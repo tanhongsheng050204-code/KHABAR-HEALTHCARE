@@ -48,7 +48,7 @@ class FakePatientGeneratorTest {
 
     @Test
     void phoneNumbersCanNeverReachARealPerson() {
-        // 03-0000 xxxx is not a routable Malaysian number, so a misconfigured WhatsApp can't message a stranger
+        // 03-0000 xxxx is not a routable Malaysian number, so no real Telegram account can link to it
         assertThat(thirty).allMatch(p -> p.phone().startsWith("03-0000 "));
     }
 

@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 
 /**
  * Fake people for the `local` profile. Every name, IC and phone number here is made up, and the phone
- * numbers use 03-0000 xxxx, which no real line has, so a WhatsApp account configured by mistake can't
- * message a stranger. Four hand-written patients carry the demo story; 26 more come from the generator.
+ * numbers use 03-0000 xxxx, which no real line has, so no real Telegram account can share a
+ * number that links to a demo patient. Four hand-written patients carry the demo story; 26 more come from the generator.
  */
 @Component
 @Profile("local")

@@ -51,6 +51,19 @@ public class PatientMessages {
             "zh", "谢谢您告诉我们。请保重！",
             "ta", "தெரிவித்ததற்கு நன்றி. உடல்நலத்தைக் கவனித்துக் கொள்ளுங்கள்!");
 
+    /** Sent once a patient links Telegram. zh and ta need fluent-reader review like the rest of this file. */
+    private static final Map<String, String> TELEGRAM_LINKED = Map.of(
+            "ms", "Telegram anda kini disambungkan ke Khabar. Klinik anda akan menghantar pelan rawatan dan semakan susulan di sini.",
+            "en", "Your Telegram is now connected to Khabar. Your clinic will send your care plan and check-ins here.",
+            "zh", "您的 Telegram 已连接到 Khabar。诊所会在这里发送您的护理计划和随访问候。",
+            "ta", "உங்கள் Telegram இப்போது Khabar உடன் இணைக்கப்பட்டுள்ளது. உங்கள் மருத்துவமனை பராமரிப்புத் திட்டத்தையும் பின்தொடர் செய்திகளையும் இங்கே அனுப்பும்.");
+
+    private static final Map<String, String> TEXT_ONLY = Map.of(
+            "ms", "Sila balas dalam bentuk teks.",
+            "en", "Please reply in text.",
+            "zh", "请用文字回复。",
+            "ta", "தயவுசெய்து உரையாகப் பதிலளிக்கவும்.");
+
     private final Messenger messenger;
     private final OutboundMessageRepository outbox;
     private final AdjustableClock clock;
@@ -91,6 +104,14 @@ public class PatientMessages {
     }
 
     /** In-app response for an idempotent retry; do not send this as a second outbound message. */
+    public static String telegramLinkedText(String language) {
+        return TELEGRAM_LINKED.getOrDefault(language, TELEGRAM_LINKED.get("en"));
+    }
+
+    public static String textOnlyText(String language) {
+        return TEXT_ONLY.getOrDefault(language, TEXT_ONLY.get("en"));
+    }
+
     public static String duplicateUpdateText(String language) {
         return Map.of(
                 "ms", "Kemas kini ini telah diterima dan tidak dihantar semula.",

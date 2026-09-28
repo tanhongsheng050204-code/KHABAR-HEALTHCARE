@@ -28,7 +28,7 @@ class PhoneIndexTest {
     }
 
     @Test
-    void normalisesToWhatsAppFormat() {
+    void normalisesToTelegramFormat() {
         assertThat(PhoneIndex.normalise("012-345 6789")).isEqualTo("60123456789");
         assertThat(PhoneIndex.normalise("+60 12-345 6789")).isEqualTo("60123456789");
         assertThat(PhoneIndex.normalise(null)).isNull();

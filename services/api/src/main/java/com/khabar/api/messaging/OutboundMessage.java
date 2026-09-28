@@ -28,7 +28,7 @@ public class OutboundMessage {
     @Column(nullable = false)
     private String kind;
 
-    /** whatsapp or outbox */
+    /** telegram or outbox */
     @Column(nullable = false)
     private String channel;
 

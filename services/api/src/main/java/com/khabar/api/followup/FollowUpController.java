@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
-/** A follow-up reply sent from the Khabar app. WhatsApp replies arrive through the webhook instead. */
+/** A follow-up reply sent from the Khabar app. Telegram replies arrive through the webhook instead. */
 @RestController
 @RequestMapping("/api/followup")
 public class FollowUpController {

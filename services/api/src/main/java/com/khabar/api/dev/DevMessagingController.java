@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** `local` profile only: send due check-ins now, and see what would have gone out on WhatsApp. */
+/** `local` profile only: send due check-ins now, and see what would have gone out on Telegram. */
 @RestController
 @RequestMapping("/dev")
 @Profile("local")

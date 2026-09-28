@@ -12,8 +12,8 @@ import java.util.HexFormat;
 
 /**
  * A "blind index" for phone numbers. Phones are stored encrypted with a random IV, so they cannot
- * be searched; this keyed hash of the normalised number lets an incoming WhatsApp message find its
- * patient without the number ever being stored in the clear.
+ * be searched; this keyed hash of the normalised number lets a number shared with the Telegram bot
+ * find its patient without the number ever being stored in the clear.
  */
 @Component
 public class PhoneIndex {
@@ -29,7 +29,7 @@ public class PhoneIndex {
         }
     }
 
-    /** Malaysian numbers in WhatsApp's form: digits only, country code 60 instead of the leading 0. */
+    /** Malaysian numbers as digits only, country code 60 instead of the leading 0 (Telegram's form without the +). */
     public static String normalise(String phone) {
         if (phone == null) {
             return null;

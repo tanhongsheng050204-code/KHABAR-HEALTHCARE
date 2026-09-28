@@ -35,6 +35,5 @@ khabar:
     allowed-origins: ${WEB_ALLOWED_ORIGINS}
   favoriot:
     device-secret: ${FAVORIOT_DEVICE_SECRET:}
-  whatsapp:
-    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
-    app-secret: ${WHATSAPP_APP_SECRET:}
+  telegram:
+    webhook-secret: ${KHABAR_TELEGRAM_WEBHOOK_SECRET:}
