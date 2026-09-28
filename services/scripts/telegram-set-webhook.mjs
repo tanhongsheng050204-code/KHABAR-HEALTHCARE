@@ -79,6 +79,12 @@ if (!token || !secret) {
   console.error("Both values are needed.");
   process.exit(1);
 }
+// BotFather's tokens look like 1234567890:AA... (the bot's number, a colon, then about 35 characters).
+if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(token)) {
+  const hint = /^bot\d/i.test(token) ? " Leave out the leading \"bot\"." : "";
+  console.error(`That does not look like a bot token (digits, a colon, then letters and digits); ${describe(token)}.${hint}`);
+  process.exit(1);
+}
 if (!/^[A-Za-z0-9_-]{1,256}$/.test(secret)) {
   console.error(`Telegram only accepts letters, digits, _ and - in the secret (1-256 characters); ${describe(secret)}.`);
   process.exit(1);
