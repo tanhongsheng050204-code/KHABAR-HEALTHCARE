@@ -72,7 +72,7 @@ Khabar is an AI platform for Malaysian clinics that follows the patient home. It
 | **During the visit** | The doctor types shorthand or speaks, and deterministic parsing structures those clinician-authored notes into a draft report · a **safety check** (allergy, interaction, duplicate across clinics and brands, herb clash, dose, pregnancy, invented drugs or symptoms, missing fields) · a **critical finding cannot be finalised** without a written reason, enforced in the screen, the API **and** the database |
 | **After the visit** | A summary in **BM, English, Chinese or Tamil**, sent on WhatsApp · **Ramadan fasting mode** (sahur and berbuka timings) · **caregiver access** that the patient grants and can revoke |
 | **Follow-up, days 1–30** | Check-ins on days 1, 3, 7, 14 and 30 · prototype reply routing in four languages · precautionary 999 wording for replies needing review · home blood pressure and glucose readings (manual, or a Favoriot-linked device) · the clinic's **"who needs you first"** call list |
-| **Privacy** | Access rules per role · encrypted sensitive fields · names and IC numbers removed before anything reaches the AI · a **"who viewed my record"** audit trail |
+| **Privacy** | Access rules per role · encrypted sensitive fields · the patient's registered name, IC and phone numbers removed before text reaches the AI (other names typed in free text are not detected, so patients are asked not to type them) · a **"who viewed my record"** audit trail |
 
 ---
 
@@ -249,7 +249,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 | **A gate enforced three times** | A critical finding is blocked in the UI, the API **and** a database rule, so a bug in one layer can't let it through. |
 | **Ramadan fasting mode** | Timings move to sahur and berbuka, and check-ins ask about low-blood-sugar symptoms. Doses stay the doctor's decision. |
 | **"Who viewed my record"** | Patients can see who opened their data, which clinic software rarely offers. |
-| **De-identified patient graph** | Neo4j holds each patient's medicines, herbs, conditions and visits under a random ID only. A test proves no name, IC or phone number can reach it. |
+| **De-identified patient graph** | Neo4j holds each patient's medicines, herbs, conditions and visits under a random ID only. A test proves the patient's name, IC and phone number cannot reach it. |
 
 **Comparison with the solutions named in Section 1**
 
@@ -307,7 +307,7 @@ flowchart LR
 ```
 
 **Rules the architecture enforces**
-1. **The agents never see identity.** Names, IC numbers and phone numbers are removed before any text reaches the AI, and the agents never touch Postgres.
+1. **The agents never see the patient's identity.** The API removes the patient's registered name and any IC or phone number before text reaches the AI, and the agents never touch Postgres. Other people's names typed in free text are not detected, so the screens ask patients not to type names.
 2. **Only the API holds the encryption key.** IC, phone, notes, replies, summaries, intake chats, medication lists and booking reasons are encrypted in the database.
 3. **Rules and data first, AI second.** Safety checks use DDInter and written rules wherever they exist.
 4. **Critical findings are blocked three times:** in the UI, in the API, and by a database rule.
@@ -341,7 +341,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 - **Bug bash (23 Sep):** 11 defects found and fixed, including one patient-safety issue: a reply confirmation that could be empty when triage was down now always includes 999 advice. See [docs/BUG_BASH_2026-09-23.md](docs/BUG_BASH_2026-09-23.md).
 - **Deployed rehearsal (23 Sep):** pre-visit → draft → safety review → finalise → summary → follow-up reply → call list, run on the public URLs with demo sign-in.
 - **Local rehearsal (25 Sep):** guided intake → pre-visit report → doctor visit and duplicate-safety gate → final summary → patient follow-up reply → doctor call list, plus caregiver access/revocation and agent-outage fallback, all exercised with fictional data. It did not verify the current public deployment, real sign-in, or graph/provider readiness; see [the local run record](docs/DEMO_RUN_2026-09-25_LOCAL.md).
-- **Privacy test:** a test proves that no name, IC number or phone number can reach the Neo4j graph, and the live AuraDB instance was checked directly.
+- **Privacy test:** a test proves that the patient's name, IC number and phone number cannot reach the Neo4j graph, and the live AuraDB instance was checked directly. The graph stores structured facts (conditions, medicines, matched symptom words), not free-text answers.
 - **Planned comprehension check:** a draft five-person summary-understanding protocol is in [`docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md`](docs/PATIENT_UNDERSTANDING_TEST_DRAFT.md). It is not approved or run; recruitment and results remain open. Any result will be reported as a small usability signal, not proof of clinical impact.
 
 ---

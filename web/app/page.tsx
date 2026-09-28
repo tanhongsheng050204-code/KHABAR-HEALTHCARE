@@ -144,7 +144,8 @@ export default function LandingPage() {
                   <LockKeyhole size={21} />
                   <h3>Privacy is part of the workflow</h3>
                   <p>
-                    Identity is removed before AI-assisted intake and triage.
+                    Your registered name, IC and phone number are removed
+                    before AI-assisted intake and triage.
                     Record access is logged and visible.
                   </p>
                 </div>
