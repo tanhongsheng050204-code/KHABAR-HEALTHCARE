@@ -158,6 +158,13 @@ test("the town's lights bob only while it is on screen and motion is on", async 
     .locator("#act5 [data-town]")
     .evaluate((el) => el.scrollIntoView({ block: "center" }));
   await expect.poll(running).toBeGreaterThan(0);
+  // Scrolled away, the lights rest; back on screen, they move again.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(running).toBe(0);
+  await page
+    .locator("#act5 [data-town]")
+    .evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await expect.poll(running).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Pause motion" }).click();
   await expect.poll(running).toBe(0);
 });

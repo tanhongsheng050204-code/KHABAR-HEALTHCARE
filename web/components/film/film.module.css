@@ -69,15 +69,17 @@
 .thread { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; --thread: var(--pandan-glow); }
 .thread[data-state="watch"] { --thread: var(--amber); }
 .thread[data-state="red"] { --thread: var(--cili); }
-.thread path { fill: none; stroke: var(--thread); stroke-linecap: round; vector-effect: non-scaling-stroke; transition: stroke 0.6s var(--ease-enter); }
+.thread path { fill: none; stroke: var(--thread); stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.film[data-motion="on"] .thread path { transition: stroke 0.6s var(--ease-enter); }
 /* A covering thread scales its stroke with the frame, so its pathLength dash matches what is drawn. */
 .thread[data-fit="cover"] path { vector-effect: none; }
 .threadLine { stroke-width: 3px; }
 .threadGlow { stroke-width: 12px; opacity: 0.45; filter: blur(5px); }
-/* A thread that needs attention breathes: its glow swells and fades. (A travelling dash would need
-   pathLength, which scales wrongly inside the small stretched thread SVGs.) */
-.film[data-motion="on"] .thread[data-pulse] .threadGlow { animation: threadBreathe 1.8s ease-in-out infinite; }
-@keyframes threadBreathe { 50% { opacity: 0.9; stroke-width: 18px; } }
+/* A thread that needs attention breathes: its glow brightens and fades, only while its act is on screen.
+   Opacity only: stroke-width on a blurred path would repaint the blur every frame. (A travelling dash would
+   need pathLength, which scales wrongly inside the small stretched thread SVGs.) */
+.film[data-motion="on"] [data-inview="true"] .thread[data-pulse] .threadGlow { animation: threadBreathe 1.8s ease-in-out infinite; }
+@keyframes threadBreathe { 50% { opacity: 0.95; } }
 /* Only the hero's thread is drawn on: its dash pattern spans the whole path (pathLength 1). At rest it
    runs from the door to Aminah; scrolling draws the rest. */
 .thread[data-thread="hero"] [data-draw] { stroke-dasharray: 1; stroke-dashoffset: 0.62; }
@@ -89,8 +91,8 @@
 
 /* ---------- Characters and bubbles ---------- */
 .aminah { display: block; width: 100%; height: auto; overflow: visible; }
-.film[data-motion="on"] .aminah [data-part="body"] { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe 3.6s ease-in-out infinite; }
-.film[data-motion="on"] .aminah [data-part="eye"] { transform-box: fill-box; transform-origin: center; animation: blink 4.8s infinite; }
+.film[data-motion="on"] [data-inview="true"] .aminah [data-part="body"] { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe 3.6s ease-in-out infinite; }
+.film[data-motion="on"] [data-inview="true"] .aminah [data-part="eye"] { transform-box: fill-box; transform-origin: center; animation: blink 4.8s infinite; }
 @keyframes breathe { 50% { transform: scaleY(1.012); } }
 @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
 
@@ -118,8 +120,9 @@
 .langs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .langs button {
   border: 1.5px solid var(--kopi); background: transparent; color: var(--kopi); border-radius: 999px;
-  padding: 9px 16px; font: 600 15px/1 inherit; cursor: pointer; transition: transform 0.25s var(--ease-enter), background 0.2s;
+  padding: 9px 16px; font: 600 15px/1 inherit; cursor: pointer;
 }
+.film[data-motion="on"] .langs button { transition: transform 0.25s var(--ease-enter), background 0.2s; }
 .langs button:hover { transform: translateY(-2px); }
 .langs button[aria-pressed="true"] { background: var(--kopi); color: var(--santan); }
 .actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
@@ -127,7 +130,7 @@
 .act0Greeting { position: absolute; bottom: 100%; left: 40%; width: max-content; max-width: 26ch; }
 .scrollCue { position: absolute; left: clamp(16px, 6vw, 96px); bottom: 28px; z-index: 5; margin: 0; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teh); }
 .scrollCue i { display: inline-block; width: 1px; height: 24px; background: currentColor; vertical-align: middle; margin-right: 10px; }
-.film[data-motion="on"] .scrollCue i { animation: cue 1.6s ease-in-out infinite; transform-origin: top; }
+.film[data-motion="on"] [data-inview="true"] .scrollCue i { animation: cue 1.6s ease-in-out infinite; transform-origin: top; }
 @keyframes cue { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
 @media (max-width: 760px) {
@@ -166,7 +169,8 @@
   /* The heading shrinks with the screen height and, uncapped, keeps to its two lines, so the day cards fit. */
   .act3[data-mode="animated"] .act3Head { max-width: none; }
   .act3[data-mode="animated"] .act3Head h2 { font-size: clamp(30px, 6vh, 64px); margin-bottom: clamp(12px, 2.5vh, 28px); }
-  .act3[data-mode="animated"] .act3Track { display: flex; width: max-content; gap: 56px; padding-right: 20vw; will-change: transform; }
+  .act3[data-mode="animated"] .act3Track { display: flex; width: max-content; gap: 56px; padding-right: 20vw; }
+  .act3[data-mode="animated"][data-inview="true"] .act3Track { will-change: transform; }
   .act3[data-mode="animated"] .day { width: min(420px, 34vw); flex: none; gap: clamp(8px, 1.6vh, 14px); }
   .act3[data-mode="animated"] .dayThread { margin-right: -56px; height: clamp(24px, 4vh, 40px); }
   .act3[data-mode="animated"] .dayCaption { min-height: 3.1em; } /* two lines, so every day's thread sits level */
@@ -182,8 +186,9 @@
 .choices { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
 .choices button {
   border: 1.5px solid var(--kopi); background: #fff; color: var(--kopi); border-radius: 14px; padding: 12px 18px;
-  font: 600 16px/1.2 inherit; cursor: pointer; transition: transform 0.2s var(--ease-enter), background 0.2s;
+  font: 600 16px/1.2 inherit; cursor: pointer;
 }
+.film[data-motion="on"] .choices button { transition: transform 0.2s var(--ease-enter), background 0.2s; }
 .choices button:hover { transform: translateY(-2px); }
 .choices button[aria-pressed="true"][data-state="ok"] { background: var(--pandan); border-color: var(--pandan); color: #fff; }
 .choices button[aria-pressed="true"][data-state="watch"] { background: #8a5a12; border-color: #8a5a12; color: #fff; }
@@ -269,7 +274,7 @@
 .thread[data-thread="to-nurul"] [data-draw] { stroke-dasharray: 1; }
 .kl { position: relative; z-index: 2; display: grid; grid-template-columns: 180px minmax(0, 360px) minmax(0, 1fr); gap: clamp(16px, 3vw, 40px); align-items: end; margin-top: 32px; }
 .nurul { display: block; width: 100%; height: auto; }
-.film[data-motion="on"] .nurul [data-part="eye"] { transform-box: fill-box; transform-origin: center; animation: blink 5.2s infinite; }
+.film[data-motion="on"] [data-inview="true"] .nurul [data-part="eye"] { transform-box: fill-box; transform-origin: center; animation: blink 5.2s infinite; }
 .act4 .phone { color: var(--kopi); }
 .plan { display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }
 .plan p { margin: 0; overflow-wrap: anywhere; }

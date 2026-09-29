@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { LockKeyhole } from "lucide-react";
 import { useFilm } from "../film-provider";
+import { useInView } from "../use-in-view";
 import { Backdrop } from "../backdrop";
 import { Thread } from "../thread";
 import { Phone } from "../characters/phone";
@@ -21,6 +22,7 @@ import styles from "../film.module.css";
 export function Act4Daughter() {
   const { motion, lang } = useFilm();
   const root = useRef<HTMLElement>(null);
+  const inView = useInView(root);
   const [shared, setShared] = useState(true);
 
   useGSAP(
@@ -49,6 +51,7 @@ export function Act4Daughter() {
     <section
       ref={root}
       id="act4"
+      data-inview={inView}
       data-anchor=""
       className={styles.act4}
       aria-labelledby="act4-title"

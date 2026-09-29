@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useFilm } from "../film-provider";
+import { useInView } from "../use-in-view";
 import { Backdrop } from "../backdrop";
 import { Thread, type ThreadState } from "../thread";
 import { Bubble, Phone } from "../characters/phone";
@@ -61,6 +62,7 @@ const CHOICES: {
 export function Act3ThirtyDays() {
   const { motion, lang } = useFilm();
   const root = useRef<HTMLElement>(null);
+  const inView = useInView(root);
   const stage = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const lab = useRef<HTMLDivElement>(null);
@@ -127,6 +129,7 @@ export function Act3ThirtyDays() {
     <section
       ref={root}
       id="act3"
+      data-inview={inView}
       className={styles.act3}
       data-mode={motion ? "animated" : "static"}
       aria-labelledby="act3-title"
@@ -245,7 +248,7 @@ export function Act3ThirtyDays() {
               d="M 0 20 C 30 0, 70 40, 100 20"
               viewBox="0 0 100 40"
               state={picked?.state ?? "ok"}
-              pulse
+              pulse={(picked?.state ?? "ok") !== "ok"}
             />
           </div>
         </div>

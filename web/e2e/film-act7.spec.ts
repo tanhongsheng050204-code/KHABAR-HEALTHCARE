@@ -89,6 +89,11 @@ test("the stars twinkle only while the finale is on screen and motion is on", as
   expect(await running()).toBe(0);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect.poll(running).toBeGreaterThan(0);
+  // Scrolled away, the lights rest; back on screen, they move again.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(running).toBe(0);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect.poll(running).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Pause motion" }).click();
   await expect.poll(running).toBe(0);
 });
@@ -109,6 +114,7 @@ test("no thread of light runs through the finale's words or buttons", async ({
       .locator("#act7")
       .getByRole("link", { name: "Explore the 30-day story" }),
   ]) {
+    await target.scrollIntoViewIfNeeded();
     const png = await page.screenshot({ clip: (await target.boundingBox())! });
     const { data, info } = await sharp(png)
       .raw()

@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -36,6 +37,7 @@ const FilmContext = createContext<Film>({
 export const useFilm = () => useContext(FilmContext);
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
+const noSubscription = () => () => {};
 function subscribe(onChange: () => void) {
   const list = window.matchMedia(REDUCED);
   list.addEventListener("change", onChange);
@@ -55,6 +57,12 @@ export function FilmProvider({
     subscribe,
     () => window.matchMedia(REDUCED).matches,
     () => true,
+  );
+  // Only the browser knows the device setting, so only it may say so: the served page makes no claim.
+  const hydrated = useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
   );
   const [paused, setPaused] = useState(false);
   const [lang, setLang] = useState<Lang>("ms");
@@ -76,6 +84,9 @@ export function FilmProvider({
   const early = useRef<Place | null>(null);
   useEffect(() => {
     if (motion || arrived.current) return;
+    // A reader whose device keeps motion off never gets pins, so there is no place to keep. (The device
+    // setting itself, not `reduced`, which reads true until hydration is over.)
+    if (window.matchMedia(REDUCED).matches) return;
     // On a reload or back/forward the browser restores the scroll position of the page as it was (pins
     // included), so that position, not the static layout under it, is the reader's place.
     const navigation = performance.getEntriesByType("navigation")[0] as
@@ -102,6 +113,15 @@ export function FilmProvider({
       if (target) target.scrollIntoView({ block: "start" });
       else if (early.current) bringBack(early.current);
     }
+  }, [motion]);
+
+  // Pausing must stop everything at once. React applies the acts' changes (a reveal now shown) before this
+  // element's data-motion="off", and a GSAP revert in between makes the browser restyle mid-way, so a few
+  // transitions start anyway; finish them before the next paint.
+  useLayoutEffect(() => {
+    if (motion) return;
+    for (const a of document.getAnimations())
+      if (a instanceof CSSTransition) a.finish();
   }, [motion]);
 
   // ScrollTrigger measures where each pin starts once, but content above a pin can grow afterwards (a
@@ -135,7 +155,7 @@ export function FilmProvider({
         className={`${styles.film} ${className ?? ""}`}
         data-motion={motion ? "on" : "off"}
       >
-        {children}
+        {/* First in keyboard order: the way to stop motion should not sit behind the whole story. */}
         <button
           type="button"
           className={styles.motionToggle}
@@ -156,8 +176,9 @@ export function FilmProvider({
             <Play size={13} aria-hidden />
           )}
           <span>Pause motion</span>
-          {reduced ? <small>Reduced motion is on</small> : null}
+          {hydrated && reduced ? <small>Reduced motion is on</small> : null}
         </button>
+        {children}
       </div>
     </FilmContext.Provider>
   );

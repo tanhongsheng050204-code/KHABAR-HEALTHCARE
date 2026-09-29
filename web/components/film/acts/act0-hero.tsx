@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight } from "lucide-react";
 import { useFilm } from "../film-provider";
+import { useInView } from "../use-in-view";
 import { Backdrop } from "../backdrop";
 import { Thread } from "../thread";
 import { Aminah } from "../characters/aminah";
@@ -27,6 +28,7 @@ const HERO_THREAD_TALL =
 export function Act0Hero() {
   const { motion, lang, setLang } = useFilm();
   const root = useRef<HTMLElement>(null);
+  const inView = useInView(root);
   const spacer = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -85,6 +87,7 @@ export function Act0Hero() {
       <section
         ref={root}
         id="act0"
+        data-inview={inView}
         data-anchor=""
         className={styles.act0}
         aria-labelledby="act0-title"
