@@ -404,7 +404,7 @@ test("the acts run in story order", async ({
   const order = await page.evaluate(() =>
     [...document.querySelectorAll("main section[id^='act']")].map((s) => s.id),
   );
-  expect(order).toEqual(["act0", "act1", "act2", "act3", "act4", "act5"]);
+  expect(order).toEqual(["act0", "act1", "act2", "act3", "act4", "act5", "act6"]);
 });
 
 test("the thirty-day pan pins exactly at the top even after the content above it grows", async ({
@@ -490,7 +490,7 @@ test("every act describes its illustration for screen readers", async ({
   page,
 }) => {
   await page.goto("/preview/film");
-  for (const id of ["act0", "act1", "act2", "act3", "act4", "act5"]) {
+  for (const id of ["act0", "act1", "act2", "act3", "act4", "act5", "act6"]) {
     await expect(
       page.locator(`#${id}`).getByText(/^Illustration: /),
       id,
