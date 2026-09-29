@@ -25,9 +25,15 @@ FORMS = r"(?:T\.|Tab\.?|Tabs\.?|Cap\.?|Caps\.?|Syr\.?|Inj\.?)"
 
 _STRENGTH = re.compile(r"(\d+(?:\.\d+)?)\s*(mg|mcg|g)\b", re.IGNORECASE)
 _UNITS = re.compile(r"\b(\d+(?:\.\d+)?)/1\b")
-_CODE = re.compile(r"\b(" + "|".join(sorted(FREQUENCIES, key=len, reverse=True)) + r"|PRN)\b")
+_CODES = r"\b(" + "|".join(sorted(FREQUENCIES, key=len, reverse=True)) + r"|PRN)\b"
+_CODE = re.compile(_CODES)
 _TIMING = re.compile(r"\b(AC|PC)\b")
+# Doctors also type codes in lower or mixed case ("bd pc"). Those are only trusted on a line that is clearly a
+# medicine order, so everyday words such as "on" in "Review on 12 Oct" never become a frequency.
+_CODE_ANY_CASE = re.compile(_CODES, re.IGNORECASE)
+_TIMING_ANY_CASE = re.compile(r"\b(AC|PC)\b", re.IGNORECASE)
 _LEADING = re.compile(r"^\s*(?:\d+[.)]\s*)?(?:" + FORMS + r"\s*)?", re.IGNORECASE)
+_FORM_START = re.compile(r"^\s*(?:\d+[.)]\s*)?" + FORMS + r"(?:\s|$)", re.IGNORECASE)
 
 
 class ParsedRx(BaseModel):
@@ -53,11 +59,13 @@ def _to_mg(value: float, unit: str) -> float:
 
 def parse_line(line: str) -> Optional[ParsedRx]:
     """Returns None when the line is not a prescription (no frequency code or PRN)."""
-    codes = _CODE.findall(line)
+    strength = _STRENGTH.search(line)
+    order = bool(strength or _FORM_START.match(line))
+    code_re = _CODE_ANY_CASE if order else _CODE
+    codes = [c.upper() for c in code_re.findall(line)]
     if not codes:
         return None
-    strength = _STRENGTH.search(line)
-    name_end = strength.start() if strength else _CODE.search(line).start()
+    name_end = strength.start() if strength else code_re.search(line).start()
     name = _LEADING.sub("", line[:name_end]).strip(" .-")
     if not name or not re.search(r"[A-Za-z]", name):
         return None
@@ -72,7 +80,7 @@ def parse_line(line: str) -> Optional[ParsedRx]:
     if frequency:
         rx.times_per_day, rx.times_of_day = FREQUENCIES[frequency][0], list(FREQUENCIES[frequency][1])
     rx.as_needed = "PRN" in codes
-    timing = _TIMING.search(line)
+    timing = (_TIMING_ANY_CASE if order else _TIMING).search(line)
     if timing:
-        rx.timing = TIMINGS[timing.group(1)]
+        rx.timing = TIMINGS[timing.group(1).upper()]
     return rx

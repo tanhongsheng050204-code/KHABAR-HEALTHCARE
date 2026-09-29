@@ -163,3 +163,12 @@ def test_new_sentences_after_a_spoken_diagnosis_are_their_own_items():
 
 def test_a_typed_plan_with_a_second_sentence_keeps_it():
     assert draft_from_notes("Plan: continue. Monitor BP OD").plan == "continue. Monitor BP OD"
+
+
+def test_a_lower_case_prescription_line_reaches_the_draft():
+    from agents.report_agent import draft_from_notes
+
+    draft = draft_from_notes("Dx: T2DM\nTab metformin 500mg bd pc\nReview on 12 Oct")
+    assert [(r.name, r.times_of_day, r.timing) for r in draft.prescription] == [
+        ("metformin", ["morning", "night"], "after_food"),
+    ]

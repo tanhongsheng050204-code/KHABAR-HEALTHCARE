@@ -47,3 +47,38 @@ def test_before_food_and_as_needed():
 def test_a_line_without_a_frequency_is_not_a_prescription():
     assert parse_line("Dx: T2DM, HTN") is None
     assert parse_line("TCA 2/52") is None
+
+
+# Doctors often type shorthand in lower or mixed case. A code the parser did not recognise used to drop the
+# whole medicine from the draft (so from the safety check and the patient summary), or silently lose
+# "after food".
+@pytest.mark.parametrize("line, times, when, timing", [
+    ("Tab metformin 500mg bd pc", 2, ["morning", "night"], "after_food"),
+    ("T. Metformin 500mg 1/1 Bd Pc", 2, ["morning", "night"], "after_food"),
+    ("Tab metformin 500mg BD pc", 2, ["morning", "night"], "after_food"),
+    ("Cap omeprazole 20mg od ac", 1, ["morning"], "before_food"),
+    ("Tab simvastatin 20mg on", 1, ["night"], None),
+    ("tab amlodipine 5mg tds", 3, ["morning", "afternoon", "night"], None),
+])
+def test_lower_and_mixed_case_codes_on_a_prescription_line(line, times, when, timing):
+    rx = parse_line(line)
+    assert rx is not None, line
+    assert rx.times_per_day == times
+    assert rx.times_of_day == when
+    assert rx.timing == timing
+
+
+def test_lower_case_as_needed():
+    rx = parse_line("tab paracetamol 1g prn")
+    assert rx.as_needed and rx.strength_mg == 1000
+
+
+@pytest.mark.parametrize("sentence", [
+    "Review on 12 Oct",
+    "Patient is doing well on current meds",
+    "Check her sugar on each visit",
+    "Advised to eat before exercise, rest well",
+])
+def test_ordinary_sentences_with_code_like_words_are_not_prescriptions(sentence):
+    # Lower-case codes only count on a line that is clearly a medicine order (a strength or a dosage form).
+    assert parse_line(sentence) is None
