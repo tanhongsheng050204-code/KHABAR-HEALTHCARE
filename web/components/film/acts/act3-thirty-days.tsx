@@ -9,59 +9,25 @@ import { Thread, type ThreadState } from "../thread";
 import { Bubble, Phone } from "../characters/phone";
 import {
   CHECK_IN,
-  FEELING_BETTER,
-  MEDICINE_TAKEN,
+  DAY_REPLIES,
+  REPLY_STATE,
   REPLY_TEXT,
-  THANK_YOU,
   answer,
-  type Lang,
   type Reply,
 } from "../messages";
 import { duration, ease, media, SCRUB } from "../tokens";
 import styles from "../film.module.css";
 
-type Day = {
-  day: number;
-  reply: Record<Lang, string>;
-  state: ThreadState;
-  caption: string;
+// Fictional. Captions never promise a call: a reply goes onto the clinic's follow-up list. Replies and the
+// thread colour for each day come from DAY_REPLIES, which a test checks against the triage word lists.
+const CAPTIONS: Record<number, string> = {
+  1: "The first check-in arrives in the language she thinks in.",
+  3: "A two-word reply is enough. The thread stays green.",
+  7: "“Pening” turns the thread amber, and her reply goes onto the clinic’s follow-up list.",
+  14: "A week later she is feeling better. Every reply stays on her record.",
+  30: "Thirty days, one thread. Her follow-up closes on her record.",
 };
-
-// Fictional. Captions never promise a call: a reply goes onto the clinic's follow-up list.
-const DAYS: Day[] = [
-  {
-    day: 1,
-    reply: MEDICINE_TAKEN,
-    state: "ok",
-    caption: "The first check-in arrives in the language she thinks in.",
-  },
-  {
-    day: 3,
-    reply: REPLY_TEXT.ok,
-    state: "ok",
-    caption: "A two-word reply is enough. The thread stays green.",
-  },
-  {
-    day: 7,
-    reply: REPLY_TEXT.dizzy,
-    state: "watch",
-    caption:
-      "“Pening” turns the thread amber, and her reply goes onto the clinic’s follow-up list.",
-  },
-  {
-    day: 14,
-    reply: FEELING_BETTER,
-    state: "ok",
-    caption:
-      "A week later she is feeling better. Every reply stays on her record.",
-  },
-  {
-    day: 30,
-    reply: THANK_YOU,
-    state: "ok",
-    caption: "Thirty days, one thread. Her follow-up closes on her record.",
-  },
-];
+const DAYS = DAY_REPLIES.map((d) => ({ ...d, caption: CAPTIONS[d.day] }));
 
 const CHOICES: {
   id: Reply;
@@ -72,21 +38,21 @@ const CHOICES: {
   {
     id: "ok",
     label: "I'm okay",
-    state: "ok",
+    state: REPLY_STATE.ok,
     outcome:
       "Khabar thanks her. Nothing else is needed, so the thread stays green.",
   },
   {
     id: "dizzy",
     label: "A bit dizzy",
-    state: "watch",
+    state: REPLY_STATE.dizzy,
     outcome:
       "Khabar tells her the clinic may not have seen it yet and gives the 999 advice. Her reply goes onto the clinic’s follow-up list, and the thread turns amber.",
   },
   {
     id: "chest",
     label: "Chest pain",
-    state: "red",
+    state: REPLY_STATE.chest,
     outcome:
       "Chest pain gets the 999 advice straight away. Her reply goes to the top of the clinic’s follow-up list, and the thread turns red.",
   },

@@ -11,7 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "test:assets": "node --test scripts/film-assets.test.mjs"
+    "test:unit": "node --test scripts/film-assets.test.mjs scripts/triage-consistency.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

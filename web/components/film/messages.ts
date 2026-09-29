@@ -44,7 +44,7 @@ export const REPLY_TEXT: Record<Reply, Record<Lang, string>> = {
     ms: "Okay, sihat.",
     en: "I'm okay.",
     zh: "我很好。",
-    ta: "நான் நலமாக இருக்கிறேன்.",
+    ta: "நான் நலம்.",
   },
   dizzy: {
     ms: "Pening sikit hari ini.",
@@ -62,21 +62,21 @@ export const REPLY_TEXT: Record<Reply, Record<Lang, string>> = {
 
 export const MEDICINE_TAKEN: Record<Lang, string> = {
   ms: "Dah makan ubat.",
-  en: "I've taken my medicine.",
-  zh: "药已经吃了。",
-  ta: "மருந்து சாப்பிட்டேன்.",
+  en: "Took my medicine, all good.",
+  zh: "吃了药，很好。",
+  ta: "மருந்து சாப்பிட்டேன், நலம்.",
 };
 export const FEELING_BETTER: Record<Lang, string> = {
   ms: "Dah okay, terima kasih.",
-  en: "Better now, thank you.",
-  zh: "好多了，谢谢。",
-  ta: "இப்போது பரவாயில்லை, நன்றி.",
+  en: "I'm okay now, thank you.",
+  zh: "没事了，谢谢。",
+  ta: "இப்போது நலம், நன்றி.",
 };
 export const THANK_YOU: Record<Lang, string> = {
-  ms: "Terima kasih, Khabar.",
-  en: "Thank you, Khabar.",
-  zh: "谢谢你，Khabar。",
-  ta: "நன்றி, Khabar.",
+  ms: "Sihat, terima kasih Khabar.",
+  en: "All good, thank you Khabar.",
+  zh: "很好，谢谢你 Khabar。",
+  ta: "நலம், நன்றி Khabar.",
 };
 
 /** PatientMessages.THANKS */
@@ -114,3 +114,29 @@ export function answer(reply: Reply, lang: Lang): string {
   if (reply === "dizzy") return `${WAITING[lang]} ${EMERGENCY[lang]}`;
   return URGENT[lang];
 }
+
+/** The thread colour a reply earns: ok, watch or red (what the word lists give; review is never shown). */
+export type ReplyLevel = "ok" | "watch" | "red";
+
+/** Reply for Aminah: the level each choice gets, which the thread and outcome show. */
+export const REPLY_STATE: Record<Reply, ReplyLevel> = {
+  ok: "ok",
+  dizzy: "watch",
+  chest: "red",
+};
+
+/**
+ * Aminah's reply on each day of the pan, and the thread colour shown for it. A test runs every reply
+ * through services/agents/data/triage_words.json, so a reply shown as green must really be triaged ok.
+ */
+export const DAY_REPLIES: {
+  day: number;
+  reply: Record<Lang, string>;
+  state: ReplyLevel;
+}[] = [
+  { day: 1, reply: MEDICINE_TAKEN, state: "ok" },
+  { day: 3, reply: REPLY_TEXT.ok, state: "ok" },
+  { day: 7, reply: REPLY_TEXT.dizzy, state: "watch" },
+  { day: 14, reply: FEELING_BETTER, state: "ok" },
+  { day: 30, reply: THANK_YOU, state: "ok" },
+];
