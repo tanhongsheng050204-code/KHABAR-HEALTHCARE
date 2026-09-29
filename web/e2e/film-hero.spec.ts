@@ -147,3 +147,18 @@ for (const size of [
     expect(await threadPixelAt(page, 0.95)).toBe(true);
   });
 }
+
+test("the keyboard focus ring is dark enough to see on the cream background (3:1)", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  const chip = page.getByRole("button", { name: "中文" });
+  await chip.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab"); // keyboard focus, so :focus-visible applies
+  await expect(chip).toBeFocused();
+  // kopi #3B2A20 on santan #F6EFE4 is about 13:1; the old amber ring was 2.06:1.
+  expect(await chip.evaluate((el) => getComputedStyle(el).outlineColor)).toBe(
+    "rgb(59, 42, 32)",
+  );
+});

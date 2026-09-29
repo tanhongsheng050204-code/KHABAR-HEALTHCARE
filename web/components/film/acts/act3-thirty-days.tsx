@@ -96,7 +96,7 @@ export function Act3ThirtyDays() {
         gsap.utils.toArray<HTMLElement>("article[data-day]").forEach((card) => {
           gsap.from(card, {
             y: 40,
-            autoAlpha: 0,
+            opacity: 0, // opacity only: autoAlpha would set visibility:hidden and hide the card from screen readers
             duration: duration.enter,
             ease: ease.enter,
             scrollTrigger: { trigger: card, start: "top 85%", once: true },
@@ -113,7 +113,7 @@ export function Act3ThirtyDays() {
       if (!motion || !choice) return;
       gsap.from("[data-new]", {
         scale: 0.7,
-        autoAlpha: 0,
+        opacity: 0,
         duration: duration.pop,
         ease: ease.pop,
         stagger: 0.18,

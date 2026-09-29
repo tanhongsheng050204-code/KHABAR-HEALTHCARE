@@ -25,7 +25,8 @@
 .film :where(h1, h2) em { font-style: italic; color: var(--pandan); }
 .film [lang|="zh"] { font-family: var(--film-zh), var(--film-body), sans-serif; }
 .film [lang="ta"] { font-family: var(--film-ta), var(--film-body), sans-serif; }
-.film :where(a, button):focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; border-radius: 10px; }
+/* Kopi on santan is ~13:1; the focus ring must reach 3:1 against the page (WCAG 1.4.11). */
+.film :where(a, button):focus-visible { outline: 3px solid var(--kopi); outline-offset: 3px; border-radius: 10px; }
 
 .srOnly {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

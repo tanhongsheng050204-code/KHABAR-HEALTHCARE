@@ -186,3 +186,12 @@ test("a phone turned sideways stacks the days instead of pinning a pan taller th
   );
   expect(three.top).toBeGreaterThanOrEqual(one.bottom);
 });
+
+test("screen readers can reach every day before it is scrolled to", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
+  // Hidden elements (visibility:hidden) drop out of the accessibility tree; fading must not hide them.
+  await expect(page.getByRole("heading", { name: "Day 30" })).toHaveCount(1);
+});
