@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { useFilm } from "../film-provider";
+import { alreadyPassed } from "../already-passed";
 import { Backdrop } from "../backdrop";
 import { htmlLang } from "../messages";
 import { PRODUCT_WORDS } from "../product-words";
@@ -24,7 +25,7 @@ export function Act1Paper() {
     LINES.map(() => null),
   );
   const [reached, setReached] = useState<boolean[]>(() =>
-    LINES.map(() => false),
+    LINES.map((_, i) => alreadyPassed(`#act1 [data-rx-line="${i}"]`, 0.8)),
   );
 
   useGSAP(

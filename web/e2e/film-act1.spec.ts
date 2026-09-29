@@ -10,7 +10,9 @@ test.describe("with reduced motion", () => {
   }) => {
     await page.goto("/preview/film");
     await expect(lines(page)).toHaveCount(3);
-    await expect(lines(page).first()).toContainText("Tab metformin 500mg bd pc");
+    await expect(lines(page).first()).toContainText(
+      "Tab metformin 500mg bd pc",
+    );
     await expect(lines(page).first()).toContainText(
       "1 biji, pagi dan malam, selepas makan.",
     );
@@ -33,6 +35,10 @@ test("a line clicked before it is reached keeps the reader's choice", async ({
   page,
 }) => {
   await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
   const third = lines(page).nth(2);
   // dispatchEvent clicks without scrolling, so the line is clicked before its scroll reveal can run.
   await third.dispatchEvent("click"); // reveal it early
@@ -59,8 +65,28 @@ test("the keyboard toggles a line with Enter", async ({ page }) => {
   await page.goto("/preview/film");
   await page.locator("#act1").scrollIntoViewIfNeeded();
   const second = lines(page).nth(1);
-  await expect(second).toHaveAttribute("aria-pressed", "true", { timeout: 5000 });
+  await expect(second).toHaveAttribute("aria-pressed", "true", {
+    timeout: 5000,
+  });
   await second.focus();
   await page.keyboard.press("Enter");
   await expect(second).toHaveAttribute("aria-pressed", "false");
+});
+
+test("switching language after a line is revealed changes her words and keeps the shorthand", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  const first = lines(page).nth(0);
+  await first.scrollIntoViewIfNeeded();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  const shorthand = await first.locator("code").textContent();
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await expect(first).toContainText("after food.");
+  await expect(first.locator("code")).toHaveText(shorthand!);
+  await expect(first).toHaveAttribute("aria-pressed", "true");
 });

@@ -14,6 +14,7 @@ import {
   REPLY_STATE,
   REPLY_TEXT,
   answer,
+  htmlLang,
   type Reply,
 } from "../messages";
 import { duration, ease, media, SCRUB } from "../tokens";
@@ -24,7 +25,6 @@ import styles from "../film.module.css";
 const CAPTIONS: Record<number, string> = {
   1: "The first check-in arrives in the language she thinks in.",
   3: "A two-word reply is enough. The thread stays green.",
-  7: "“Pening” turns the thread amber, and her reply goes onto the clinic’s follow-up list.",
   14: "A week later she is feeling better. Every reply stays on her record.",
   30: "Thirty days, one thread. Her follow-up closes on her record.",
 };
@@ -167,7 +167,17 @@ export function Act3ThirtyDays() {
                   {d.reply[lang]}
                 </Bubble>
               </Phone>
-              <p className={styles.dayCaption}>{d.caption}</p>
+              <p className={styles.dayCaption}>
+                {d.day === 7 ? (
+                  <>
+                    “<span lang={htmlLang(lang)}>{d.reply[lang]}</span>” turns
+                    the thread amber, and her reply goes onto the clinic’s
+                    follow-up list.
+                  </>
+                ) : (
+                  d.caption
+                )}
+              </p>
               <div className={styles.dayThread}>
                 <Thread
                   name={`day-${d.day}`}

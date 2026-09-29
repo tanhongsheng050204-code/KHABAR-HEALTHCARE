@@ -197,3 +197,14 @@ test("screen readers can reach every day before it is scrolled to", async ({
   // Hidden elements (visibility:hidden) drop out of the accessibility tree; fading must not hide them.
   await expect(page.getByRole("heading", { name: "Day 30" })).toHaveCount(1);
 });
+
+test("the Day 7 caption quotes her reply in the chosen language", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  const caption = page.locator("article[data-day='7'] p").last();
+  await expect(caption).toContainText("“Pening sikit hari ini.”");
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await expect(caption).toContainText("“A bit dizzy today.”");
+  await expect(caption).not.toContainText("Pening");
+});

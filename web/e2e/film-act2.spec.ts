@@ -87,3 +87,75 @@ test("pausing the film also stops the app preview's own animations", async ({
   );
   expect(running).toBe(0);
 });
+
+test("pausing part-way through the reveal shows the draft and stamp at once", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.locator("#act2 [data-visit]").scrollIntoViewIfNeeded();
+  await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "true");
+  // The stamp lands 0.9 s after the draft; pause before it does.
+  await page.getByRole("button", { name: "Pause motion" }).click();
+  const opacities = await page
+    .locator("#act2 [data-stamp], #act2 [data-draft-row]")
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).opacity));
+  expect(opacities).toEqual(["1", "1", "1"]);
+});
+
+test("the stamp does not pretend to be a live announcement", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("#act2 [data-stamp]")).not.toHaveAttribute(
+    "role",
+    "status",
+  );
+});
+
+test("a reload part-way down the page does not hide and re-show what the reader already passed", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.locator("#act6 [data-principle]").first().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(800);
+  await page.addInitScript(() => {
+    const w = window as unknown as { hidden: string[] };
+    w.hidden = [];
+    new MutationObserver((changes) => {
+      for (const c of changes) {
+        const el = c.target as HTMLElement;
+        // Hiding what is still below the screen is fine; hiding what the reader is looking at is not.
+        const onScreen = el.getBoundingClientRect().top < window.innerHeight;
+        if (
+          onScreen &&
+          (el.getAttribute("data-shown") === "false" ||
+            el.getAttribute("data-revealed") === "false")
+        )
+          w.hidden.push(el.id || el.tagName);
+      }
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-shown", "data-revealed"],
+    });
+  });
+  await page.reload();
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.waitForTimeout(800);
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { hidden: string[] }).hidden,
+    ),
+  ).toEqual([]);
+});

@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useFilm } from "../film-provider";
+import { alreadyPassed } from "../already-passed";
 import { Backdrop } from "../backdrop";
 import styles from "../film.module.css";
 
@@ -35,7 +36,9 @@ export function Act6Trust() {
   const { motion } = useFilm();
   const root = useRef<HTMLElement>(null);
   const [reached, setReached] = useState<boolean[]>(() =>
-    PRINCIPLES.map(() => false),
+    PRINCIPLES.map((_, i) =>
+      alreadyPassed(`#act6 [data-principle]:nth-of-type(${i + 1})`, 0.85),
+    ),
   );
 
   useGSAP(

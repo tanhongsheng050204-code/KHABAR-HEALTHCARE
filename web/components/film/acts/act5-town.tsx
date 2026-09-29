@@ -198,7 +198,7 @@ export function Act5Town() {
               }
               aria-pressed={selected === h.id}
               aria-label={`${h.name}’s home`}
-              onClick={() => setSelected(h.id)}
+              onClick={() => setSelected((was) => (was === h.id ? null : h.id))}
             >
               {box}
             </button>

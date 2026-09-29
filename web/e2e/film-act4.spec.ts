@@ -64,3 +64,44 @@ test("the thread to Nurul crosses no words: it runs in its own strip above her",
   });
   expect(hits).toEqual([]);
 });
+
+/** WCAG contrast ratio between two colours given as "rgb(r, g, b)" or "#rrggbb". */
+function contrast(a: string, b: string) {
+  const rgb = (c: string) =>
+    c.startsWith("#")
+      ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16))
+      : c.match(/\d+/g)!.slice(0, 3).map(Number);
+  const lum = (c: string) => {
+    const [r, g, b] = rgb(c).map((v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
+test("the consent switch reads well: bold label, and an off track that stands out from the night", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  const share = page.getByRole("switch", { name: SHARE });
+  await share.click();
+  await expect(share).toHaveAttribute("aria-checked", "false");
+  await page.waitForTimeout(400);
+  const style = await share.evaluate((el) => {
+    const track = el.querySelector("span")!;
+    return {
+      weight: getComputedStyle(el).fontWeight,
+      track: getComputedStyle(track).backgroundColor,
+    };
+  });
+  expect(style.weight).toBe("600");
+  for (const night of ["#1e2a44", "#2b2447"])
+    expect(contrast(style.track, night)).toBeGreaterThanOrEqual(3);
+});

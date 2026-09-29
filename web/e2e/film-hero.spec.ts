@@ -199,3 +199,15 @@ for (const size of [
     }
   });
 }
+
+test("the language chips and reply buttons use their bold label weight", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  for (const name of ["EN", "A bit dizzy"]) {
+    const weight = await page
+      .getByRole("button", { name, exact: true })
+      .evaluate((el) => getComputedStyle(el).fontWeight);
+    expect(weight, name).toBe("600");
+  }
+});

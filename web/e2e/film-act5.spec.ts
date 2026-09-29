@@ -408,3 +408,40 @@ test("the emergency reply keeps the note that the clinic may not have seen it ye
     "may not have seen it yet",
   );
 });
+
+test("pressing the selected home again clears the selection", async ({
+  page,
+}) => {
+  await settledTown(page);
+  await roof(page, "Mr Muthu").click();
+  await expect(home(page, "Mr Muthu")).toHaveAttribute("aria-pressed", "true");
+  await roof(page, "Mr Muthu").click();
+  await expect(home(page, "Mr Muthu")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#act5 [data-home-status]")).toContainText(
+    "Select a home",
+  );
+});
+
+test("the amber and red threads stand out from the board (3:1)", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  const strokes = await page
+    .locator("#act5 [data-town-thread]:not([data-state='ok'])")
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).stroke));
+  expect(strokes).toHaveLength(4);
+  const lum = (c: string) => {
+    const [r, g, b] = c
+      .match(/\d+/g)!
+      .slice(0, 3)
+      .map((v) => {
+        const s = Number(v) / 255;
+        return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  // The board runs from #f7fbf8 to #e3efe8; the lighter end is the harder one.
+  const board = lum("rgb(247, 251, 248)");
+  for (const s of strokes)
+    expect((board + 0.05) / (lum(s) + 0.05), s).toBeGreaterThanOrEqual(3);
+});

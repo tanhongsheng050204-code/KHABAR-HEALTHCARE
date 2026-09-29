@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ShieldAlert } from "lucide-react";
 import { useFilm } from "../film-provider";
+import { alreadyPassed } from "../already-passed";
 import { Backdrop } from "../backdrop";
 import { PRODUCT_WORDS } from "../product-words";
 import styles from "../film.module.css";
@@ -31,7 +32,9 @@ const TIMING: Record<string, string> = {
 export function Act2Visit() {
   const { motion } = useFilm();
   const root = useRef<HTMLElement>(null);
-  const [reached, setReached] = useState(false);
+  const [reached, setReached] = useState(() =>
+    alreadyPassed("#act2 [data-visit]", 0.7),
+  );
   const previewSlot = useRef<HTMLDivElement>(null);
   const [previewNear, setPreviewNear] = useState(false);
 
@@ -121,13 +124,15 @@ export function Act2Visit() {
                     {row.strengthMg === null ? "—" : `${row.strengthMg} mg`}
                   </td>
                   <td>{row.timesPerDay ?? "—"}</td>
-                  <td>{row.timing ? TIMING[row.timing] : "—"}</td>
+                  <td>
+                    {row.timing ? (TIMING[row.timing] ?? row.timing) : "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </figure>
-        <div className={styles.stamp} data-stamp="" role="status">
+        <div className={styles.stamp} data-stamp="">
           <ShieldAlert size={22} aria-hidden />
           <div>
             <strong>
