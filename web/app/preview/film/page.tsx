@@ -4,6 +4,7 @@ import { Brand } from "@/components/brand";
 import { FilmProvider } from "@/components/film/film-provider";
 import { fontVariables } from "@/components/film/fonts";
 import { Act0Hero } from "@/components/film/acts/act0-hero";
+import { Act1Paper } from "@/components/film/acts/act1-paper";
 import { Act3ThirtyDays } from "@/components/film/acts/act3-thirty-days";
 import styles from "@/components/film/film.module.css";
 
@@ -26,6 +27,7 @@ export default function FilmPreviewPage() {
       </header>
       <main id="main-content">
         <Act0Hero />
+        <Act1Paper />
         <Act3ThirtyDays />
       </main>
       <footer className={styles.footer}>

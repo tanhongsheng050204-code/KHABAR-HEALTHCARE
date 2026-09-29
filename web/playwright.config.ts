@@ -4,6 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
+  // More browsers than this at once starve the machine and tests time out waiting, not failing.
+  workers: 3,
   reporter: [["list"]],
   use: { baseURL: "http://localhost:3100", trace: "retain-on-failure" },
   projects: [
