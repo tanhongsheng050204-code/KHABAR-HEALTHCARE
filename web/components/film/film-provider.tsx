@@ -66,12 +66,20 @@ export function FilmProvider({
   // motion, a visitor who arrived by a link such as #act3 is taken there again, because pinning added
   // scroll length above it after the browser's own jump. Child effects (the acts' timelines) run first.
   const keep = useRef<HTMLElement | null>(null);
+  // The anchor last brought back, and the scroll position it left: toggling again without scrolling in
+  // between keeps that same anchor, instead of re-reading a layout that places it differently.
+  const restored = useRef<{ el: HTMLElement; y: number } | null>(null);
   const arrived = useRef(false);
   // Until motion first switches on, note what a reader who scrolls early is looking at: on a slow phone
   // the pins attach seconds after the page appears, and would otherwise push them somewhere else.
   const early = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (motion || arrived.current) return;
+    // On a reload or back/forward the browser restores the scroll position of the page as it was (pins
+    // included), so that position, not the static layout under it, is the reader's place.
+    const navigation = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
+    if (navigation && navigation.type !== "navigate") return;
     const note = () => {
       early.current = window.scrollY > 0 ? mostVisibleAnchor() : null;
     };
@@ -86,6 +94,7 @@ export function FilmProvider({
     keep.current = null;
     if (kept) {
       bringBack(kept);
+      restored.current = { el: kept, y: window.scrollY };
     } else if (motion && !arrived.current) {
       arrived.current = true;
       const target = hashTarget();
@@ -105,7 +114,11 @@ export function FilmProvider({
           type="button"
           className={styles.motionToggle}
           onClick={() => {
-            keep.current = mostVisibleAnchor();
+            const last = restored.current;
+            keep.current =
+              last && Math.abs(window.scrollY - last.y) < 2
+                ? last.el
+                : mostVisibleAnchor();
             setPaused((was) => !was);
           }}
           disabled={reduced}
@@ -124,17 +137,32 @@ export function FilmProvider({
   );
 }
 
-/** The [data-anchor] element with the largest area on screen, or null. */
+/**
+ * The [data-anchor] element the reader is looking at: the one under the middle of the screen (the smallest,
+ * if several are), else the visible one nearest the middle. Area alone ties when two day cards are both
+ * fully on screen, and then picks the wrong one.
+ */
 function mostVisibleAnchor(): HTMLElement | null {
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
   let best: HTMLElement | null = null;
-  let bestArea = 0;
+  let bestScore = Infinity;
   for (const el of document.querySelectorAll<HTMLElement>("[data-anchor]")) {
     const r = el.getBoundingClientRect();
-    const w = Math.min(r.right, window.innerWidth) - Math.max(r.left, 0);
-    const h = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
-    if (w > 0 && h > 0 && w * h > bestArea) {
+    const left = Math.max(r.left, 0);
+    const right = Math.min(r.right, window.innerWidth);
+    const top = Math.max(r.top, 0);
+    const bottom = Math.min(r.bottom, window.innerHeight);
+    if (right <= left || bottom <= top) continue;
+    const covers =
+      r.left <= cx && cx <= r.right && r.top <= cy && cy <= r.bottom;
+    // Covering the middle always beats not covering it; then smaller (more specific) or nearer wins.
+    const score = covers
+      ? -1e12 + r.width * r.height
+      : Math.hypot((left + right) / 2 - cx, (top + bottom) / 2 - cy);
+    if (score < bestScore) {
       best = el;
-      bestArea = w * h;
+      bestScore = score;
     }
   }
   return best;
