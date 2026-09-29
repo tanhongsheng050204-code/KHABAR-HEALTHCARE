@@ -61,10 +61,10 @@ export function Act5Town() {
   const chosen = HOMES.find((h) => h.id === selected);
   const stage = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
-  const { canTilt, tilting, refused, toggleDeviceTilt, turn } = useTilt(
-    stage,
-    world,
-  );
+  const { canTilt, tilting, refused, unavailable, toggleDeviceTilt, turn } =
+    useTilt(stage, world);
+  // Once tilt has been refused or found missing, stop suggesting it.
+  const offerTilt = canTilt && !refused && !unavailable;
 
   useGSAP(
     () => {
@@ -245,7 +245,7 @@ export function Act5Town() {
           )}
         </div>
         <p className={styles.townHint}>
-          {canTilt
+          {offerTilt
             ? "Drag sideways to turn the town, or tilt your phone."
             : "Drag to turn the town."}
         </p>
@@ -272,7 +272,11 @@ export function Act5Town() {
               Tilt to explore
             </button>
             <p className={styles.townHint} aria-live="polite">
-              {refused ? "Tilt is off. Drag the town to turn it instead." : ""}
+              {refused
+                ? "Tilt is off. Drag the town to turn it instead."
+                : unavailable
+                  ? "Tilt isn’t available here. Drag the town to turn it instead."
+                  : ""}
             </p>
           </>
         ) : null}

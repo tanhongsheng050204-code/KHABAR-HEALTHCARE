@@ -95,8 +95,9 @@ test.describe("with reduced motion", () => {
     test.skip(info.project.name !== "phone", "The phone layout.");
     await page.setViewportSize({ width: 320, height: 700 });
     await page.goto("/preview/film");
+    // The roofs are what a reader taps; the buttons' own boxes lie flat on the ground below them.
     const centres = await page
-      .locator("#act5 [data-house]")
+      .locator("#act5 [data-house] > i:first-child")
       .evaluateAll((els) =>
         els.map((el) => {
           const r = el.getBoundingClientRect();
@@ -282,6 +283,38 @@ test("refusing device tilt says so, and the town can still be dragged", async ({
   await expect(page.locator("#act5")).toContainText(
     "Tilt is off. Drag the town to turn it instead.",
   );
+  await expect(page.locator("#act5")).not.toContainText("or tilt your phone");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page
+    .locator("#act5 [data-town]")
+    .evaluate((el) => el.scrollIntoView({ block: "center" }));
+  const box = (await page.locator("#act5 [data-town]").boundingBox())!;
+  await page.mouse.move(box.x + 20, box.y + 20);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 180, box.y + 20, { steps: 8 });
+  await page.mouse.up();
+  expect(await tiltX(page)).toBeGreaterThan(0.3);
+});
+
+test("on a phone with no motion sensor, tilt switches itself off and says so", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "Touch screens only.");
+  await page
+    .context()
+    .grantPermissions(["accelerometer", "gyroscope", "magnetometer"]);
+  await page.goto("/preview/film");
+  const tilt = page.getByRole("button", { name: "Tilt to explore" });
+  await tilt.click();
+  await expect(tilt).toHaveAttribute("aria-pressed", "false", {
+    timeout: 3000,
+  });
+  await expect(page.locator("#act5")).toContainText(
+    "Tilt isn\u2019t available here. Drag the town to turn it instead.",
+  );
 });
 
 test("on a phone, tapping a home shows its reply where the reader is looking", async ({
@@ -298,19 +331,21 @@ test("on a phone, tapping a home shows its reply where the reader is looking", a
   });
 });
 
-test("on a phone the whole town fits across the screen", async ({
-  page,
-}, info) => {
-  test.skip(info.project.name !== "phone", "The phone layout.");
-  await settledTown(page);
-  const board = await page
-    .locator("#act5 [data-world] > div")
-    .first()
-    .boundingBox();
-  const width = page.viewportSize()!.width;
-  expect(board!.x).toBeGreaterThanOrEqual(0);
-  expect(board!.x + board!.width).toBeLessThanOrEqual(width);
-});
+for (const width of [320, 390]) {
+  test(`on a ${width} px phone the whole town fits across the screen`, async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name !== "phone", "The phone layout.");
+    await page.setViewportSize({ width, height: 800 });
+    await settledTown(page);
+    const board = await page
+      .locator("#act5 [data-world] > div")
+      .first()
+      .boundingBox();
+    expect(board!.x).toBeGreaterThanOrEqual(0);
+    expect(board!.x + board!.width).toBeLessThanOrEqual(width);
+  });
+}
 
 test("a drag released outside the town does not leave it following the mouse", async ({
   page,

@@ -43,6 +43,7 @@ export function useTilt(
   );
   const [tilting, setTilting] = useState(false);
   const [refused, setRefused] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const tilt = useRef<Tilt>({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -124,12 +125,22 @@ export function useTilt(
 
   useEffect(() => {
     if (!tilting) return;
+    // A touch screen with no motion sensor sends nothing (or only empty readings): after a second of
+    // silence, switch off and say so, rather than show a pressed button that does nothing.
+    const silence = window.setTimeout(() => {
+      setTilting(false);
+      setUnavailable(true);
+    }, 1000);
     const onTilt = (e: DeviceOrientationEvent) => {
       if (e.gamma == null || e.beta == null) return;
+      window.clearTimeout(silence);
       apply(world.current, tilt.current, e.gamma / 45, (e.beta - 50) / 30);
     };
     window.addEventListener("deviceorientation", onTilt);
-    return () => window.removeEventListener("deviceorientation", onTilt);
+    return () => {
+      window.clearTimeout(silence);
+      window.removeEventListener("deviceorientation", onTilt);
+    };
   }, [tilting, world]);
 
   const toggleDeviceTilt = async () => {
@@ -148,11 +159,12 @@ export function useTilt(
       }
     }
     setRefused(false);
+    setUnavailable(false);
     setTilting(true);
   };
 
   const turn = (step: number) =>
     apply(world.current, tilt.current, tilt.current.x + step, tilt.current.y);
 
-  return { canTilt, tilting, refused, toggleDeviceTilt, turn };
+  return { canTilt, tilting, refused, unavailable, toggleDeviceTilt, turn };
 }

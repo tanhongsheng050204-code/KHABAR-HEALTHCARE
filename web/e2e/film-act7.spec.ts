@@ -28,11 +28,14 @@ test("the way back to the thirty days lands on them", async ({ page }) => {
   await expect(page.locator("#act3-title")).toBeInViewport();
 });
 
+// The sky drawn for this screen: a wide one on desktops, a tall one on phones.
 const offsets = (page: Page) =>
   page
     .locator("#act7 [data-sky-thread]")
     .evaluateAll((els) =>
-      els.map((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+      els
+        .filter((el) => el.getBoundingClientRect().width > 0)
+        .map((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
     );
 
 test.describe("with reduced motion", () => {
@@ -46,7 +49,11 @@ test.describe("with reduced motion", () => {
     expect(risen.every((o) => o === 0)).toBe(true);
     const lit = await page
       .locator("#act7 [data-star]")
-      .evaluateAll((els) => els.map((el) => getComputedStyle(el).opacity));
+      .evaluateAll((els) =>
+        els
+          .filter((el) => el.getBoundingClientRect().width > 0)
+          .map((el) => getComputedStyle(el).opacity),
+      );
     expect(lit).toHaveLength(12);
     expect(lit.every((o) => o === "1")).toBe(true);
   });
@@ -128,4 +135,33 @@ test("no thread of light runs through the finale's words or buttons", async ({
     }
     expect(glowing, (await target.textContent()) ?? "").toBe(0);
   }
+});
+
+test("the finale's description matches its drawing", async ({ page }) => {
+  await page.goto("/preview/film");
+  const text = await page
+    .locator("#act7")
+    .getByText(/^Illustration: /)
+    .textContent();
+  expect(text).not.toContain("from above");
+  expect(text).toContain("row of homes");
+});
+
+test("on a phone the finale shows every home and its thread", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "The phone layout.");
+  await page.goto("/preview/film");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(800);
+  const width = page.viewportSize()!.width;
+  const homes = await page.locator("#act7 [data-sky-home]").evaluateAll(
+    (els, w) =>
+      els.filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.left >= 0 && r.right <= w;
+      }).length,
+    width,
+  );
+  expect(homes).toBe(12);
 });
