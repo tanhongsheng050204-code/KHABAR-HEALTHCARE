@@ -50,7 +50,8 @@ export function Act0Hero() {
           },
         });
         tl.to("[data-layer='backdrop']", { scale: 1, yPercent: -3 }, 0)
-          .to("[data-layer='aminah']", { xPercent: mobile ? 45 : 120 }, 0)
+          // On a narrow phone there is no room to walk sideways: she stays, and the thread shows the way home.
+          .to("[data-layer='aminah']", { xPercent: mobile ? 0 : 120 }, 0)
           .to(
             "[data-part='body']",
             {

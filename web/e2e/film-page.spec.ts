@@ -189,3 +189,163 @@ test("after arriving by #act3 and going back up, pausing does not jump back to #
   await pause.click();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
 });
+
+/** Right edges past the screen: the page clips overflow, so the page-wide check alone cannot see these. */
+const overflowing = (page: Page) =>
+  page.evaluate(() =>
+    [
+      ...document.querySelectorAll(
+        "[data-from], [aria-label='Khabar speaks her language'] button, [data-lab] button",
+      ),
+    ]
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.right > window.innerWidth + 1;
+      })
+      .map((el) => (el.textContent ?? "").slice(0, 30)),
+  );
+
+test("in Tamil at 320 px no chip or bubble runs off the screen, even mid-scroll through the hero", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto("/preview/film");
+  await page.getByRole("button", { name: "தமிழ்" }).click();
+  expect(await overflowing(page)).toEqual([]);
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.55));
+  await page.waitForTimeout(700);
+  expect(await overflowing(page)).toEqual([]);
+  await page.getByRole("button", { name: "Chest pain" }).click();
+  expect(await overflowing(page)).toEqual([]);
+});
+
+test("reloading mid-way through the pan shows the days, not an empty pinned area", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Desktop pan.");
+  await page.goto("/preview/film");
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  await page.evaluate(() => window.scrollBy(0, 700));
+  await page.waitForTimeout(600);
+  await page.reload();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [
+          ...document.querySelectorAll(
+            "article[data-day], #act0 h1, [data-lab] h3",
+          ),
+        ].some((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            r.bottom > 0 &&
+            r.top < window.innerHeight &&
+            r.right > 0 &&
+            r.left < window.innerWidth
+          );
+        }),
+      ),
+    )
+    .toBe(true);
+});
+
+test("resizing to phone width mid-pan stacks the days, and back to desktop the pan still ends on Day 30", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Desktop pan.");
+  await page.goto("/preview/film");
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  await page.evaluate(() => window.scrollBy(0, 700));
+  await page.setViewportSize({ width: 700, height: 900 });
+  await page.waitForTimeout(500);
+  const [one, three] = await Promise.all(
+    ["1", "3"].map((d) =>
+      page
+        .locator(`article[data-day='${d}']`)
+        .evaluate((el) => el.getBoundingClientRect().toJSON()),
+    ),
+  );
+  expect(three.top).toBeGreaterThanOrEqual(one.bottom);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  await expect
+    .poll(
+      async () => {
+        await page.evaluate(() => window.scrollBy(0, 250));
+        return page.locator("article[data-day='30']").evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            r.left >= 0 &&
+            r.right <= window.innerWidth &&
+            r.top < window.innerHeight &&
+            r.bottom > 0
+          );
+        });
+      },
+      { timeout: 15_000, intervals: [150] },
+    )
+    .toBe(true);
+});
+
+test("the keyboard alone reaches the language chips and the replies, each on screen when focused", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  const reach = async (name: string, limit: number) => {
+    for (let i = 0; i < limit; i++) {
+      await page.keyboard.press("Tab");
+      const focused = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el || el === document.body) return null;
+        const r = el.getBoundingClientRect();
+        return {
+          name: el.textContent?.trim() ?? "",
+          onScreen:
+            r.bottom > 0 &&
+            r.top < window.innerHeight &&
+            r.right > 0 &&
+            r.left < window.innerWidth,
+        };
+      });
+      if (focused?.name === name) return focused;
+      if (focused)
+        expect(
+          focused.onScreen,
+          `"${focused.name}" was focused off screen`,
+        ).toBe(true);
+    }
+    return null;
+  };
+  expect(await reach("中文", 20)).toEqual({ name: "中文", onScreen: true });
+  await page.keyboard.press("Enter");
+  expect(await reach("Chest pain", 30)).toEqual({
+    name: "Chest pain",
+    onScreen: true,
+  });
+  await page.keyboard.press("Space");
+  await expect(page.locator("[data-outcome]")).toHaveAttribute(
+    "data-state",
+    "red",
+  );
+});
+
+test("turning a phone sideways and back keeps the reader where they were", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "Phone rotation.");
+  await page.goto("/preview/film");
+  await page.locator("article[data-day='7']").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.waitForTimeout(600);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(600);
+  const y = await page.evaluate(() => window.scrollY);
+  expect(y).toBeGreaterThan(500); // not sent back to the top of the page
+});

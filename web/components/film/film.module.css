@@ -136,7 +136,7 @@
   .act0Copy h1 { font-size: clamp(40px, 11vw, 56px); }
   .lede { font-size: 16px; }
   .act0Aminah { left: 12%; bottom: 3%; width: 128px; }
-  .act0Greeting { left: 70%; max-width: 20ch; font-size: 14px; }
+  .act0Greeting { left: 50%; max-width: min(20ch, 52vw); font-size: 14px; } /* stays on a 320 px screen, even in Tamil */
   .scrollCue { display: none; }
 }
 
