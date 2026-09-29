@@ -371,3 +371,16 @@
 .act7Copy h2 { font-size: clamp(36px, 5vw, 68px); line-height: 1.02; margin: 0 0 28px; }
 .act7Actions { display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: center; align-items: center; }
 .backToStory { color: #f6efe4; font-weight: 600; }
+
+/* ---------- Progress rail (desktop only, where Act 3 pins) ---------- */
+.rail { display: none; }
+@media (min-width: 761px) and (min-height: 600px) {
+  .rail { display: block; position: fixed; right: 12px; top: 50%; transform: translateY(-50%); z-index: 45; }
+}
+.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rail a { position: relative; display: grid; place-items: center; width: 24px; height: 24px; }
+.railDot { width: 9px; height: 9px; border-radius: 50%; background: rgba(59, 42, 32, 0.45); box-shadow: 0 0 0 2px rgba(246, 239, 228, 0.9); }
+.rail a[aria-current="step"] .railDot { background: var(--kopi); transform: scale(1.4); }
+.railName { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: rgba(246, 239, 228, 0.96); color: var(--kopi); font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; }
+.film[data-motion="on"] .railName { transition: opacity 0.3s; }
+.rail[data-moving="true"] a[aria-current="step"] .railName, .rail a:hover .railName, .rail a:focus-visible .railName { opacity: 1; }
