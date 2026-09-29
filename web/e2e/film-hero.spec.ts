@@ -10,7 +10,7 @@ const dashOffset = (page: import("@playwright/test").Page) =>
 test("the hero offers the four greeting languages, BM first", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const chips = page
     .getByRole("group", { name: "Khabar speaks her language" })
     .getByRole("button");
@@ -24,7 +24,7 @@ test("the hero offers the four greeting languages, BM first", async ({
 test("choosing a language changes the greeting, by mouse or keyboard", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "中文", exact: true }).click();
   await expect(page.locator("#act0 [data-from='khabar']")).toContainText(
     "阿姨，今天好吗？",
@@ -43,7 +43,7 @@ test("choosing a language changes the greeting, by mouse or keyboard", async ({
 test("scrolling pins the hero and draws the thread after Aminah", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act0").locator("xpath=..")).toHaveClass(
     /pin-spacer/,
   );
@@ -63,7 +63,7 @@ test.describe("with reduced motion", () => {
   test("the hero is its still frame: no pin, headline and Aminah in view", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     await expect(page.locator(".pin-spacer")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
     await expect(page.locator("#act0 [data-layer='aminah']")).toBeInViewport();
@@ -73,7 +73,7 @@ test.describe("with reduced motion", () => {
 test("pinning never moves the hero in the DOM, so its text is not re-counted as a late LCP", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   // React renders the spacer itself; ScrollTrigger reuses it (pinSpacer) instead of wrapping the section.
   const spacer = page.locator("#act0").locator("xpath=..");
   await expect(spacer).toHaveClass(/pin-spacer/);
@@ -83,7 +83,7 @@ test("pinning never moves the hero in the DOM, so its text is not re-counted as 
 test("each screen shape gets its own hero thread, so a phone never shows a stretched one", async ({
   page,
 }, info) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const visible = page.locator('[data-thread="hero"]:visible');
   await expect(visible).toHaveCount(1);
   await expect(visible).toHaveAttribute(
@@ -128,7 +128,7 @@ for (const size of [
   }, info) => {
     test.skip(info.project.name !== "desktop", "Large desktop screens.");
     await page.setViewportSize(size);
-    await page.goto("/preview/film");
+    await page.goto("/");
     await page.addStyleTag({
       content:
         "[data-layer='aminah'],[data-layer='copy'],header{visibility:hidden!important}",
@@ -151,7 +151,7 @@ for (const size of [
 test("the keyboard focus ring is dark enough to see on the cream background (3:1)", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const chip = page.getByRole("button", { name: "中文", exact: true });
   await chip.focus();
   await page.keyboard.press("Shift+Tab");
@@ -172,7 +172,7 @@ for (const size of [
   }, info) => {
     test.skip(info.project.name !== "phone", "Phone sizes.");
     await page.setViewportSize(size);
-    await page.goto("/preview/film");
+    await page.goto("/");
     for (const label of ["BM", "中文", "தமிழ்", "EN"]) {
       await page.getByRole("button", { name: label, exact: true }).click();
       const hits = await page.evaluate(() => {
@@ -203,7 +203,7 @@ for (const size of [
 test("the language chips and reply buttons use their bold label weight", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   for (const name of ["EN", "A bit dizzy"]) {
     const weight = await page
       .getByRole("button", { name, exact: true })

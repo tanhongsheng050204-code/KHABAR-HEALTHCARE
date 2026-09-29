@@ -5,7 +5,7 @@ const SHARE = "Aminah shares her care plan with Nurul";
 test("Nurul sees the approved care plan while Aminah shares it", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const share = page.getByRole("switch", { name: SHARE });
   await expect(share).toHaveAttribute("aria-checked", "true");
   await expect(page.locator("[data-nurul-phone]")).toContainText(
@@ -16,7 +16,7 @@ test("Nurul sees the approved care plan while Aminah shares it", async ({
 test("when Aminah stops sharing, Nurul's phone locks and never shows the plan", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const share = page.getByRole("switch", { name: SHARE });
   await share.focus();
   await page.keyboard.press("Space");
@@ -34,7 +34,7 @@ test("when Aminah stops sharing, Nurul's phone locks and never shows the plan", 
 test("the care plan on Nurul's phone follows the chosen language", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(page.locator("[data-nurul-phone]")).toContainText(
     "1 tablet, morning and night, after food.",
@@ -44,7 +44,7 @@ test("the care plan on Nurul's phone follows the chosen language", async ({
 test("the thread to Nurul crosses no words: it runs in its own strip above her", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const hits = await page.evaluate(() => {
     const t = document
       .querySelector("[data-thread='to-nurul']")!
@@ -85,7 +85,7 @@ function contrast(a: string, b: string) {
 test("the consent switch reads well: bold label, and an off track that stands out from the night", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",

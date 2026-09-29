@@ -15,7 +15,7 @@ test("the rail lists the eight acts and marks where the reader is", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The rail is desktop only.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   const rail = page.getByRole("navigation", { name: "Story" });
   await expect(rail.getByRole("link")).toHaveText(NAMES);
   await expect(
@@ -27,7 +27,7 @@ test("while the thirty-day pan is pinned, the rail names it", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The pan is desktop only.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
@@ -44,7 +44,7 @@ test("a rail link takes the reader to its act, past the pins above it", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The rail is desktop only.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -59,6 +59,6 @@ test("a rail link takes the reader to its act, past the pins above it", async ({
 
 test("phones do not show the rail", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "Phone layout.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Story" })).toBeHidden();
 });

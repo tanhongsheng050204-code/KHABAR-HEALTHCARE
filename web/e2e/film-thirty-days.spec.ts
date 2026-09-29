@@ -27,7 +27,7 @@ test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("all five days are laid out in order, no pin", async ({ page }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     const act = page.locator("#act3");
     await expect(act).toHaveAttribute("data-mode", "static");
     await expect(act.locator("article[data-day] h3")).toHaveText(DAYS);
@@ -42,7 +42,7 @@ test("desktop pans through the thirty days while pinned, and ends on Day 30", as
     info.project.name !== "desktop",
     "The horizontal pan is desktop only.",
   );
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   // To the top of the act: scrollIntoViewIfNeeded would centre this tall section, half-way into the pan.
   await page.evaluate(() =>
@@ -55,7 +55,7 @@ test("desktop pans through the thirty days while pinned, and ends on Day 30", as
 test("arriving by the #act3 link shows Day 1, not an empty pin", async ({
   page,
 }) => {
-  await page.goto("/preview/film#act3");
+  await page.goto("/#act3");
   await expect(page.locator("article[data-day='1']")).toBeInViewport({
     timeout: 5000,
   });
@@ -65,14 +65,14 @@ test("after a resize the pan still ends exactly on Day 30", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "Desktop pan only.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.setViewportSize({ width: 1100, height: 800 });
   await page.locator("#act3").scrollIntoViewIfNeeded();
   await panToDay30(page);
 });
 
 test("Day 7's dizziness turns the thread amber", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(
     page.locator("article[data-day='7'] [data-thread]"),
   ).toHaveAttribute("data-state", "watch");
@@ -84,7 +84,7 @@ test("Day 7's dizziness turns the thread amber", async ({ page }) => {
 test("Reply for Aminah shows exactly what Khabar sends back", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const lab = page.getByRole("group", { name: "Reply for Aminah" });
   const outcome = page.locator("[data-outcome]");
 
@@ -118,7 +118,7 @@ test("Reply for Aminah shows exactly what Khabar sends back", async ({
 test("the language chosen in the hero carries into the check-ins and answers", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "中文", exact: true }).click();
   await expect(
     page.locator("article[data-day='1'] [data-from='khabar']"),
@@ -136,7 +136,7 @@ test("the language chosen in the hero carries into the check-ins and answers", a
 });
 
 test("the day threads are solid lines, not dashes", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const dash = await page
     .locator("[data-thread='day-7'] path")
     .evaluateAll((paths) =>
@@ -150,7 +150,7 @@ test("on a short laptop screen the pinned days fit: every caption and thread is 
 }, info) => {
   test.skip(info.project.name !== "desktop", "Desktop pan.");
   await page.setViewportSize({ width: 1366, height: 650 });
-  await page.goto("/preview/film");
+  await page.goto("/");
   // Wait for the pins to attach (as a visitor does, by reading for a moment) before scrolling to the act.
   await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   await page.evaluate(() =>
@@ -175,7 +175,7 @@ test("a phone turned sideways stacks the days instead of pinning a pan taller th
 }, info) => {
   test.skip(info.project.name !== "phone", "Landscape phone.");
   await page.setViewportSize({ width: 844, height: 390 });
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
@@ -192,7 +192,7 @@ test("a phone turned sideways stacks the days instead of pinning a pan taller th
 test("screen readers can reach every day before it is scrolled to", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   // Hidden elements (visibility:hidden) drop out of the accessibility tree; fading must not hide them.
   await expect(page.getByRole("heading", { name: "Day 30" })).toHaveCount(1);
@@ -201,7 +201,7 @@ test("screen readers can reach every day before it is scrolled to", async ({
 test("the Day 7 caption quotes her reply in the chosen language", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const caption = page.locator("article[data-day='7'] p").last();
   await expect(caption).toContainText("“Pening sikit hari ini.”");
   await page.getByRole("button", { name: "EN", exact: true }).click();

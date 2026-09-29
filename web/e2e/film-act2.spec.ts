@@ -7,7 +7,7 @@ test.describe("with reduced motion", () => {
   test("the notes, the draft and the blocked dose are all shown at once", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     await expect(page.locator("#act2")).toHaveAttribute(
       "data-revealed",
       "true",
@@ -20,7 +20,7 @@ test.describe("with reduced motion", () => {
 test("reaching the desk writes the draft and stamps the planted dose error", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "false");
   await page.locator("#act2 [data-visit]").scrollIntoViewIfNeeded();
   await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "true", {
@@ -35,7 +35,7 @@ test("reaching the desk writes the draft and stamps the planted dose error", asy
 test("pausing part-way shows everything, with no half-revealed state", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "Pause motion" }).click();
   await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "true");
 });
@@ -43,7 +43,7 @@ test("pausing part-way shows everything, with no half-revealed state", async ({
 test("the clinic and patient preview still switches views", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const preview = page.locator("#act2 [data-product-preview]");
   await preview.scrollIntoViewIfNeeded();
   await expect(preview.getByRole("button").first()).toBeVisible();
@@ -52,7 +52,7 @@ test("the clinic and patient preview still switches views", async ({
 test("the app preview's code waits until the reader nears it, keeping the first load light", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -69,7 +69,7 @@ test("the app preview's code waits until the reader nears it, keeping the first 
 test("pausing the film also stops the app preview's own animations", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -91,7 +91,7 @@ test("pausing the film also stops the app preview's own animations", async ({
 test("pausing part-way through the reveal shows the draft and stamp at once", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -109,7 +109,7 @@ test("pausing part-way through the reveal shows the draft and stamp at once", as
 test("the stamp does not pretend to be a live announcement", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("#act2 [data-stamp]")).not.toHaveAttribute(
     "role",
     "status",
@@ -119,7 +119,7 @@ test("the stamp does not pretend to be a live announcement", async ({
 test("a reload part-way down the page does not hide and re-show what the reader already passed", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",

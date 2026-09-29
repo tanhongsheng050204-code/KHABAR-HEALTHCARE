@@ -8,7 +8,7 @@ test.describe("with reduced motion", () => {
   test("every line shows both the shorthand and her words, from the product's summary", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     await expect(lines(page)).toHaveCount(3);
     await expect(lines(page).first()).toContainText(
       "Tab metformin 500mg bd pc",
@@ -23,7 +23,7 @@ test.describe("with reduced motion", () => {
 test("scrolling to the paper melts the shorthand into her words", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(lines(page).first()).toHaveAttribute("aria-pressed", "false");
   await page.locator("#act1").scrollIntoViewIfNeeded();
   await expect(lines(page).first()).toHaveAttribute("aria-pressed", "true", {
@@ -34,7 +34,7 @@ test("scrolling to the paper melts the shorthand into her words", async ({
 test("a line clicked before it is reached keeps the reader's choice", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -52,7 +52,7 @@ test("a line clicked before it is reached keeps the reader's choice", async ({
 test("the plain words follow the language chosen in the hero; the shorthand stays", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "中文", exact: true }).click();
   await page.locator("#act1").scrollIntoViewIfNeeded();
   const first = lines(page).first();
@@ -62,7 +62,7 @@ test("the plain words follow the language chosen in the hero; the shorthand stay
 });
 
 test("the keyboard toggles a line with Enter", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.locator("#act1").scrollIntoViewIfNeeded();
   const second = lines(page).nth(1);
   await expect(second).toHaveAttribute("aria-pressed", "true", {
@@ -76,7 +76,7 @@ test("the keyboard toggles a line with Enter", async ({ page }) => {
 test("switching language after a line is revealed changes her words and keeps the shorthand", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",

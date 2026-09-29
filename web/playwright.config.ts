@@ -24,7 +24,8 @@ export default defineConfig({
   webServer: {
     command: "npm run build && npx next start -p 3100",
     url: "http://localhost:3100/",
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a server already on the port: it may be serving an older build.
+    reuseExistingServer: false,
     timeout: 300_000,
   },
 });

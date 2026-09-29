@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("Pause motion stops the film and can resume it", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const root = page.locator("[data-motion]");
   const pause = page.getByRole("button", { name: "Pause motion" });
   await expect(root).toHaveAttribute("data-motion", "on");
@@ -19,7 +19,7 @@ test.describe("with reduced motion", () => {
   test("the device setting keeps motion off and explains why", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     await expect(page.locator("[data-motion]")).toHaveAttribute(
       "data-motion",
       "off",
@@ -35,7 +35,7 @@ test("without JavaScript the page still shows its words", async ({
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
@@ -47,7 +47,7 @@ test("without JavaScript the page still shows its words", async ({
 test("the film turns off CSS smooth scrolling, which fights ScrollTrigger's scroll jumps", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   expect(
     await page.evaluate(
       () => getComputedStyle(document.documentElement).scrollBehavior,
@@ -59,7 +59,7 @@ test("on a phone the Pause motion button is a small round button that keeps its 
   page,
 }, info) => {
   test.skip(info.project.name !== "phone", "Phone layout only.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   const pause = page.getByRole("button", { name: "Pause motion" });
   const box = await pause.boundingBox();
   expect(box!.width).toBeLessThanOrEqual(48);
@@ -68,7 +68,7 @@ test("on a phone the Pause motion button is a small round button that keeps its 
 test("Pause motion comes first in keyboard order, before the header's links", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -84,7 +84,7 @@ test("Pause motion comes first in keyboard order, before the header's links", as
 test("while paused nothing animates, not even hover lifts or the thread's colour fade", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -106,14 +106,14 @@ test("while paused nothing animates, not even hover lifts or the thread's colour
 test("the page as served does not claim reduced motion is on", async ({
   request,
 }) => {
-  const html = await (await request.get("/preview/film")).text();
+  const html = await (await request.get("/")).text();
   expect(html).not.toContain("Reduced motion is on");
 });
 
 test("the hero, the thirty days and Nurul stop their loops once scrolled away", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -136,7 +136,7 @@ test("the hero, the thirty days and Nurul stop their loops once scrolled away", 
 test("a thread that needs attention breathes with its glow's opacity, not a blurred stroke width", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "A bit dizzy" }).click();
   const lab = page.locator("[data-lab]");
   await lab.scrollIntoViewIfNeeded();
@@ -154,7 +154,7 @@ test("a thread that needs attention breathes with its glow's opacity, not a blur
 });
 
 test("the lab thread rests when Aminah's reply is fine", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.getByRole("button", { name: "I'm okay" }).click();
   await expect(page.locator("[data-thread='lab']")).not.toHaveAttribute(
     "data-pulse",
@@ -173,7 +173,7 @@ test.describe("with reduced motion, the page does no layout work while scrolling
         return read.call(this);
       };
     });
-    await page.goto("/preview/film");
+    await page.goto("/");
     await page.waitForTimeout(500);
     await page.evaluate(() => {
       (window as unknown as { dayReads: number }).dayReads = 0;

@@ -2,13 +2,12 @@ import { expect, test, type Page } from "@playwright/test";
 
 const HEADING = /See the whole story,\s*not just the appointment\./;
 
-test("the finale says what the current landing page says, and its button opens the prototype", async ({
+test("the finale keeps the old landing page's closing words, and its button opens the prototype", async ({
   page,
 }) => {
-  for (const path of ["/", "/preview/film"]) {
-    await page.goto(path);
-    await expect(page.getByRole("heading", { name: HEADING })).toHaveCount(1);
-  }
+  // The old landing page's closing heading, kept word for word.
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: HEADING })).toHaveCount(1);
   const enter = page
     .locator("#act7")
     .getByRole("link", { name: "Enter the live prototype" });
@@ -16,7 +15,7 @@ test("the finale says what the current landing page says, and its button opens t
 });
 
 test("the way back to the thirty days lands on them", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -43,7 +42,7 @@ test.describe("with reduced motion", () => {
   test("every thread has risen and every light is lit: the end frame", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     const risen = await offsets(page);
     expect(risen).toHaveLength(12);
     expect(risen.every((o) => o === 0)).toBe(true);
@@ -62,7 +61,7 @@ test.describe("with reduced motion", () => {
 test("scrolling to the end raises every thread into the sky", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -79,7 +78,7 @@ test("scrolling to the end raises every thread into the sky", async ({
 test("the stars twinkle only while the finale is on screen and motion is on", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -108,7 +107,7 @@ test("the stars twinkle only while the finale is on screen and motion is on", as
 test("no thread of light runs through the finale's words or buttons", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(1500);
   const sharp = (await import("sharp")).default;
@@ -138,7 +137,7 @@ test("no thread of light runs through the finale's words or buttons", async ({
 });
 
 test("the finale's description matches its drawing", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const text = await page
     .locator("#act7")
     .getByText(/^Illustration: /)
@@ -151,7 +150,7 @@ test("on a phone the finale shows every home and its thread", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "phone", "The phone layout.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(800);
   const width = page.viewportSize()!.width;

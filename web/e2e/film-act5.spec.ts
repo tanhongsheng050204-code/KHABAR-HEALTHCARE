@@ -9,7 +9,7 @@ const roof = (page: Page, name: string) =>
 test("the town's key counts every home by its reply, and says it is illustrative", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const key = page.locator("#act5 [data-town-key]");
   await expect(key).toContainText("Doing well · 8");
   await expect(key).toContainText("On the follow-up list · 3");
@@ -22,7 +22,7 @@ test("the town's key counts every home by its reply, and says it is illustrative
 test("selecting a home shows its latest reply and what Khabar did", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   // The server's HTML is already interactive-looking; a click before hydration would be lost.
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
@@ -45,7 +45,7 @@ test("selecting a home shows its latest reply and what Khabar did", async ({
 });
 
 test("a home can be selected with the keyboard", async ({ page }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -80,7 +80,7 @@ test.describe("with reduced motion", () => {
   test("the town is built and every thread drawn: the end frame", async ({
     page,
   }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     const z = await houseZ(page);
     const offsets = await threadOffsets(page);
     expect(z).toHaveLength(12);
@@ -94,7 +94,7 @@ test.describe("with reduced motion", () => {
   }, info) => {
     test.skip(info.project.name !== "phone", "The phone layout.");
     await page.setViewportSize({ width: 320, height: 700 });
-    await page.goto("/preview/film");
+    await page.goto("/");
     // The roofs are what a reader taps; the buttons' own boxes lie flat on the ground below them.
     const centres = await page
       .locator("#act5 [data-house] > i:first-child")
@@ -116,7 +116,7 @@ test.describe("with reduced motion", () => {
 test("scrolling to the town raises the homes and draws the threads", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -140,7 +140,7 @@ test("scrolling to the town raises the homes and draws the threads", async ({
 test("the town's lights bob only while it is on screen and motion is on", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -179,7 +179,7 @@ const tiltX = (page: Page) =>
 
 /** Hydrated, with the town on screen and every home risen: what a reader sees before turning it. */
 async function settledTown(page: Page) {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -224,7 +224,7 @@ test("a drag that starts on a home turns the town without selecting the home", a
 
 test("mouse screens are not offered device tilt", async ({ page }, info) => {
   test.skip(info.project.name !== "desktop", "A mouse screen.");
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -242,7 +242,7 @@ test("on a touch screen, tilting the phone turns the town once the reader asks f
   await page
     .context()
     .grantPermissions(["accelerometer", "gyroscope", "magnetometer"]);
-  await page.goto("/preview/film");
+  await page.goto("/");
   const tilt = page.getByRole("button", { name: "Tilt to explore" });
   await tilt.click();
   await expect(tilt).toHaveAttribute("aria-pressed", "true");
@@ -276,7 +276,7 @@ test("refusing device tilt says so, and the town can still be dragged", async ({
       }
     ).requestPermission = async () => "denied";
   });
-  await page.goto("/preview/film");
+  await page.goto("/");
   const tilt = page.getByRole("button", { name: "Tilt to explore" });
   await tilt.click();
   await expect(tilt).toHaveAttribute("aria-pressed", "false");
@@ -306,7 +306,7 @@ test("on a phone with no motion sensor, tilt switches itself off and says so", a
   await page
     .context()
     .grantPermissions(["accelerometer", "gyroscope", "magnetometer"]);
-  await page.goto("/preview/film");
+  await page.goto("/");
   const tilt = page.getByRole("button", { name: "Tilt to explore" });
   await tilt.click();
   await expect(tilt).toHaveAttribute("aria-pressed", "false", {
@@ -460,7 +460,7 @@ test("pressing the selected home again clears the selection", async ({
 test("the amber and red threads stand out from the board (3:1)", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   const strokes = await page
     .locator("#act5 [data-town-thread]:not([data-state='ok'])")
     .evaluateAll((els) => els.map((el) => getComputedStyle(el).stroke));

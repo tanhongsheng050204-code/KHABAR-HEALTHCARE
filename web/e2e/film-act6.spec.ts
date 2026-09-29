@@ -11,21 +11,33 @@ const principles = (page: Page, selector: string) =>
       ),
     );
 
-test("the trust principles are word for word the ones on the current landing page", async ({
+/** The old landing page's safety principles, word for word, as they read on 29 Sep 2026 before the switch. */
+const LANDING_PRINCIPLES = [
+  [
+    "Human decisions stay human",
+    "Urgent replies and safety concerns go to a clinician. Khabar never presents itself as a diagnosis.",
+  ],
+  [
+    "Privacy is part of the workflow",
+    "Your registered name, IC and phone number are removed before AI-assisted intake and triage. Record access is logged and visible.",
+  ],
+  [
+    "Safety has a hard stop",
+    "Critical findings block finalisation until the clinician records a clear reason to proceed.",
+  ],
+];
+
+test("the trust principles are word for word the ones the old landing page promised", async ({
   page,
 }) => {
   await page.goto("/");
-  const landing = await principles(page, "#safety article");
-  await page.goto("/preview/film");
-  const film = await principles(page, "#act6 article");
-  expect(film).toHaveLength(3);
-  expect(film).toEqual(landing);
+  expect(await principles(page, "#act6 article")).toEqual(LANDING_PRINCIPLES);
 });
 
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
   test("all three principles are shown at once", async ({ page }) => {
-    await page.goto("/preview/film");
+    await page.goto("/");
     const shown = await page
       .locator("#act6 [data-principle]")
       .evaluateAll((els) => els.map((el) => el.getAttribute("data-shown")));
@@ -36,7 +48,7 @@ test.describe("with reduced motion", () => {
 test("the principles arrive as the reader reaches them, and pausing shows them all", async ({
   page,
 }) => {
-  await page.goto("/preview/film");
+  await page.goto("/");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
