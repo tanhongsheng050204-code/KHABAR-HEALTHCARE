@@ -10,7 +10,10 @@ import { build, BUDGET } from "./film-assets.mjs";
 async function noisyPng(path, width, height) {
   const noise = Buffer.alloc(width * height * 3);
   for (let i = 0; i < noise.length; i++) noise[i] = (i * 7919) % 256;
-  await sharp(noise, { raw: { width, height, channels: 3 } }).blur(2).png().toFile(path);
+  await sharp(noise, { raw: { width, height, channels: 3 } })
+    .blur(2)
+    .png()
+    .toFile(path);
 }
 
 test("converts an act's art to budgeted AVIF and WebP and lists it in the manifest", async () => {
@@ -26,8 +29,14 @@ test("converts an act's art to budgeted AVIF and WebP and lists it in the manife
   const results = await build(source, publicDir, manifest);
 
   assert.equal(results.length, 2);
-  for (const r of results) assert.ok(r.avifBytes <= BUDGET[r.variant], `${r.variant} AVIF ${r.avifBytes} B over budget`);
-  const meta = await sharp(join(publicDir, "film", "act0-desktop.webp")).metadata();
+  for (const r of results)
+    assert.ok(
+      r.avifBytes <= BUDGET[r.variant],
+      `${r.variant} AVIF ${r.avifBytes} B over budget`,
+    );
+  const meta = await sharp(
+    join(publicDir, "film", "act0-desktop.webp"),
+  ).metadata();
   assert.deepEqual([meta.width, meta.height], [2400, 1350]);
   assert.ok((await stat(join(publicDir, "film", "act0-mobile.avif"))).size > 0);
   const written = await readFile(manifest, "utf8");
@@ -40,5 +49,38 @@ test("an act with only one variant is refused", async () => {
   const source = join(dir, "src");
   await mkdir(source, { recursive: true });
   await noisyPng(join(source, "act4-desktop.png"), 2400, 1350);
-  await assert.rejects(build(source, join(dir, "public"), join(dir, "backdrops.ts")), /act4 needs both desktop and mobile/);
+  await assert.rejects(
+    build(source, join(dir, "public"), join(dir, "backdrops.ts")),
+    /act4 needs both desktop and mobile/,
+  );
+});
+
+test("a second batch keeps the acts an earlier batch already added", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "film-"));
+  const source = join(dir, "src");
+  const manifest = join(dir, "backdrops.ts");
+  await mkdir(source, { recursive: true });
+  await writeFile(
+    manifest,
+    "export const BACKDROPS = {\n  act6: { width: 2400, height: 1350 },\n};\n",
+  );
+  await noisyPng(join(source, "act0-desktop.png"), 2400, 1350);
+  await noisyPng(join(source, "act0-mobile.png"), 1080, 1920);
+  await build(source, join(dir, "public"), manifest);
+  const written = await readFile(manifest, "utf8");
+  assert.match(written, /act0: \{ width: 2400, height: 1350 \}/);
+  assert.match(written, /act6: \{ width: 2400, height: 1350 \}/);
+});
+
+test("two source files for the same act and screen are refused, not silently overwritten", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "film-"));
+  const source = join(dir, "src");
+  await mkdir(source, { recursive: true });
+  await noisyPng(join(source, "act1-desktop.png"), 2400, 1350);
+  await noisyPng(join(source, "act1-desktop.jpg"), 2400, 1350);
+  await noisyPng(join(source, "act1-mobile.png"), 1080, 1920);
+  await assert.rejects(
+    build(source, join(dir, "public"), join(dir, "backdrops.ts")),
+    /act1-desktop: two source files/,
+  );
 });

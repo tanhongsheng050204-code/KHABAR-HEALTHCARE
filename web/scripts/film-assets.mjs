@@ -3,7 +3,7 @@
 // components/film/backdrops.ts so those acts use them. Input files: <act>-desktop.<png|jpg|jpeg|webp>
 // and <act>-mobile.<...> for act0, act1, act2, act3, act4, act6, act7 (act5 is the 3D town, no art).
 // Usage (from web/): node scripts/film-assets.mjs <source-folder>
-import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -25,58 +25,109 @@ export type ActId = ${ACTS.map((a) => `"${a}"`).join(" | ")};
 
 async function encodeWithinBudget(input, size, budget) {
   for (let quality = 60; quality >= 30; quality -= 5) {
-    const avif = await sharp(input).resize(size.width, size.height, { fit: "cover" }).avif({ quality, effort: 6 }).toBuffer();
+    const avif = await sharp(input)
+      .resize(size.width, size.height, { fit: "cover" })
+      .avif({ quality, effort: 6 })
+      .toBuffer();
     if (avif.length <= budget) return { avif, quality };
   }
   return null;
 }
 
 export async function build(sourceDir, publicDir, manifestPath) {
-  const files = (await readdir(sourceDir)).filter((f) => /\.(png|jpe?g|webp)$/i.test(f));
+  const files = (await readdir(sourceDir)).filter((f) =>
+    /\.(png|jpe?g|webp)$/i.test(f),
+  );
   const found = new Map();
   for (const file of files) {
     const [act, variant] = basename(file, extname(file)).split("-");
     if (!ACTS.includes(act) || !(variant in SIZE)) continue;
-    found.set(`${act}-${variant}`, join(sourceDir, file));
+    const key = `${act}-${variant}`;
+    if (found.has(key))
+      throw new Error(
+        `${key}: two source files (${basename(found.get(key))} and ${file}); keep one`,
+      );
+    found.set(key, join(sourceDir, file));
   }
-  const acts = ACTS.filter((a) => found.has(`${a}-desktop`) || found.has(`${a}-mobile`));
+  const acts = ACTS.filter(
+    (a) => found.has(`${a}-desktop`) || found.has(`${a}-mobile`),
+  );
   for (const act of acts) {
-    if (!found.has(`${act}-desktop`) || !found.has(`${act}-mobile`)) throw new Error(`${act} needs both desktop and mobile images`);
+    if (!found.has(`${act}-desktop`) || !found.has(`${act}-mobile`))
+      throw new Error(`${act} needs both desktop and mobile images`);
   }
 
   const outDir = join(publicDir, "film");
   await mkdir(outDir, { recursive: true });
   const results = [];
+  // Keep what earlier batches added: a batch adds or replaces acts, it never forgets one.
   const manifest = {};
+  const earlier = await readFile(manifestPath, "utf8").catch(() => "");
+  for (const [, act, width, height] of earlier.matchAll(
+    /(act\d): \{ width: (\d+), height: (\d+) \}/g,
+  )) {
+    if (ACTS.includes(act))
+      manifest[act] = { width: Number(width), height: Number(height) };
+  }
   for (const act of acts) {
     for (const variant of ["desktop", "mobile"]) {
-      const size = variant === "desktop" && WIDE[act] ? WIDE[act] : SIZE[variant];
+      const size =
+        variant === "desktop" && WIDE[act] ? WIDE[act] : SIZE[variant];
       const budget = BUDGET[variant] * (size.width / SIZE[variant].width);
       const input = found.get(`${act}-${variant}`);
       const encoded = await encodeWithinBudget(input, size, budget);
-      if (!encoded) throw new Error(`${act}-${variant}: no AVIF quality from 60 down to 30 fits ${Math.round(budget / 1000)} KB; simplify the image`);
-      const webp = await sharp(input).resize(size.width, size.height, { fit: "cover" }).webp({ quality: 72 }).toBuffer();
+      if (!encoded)
+        throw new Error(
+          `${act}-${variant}: no AVIF quality from 60 down to 30 fits ${Math.round(budget / 1000)} KB; simplify the image`,
+        );
+      const webp = await sharp(input)
+        .resize(size.width, size.height, { fit: "cover" })
+        .webp({ quality: 72 })
+        .toBuffer();
       await writeFile(join(outDir, `${act}-${variant}.avif`), encoded.avif);
       await writeFile(join(outDir, `${act}-${variant}.webp`), webp);
-      results.push({ act, variant, avifBytes: encoded.avif.length, webpBytes: webp.length, quality: encoded.quality });
+      results.push({
+        act,
+        variant,
+        avifBytes: encoded.avif.length,
+        webpBytes: webp.length,
+        quality: encoded.quality,
+      });
       if (variant === "desktop") manifest[act] = size;
     }
   }
 
-  const entries = Object.entries(manifest).map(([act, s]) => `  ${act}: { width: ${s.width}, height: ${s.height} },`).join("\n");
-  await writeFile(manifestPath, `${HEADER}\nexport const BACKDROPS: Partial<Record<ActId, { width: number; height: number }>> = {\n${entries}\n};\n`);
+  const entries = Object.entries(manifest)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([act, s]) => `  ${act}: { width: ${s.width}, height: ${s.height} },`)
+    .join("\n");
+  await writeFile(
+    manifestPath,
+    `${HEADER}\nexport const BACKDROPS: Partial<Record<ActId, { width: number; height: number }>> = {\n${entries}\n};\n`,
+  );
   return results;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   const source = process.argv[2];
   if (!source || !(await stat(source).catch(() => null))?.isDirectory()) {
-    console.error("Usage: node scripts/film-assets.mjs <folder with act0-desktop.png, act0-mobile.png, ...>");
+    console.error(
+      "Usage: node scripts/film-assets.mjs <folder with act0-desktop.png, act0-mobile.png, ...>",
+    );
     process.exit(1);
   }
   const web = resolve(fileURLToPath(new URL("..", import.meta.url)));
-  const results = await build(source, join(web, "public"), join(web, "components", "film", "backdrops.ts"));
+  const results = await build(
+    source,
+    join(web, "public"),
+    join(web, "components", "film", "backdrops.ts"),
+  );
   for (const r of results) {
-    console.log(`${r.act}-${r.variant}: AVIF ${(r.avifBytes / 1024).toFixed(0)} KB (q${r.quality}), WebP ${(r.webpBytes / 1024).toFixed(0)} KB`);
+    console.log(
+      `${r.act}-${r.variant}: AVIF ${(r.avifBytes / 1024).toFixed(0)} KB (q${r.quality}), WebP ${(r.webpBytes / 1024).toFixed(0)} KB`,
+    );
   }
 }

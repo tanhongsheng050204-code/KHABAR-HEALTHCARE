@@ -17,6 +17,28 @@ export function Backdrop({
       data-act={act}
       aria-hidden="true"
     >
+      {art && priority ? (
+        // The first screen's art is found before the stylesheet asks for it; one per screen shape, so a
+        // phone never fetches the desktop image. (React hoists these links into <head>.)
+        <>
+          <link
+            rel="preload"
+            as="image"
+            type="image/avif"
+            href={`/film/${act}-mobile.avif`}
+            media="(max-width: 760px)"
+            fetchPriority="high"
+          />
+          <link
+            rel="preload"
+            as="image"
+            type="image/avif"
+            href={`/film/${act}-desktop.avif`}
+            media="(min-width: 761px)"
+            fetchPriority="high"
+          />
+        </>
+      ) : null}
       {art ? (
         <picture>
           <source

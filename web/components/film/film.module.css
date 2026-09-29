@@ -54,6 +54,8 @@
 /* ---------- Backdrops: AI art, or a painted-looking placeholder ---------- */
 .backdrop { position: absolute; inset: 0; overflow: hidden; transform: scale(1.06); transform-origin: 50% 70%; }
 .backdrop picture, .backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Act 3's art is a wide strip that starts at morning: keep its left end, where Day 1 is, in view. */
+.backdrop[data-act="act3"] img { object-position: left center; }
 .backdrop::after { /* paper grain over art and placeholders alike */
   content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.35; mix-blend-mode: multiply;
   background-image: radial-gradient(rgb(59 42 32 / 0.08) 1px, transparent 1px); background-size: 4px 4px;
