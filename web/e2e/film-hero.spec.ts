@@ -162,3 +162,40 @@ test("the keyboard focus ring is dark enough to see on the cream background (3:1
     "rgb(59, 42, 32)",
   );
 });
+
+for (const size of [
+  { width: 320, height: 720 },
+  { width: 390, height: 844 },
+]) {
+  test(`at ${size.width}×${size.height} the greeting never covers the hero's words or buttons, in any language`, async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name !== "phone", "Phone sizes.");
+    await page.setViewportSize(size);
+    await page.goto("/preview/film");
+    for (const label of ["BM", "中文", "தமிழ்", "EN"]) {
+      await page.getByRole("button", { name: label }).click();
+      const hits = await page.evaluate(() => {
+        const g = document
+          .querySelector("#act0 [data-from='khabar']")!
+          .getBoundingClientRect();
+        return [
+          ...document.querySelectorAll(
+            "[data-layer='copy'] :is(h1, p, a, button)",
+          ),
+        ]
+          .filter((el) => {
+            const r = el.getBoundingClientRect();
+            return (
+              r.left < g.right &&
+              r.right > g.left &&
+              r.top < g.bottom &&
+              r.bottom > g.top
+            );
+          })
+          .map((el) => (el.textContent ?? "").trim().slice(0, 24));
+      });
+      expect(hits, label).toEqual([]);
+    }
+  });
+}
