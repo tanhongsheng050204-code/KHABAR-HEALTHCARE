@@ -75,6 +75,10 @@ export function Act2Visit() {
       className={styles.act2}
       aria-labelledby="act2-title"
     >
+      <p className={styles.srOnly}>
+        Illustration: the doctor&rsquo;s desk during Aminah&rsquo;s visit, with
+        the notes on one side and Khabar&rsquo;s draft on the other.
+      </p>
       <Backdrop act="act2" />
       <header className={styles.act2Head}>
         <p className={styles.eyebrow}>The fifteen minutes</p>

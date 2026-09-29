@@ -55,6 +55,10 @@ export function Act1Paper() {
       className={styles.act1}
       aria-labelledby="act1-title"
     >
+      <p className={styles.srOnly}>
+        Illustration: Aminah&rsquo;s prescription on the clinic&rsquo;s paper,
+        each line in the doctor&rsquo;s shorthand.
+      </p>
       <Backdrop act="act1" />
       <header className={styles.act1Head}>
         <p className={styles.eyebrow}>At home, after the visit</p>

@@ -53,6 +53,10 @@ export function Act4Daughter() {
       className={styles.act4}
       aria-labelledby="act4-title"
     >
+      <p className={styles.srOnly}>
+        Illustration: Nurul in Kuala Lumpur, reading her mother&rsquo;s care
+        plan on her phone.
+      </p>
       <Backdrop act="act4" />
       <header className={styles.act4Head}>
         <p className={styles.eyebrow}>Her daughter in Kuala Lumpur</p>

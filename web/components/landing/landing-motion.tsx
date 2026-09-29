@@ -86,7 +86,10 @@ export function LandingMotionScope({
   return (
     <MotionContext.Provider value={enabled}>
       <MotionConfig reducedMotion={enabled ? "user" : "always"}>
-        {children}
+        {/* The landing stylesheet pauses its CSS animations inside a paused motion root. */}
+        <div className={styles.motionRoot} data-paused={!enabled}>
+          {children}
+        </div>
       </MotionConfig>
     </MotionContext.Provider>
   );

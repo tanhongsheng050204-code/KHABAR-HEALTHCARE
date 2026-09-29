@@ -406,3 +406,94 @@ test("the acts run in story order: hero, paper, visit, thirty days, daughter", a
   );
   expect(order).toEqual(["act0", "act1", "act2", "act3", "act4"]);
 });
+
+test("the thirty-day pan pins exactly at the top even after the content above it grows", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "The pan is desktop only.");
+  await page.goto("/preview/film");
+  await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
+  // Tamil makes Act 1 taller, and the app preview loads in after the pins were measured.
+  await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
+  const preview = page.locator("#act2 [data-product-preview]");
+  await preview.scrollIntoViewIfNeeded();
+  await expect(preview).toHaveAttribute("data-loaded", "true");
+  await expect(preview.getByRole("button").first()).toBeVisible();
+  await page.waitForTimeout(500);
+  // Scroll towards the pan in small steps: the last place the scene sits before it pins must be the top.
+  const lastTop = await page.evaluate(async () => {
+    const stage = document.querySelector<HTMLElement>("#act3 .pin-spacer > *")!;
+    const act3 = document.getElementById("act3")!;
+    window.scrollTo(0, window.scrollY + act3.getBoundingClientRect().top - 300);
+    const frame = () =>
+      new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // Let the jump settle first: a fast jump makes ScrollTrigger pin early on purpose (anticipatePin).
+    for (let i = 0; i < 10; i++) await frame();
+    let last: number | null = null;
+    for (let i = 0; i < 200; i++) {
+      await frame();
+      if (getComputedStyle(stage).position === "fixed") return last;
+      last = stage.getBoundingClientRect().top;
+      window.scrollBy(0, 4);
+    }
+    return null;
+  });
+  expect(lastTop).not.toBeNull();
+  expect(Math.abs(lastTop!)).toBeLessThan(12);
+});
+
+test("pausing and resuming deep inside an act keep what the reader was looking at in place", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  const preview = page.locator("#act2 [data-product-preview]");
+  await preview.scrollIntoViewIfNeeded();
+  await expect(preview).toHaveAttribute("data-loaded", "true");
+  await page.waitForTimeout(500);
+  const toggle = page.getByRole("button", { name: "Pause motion" });
+  for (const target of [
+    "#act2 [data-product-preview]",
+    "#act4 [data-consent-note]",
+  ]) {
+    const el = page.locator(target);
+    await el.evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await page.waitForTimeout(400);
+    const top = () => el.evaluate((e) => e.getBoundingClientRect().top);
+    const before = await top();
+    await toggle.click();
+    await expect(page.locator("[data-motion]")).toHaveAttribute(
+      "data-motion",
+      "off",
+    );
+    expect(
+      Math.abs((await top()) - before),
+      `${target} after pause`,
+    ).toBeLessThan(60);
+    await toggle.click();
+    await expect(page.locator("[data-motion]")).toHaveAttribute(
+      "data-motion",
+      "on",
+    );
+    await page.waitForTimeout(300);
+    expect(
+      Math.abs((await top()) - before),
+      `${target} after resume`,
+    ).toBeLessThan(60);
+  }
+});
+
+test("every act describes its illustration for screen readers", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  for (const id of ["act0", "act1", "act2", "act3", "act4"]) {
+    await expect(
+      page.locator(`#${id}`).getByText(/^Illustration: /),
+      id,
+    ).toHaveCount(1);
+  }
+});

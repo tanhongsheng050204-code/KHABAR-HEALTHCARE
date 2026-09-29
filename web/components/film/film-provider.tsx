@@ -62,17 +62,18 @@ export function FilmProvider({
   const value = useMemo(() => ({ motion, lang, setLang }), [motion, lang]);
 
   // Switching motion re-lays out the page (pins added or removed), so the reader's place is kept: the
-  // anchor most on screen before the switch is brought back into view after it. On the first switch to
+  // anchor under the middle of the screen before the switch is put back at the same height on screen after
+  // it. On the first switch to
   // motion, a visitor who arrived by a link such as #act3 is taken there again, because pinning added
   // scroll length above it after the browser's own jump. Child effects (the acts' timelines) run first.
-  const keep = useRef<HTMLElement | null>(null);
+  const keep = useRef<Place | null>(null);
   // The anchor last brought back, and the scroll position it left: toggling again without scrolling in
   // between keeps that same anchor, instead of re-reading a layout that places it differently.
-  const restored = useRef<{ el: HTMLElement; y: number } | null>(null);
+  const restored = useRef<{ place: Place; y: number } | null>(null);
   const arrived = useRef(false);
   // Until motion first switches on, note what a reader who scrolls early is looking at: on a slow phone
   // the pins attach seconds after the page appears, and would otherwise push them somewhere else.
-  const early = useRef<HTMLElement | null>(null);
+  const early = useRef<Place | null>(null);
   useEffect(() => {
     if (motion || arrived.current) return;
     // On a reload or back/forward the browser restores the scroll position of the page as it was (pins
@@ -81,7 +82,7 @@ export function FilmProvider({
       PerformanceNavigationTiming | undefined;
     if (navigation && navigation.type !== "navigate") return;
     const note = () => {
-      early.current = window.scrollY > 0 ? mostVisibleAnchor() : null;
+      early.current = window.scrollY > 0 ? placeOf(mostVisibleAnchor()) : null;
     };
     note();
     window.addEventListener("scroll", note, { passive: true });
@@ -94,7 +95,7 @@ export function FilmProvider({
     keep.current = null;
     if (kept) {
       bringBack(kept);
-      restored.current = { el: kept, y: window.scrollY };
+      restored.current = { place: kept, y: window.scrollY };
     } else if (motion && !arrived.current) {
       arrived.current = true;
       const target = hashTarget();
@@ -103,9 +104,34 @@ export function FilmProvider({
     }
   }, [motion]);
 
+  // ScrollTrigger measures where each pin starts once, but content above a pin can grow afterwards (a
+  // language with longer lines, the app preview loading in). The pins are measured again when the film's
+  // height changes, or the scene below would pin too early and jump to the top.
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!motion) return;
+    const film = root.current!;
+    let height = film.offsetHeight;
+    let timer: number | undefined;
+    const observer = new ResizeObserver(() => {
+      if (film.offsetHeight === height) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        ScrollTrigger.refresh();
+        height = film.offsetHeight;
+      }, 150);
+    });
+    observer.observe(film);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [motion]);
+
   return (
     <FilmContext.Provider value={value}>
       <div
+        ref={root}
         className={`${styles.film} ${className ?? ""}`}
         data-motion={motion ? "on" : "off"}
       >
@@ -117,8 +143,8 @@ export function FilmProvider({
             const last = restored.current;
             keep.current =
               last && Math.abs(window.scrollY - last.y) < 2
-                ? last.el
-                : mostVisibleAnchor();
+                ? last.place
+                : placeOf(mostVisibleAnchor());
             setPaused((was) => !was);
           }}
           disabled={reduced}
@@ -135,6 +161,13 @@ export function FilmProvider({
       </div>
     </FilmContext.Provider>
   );
+}
+
+/** An anchor and how far from the top of the screen it was when the reader's place was noted. */
+type Place = { el: HTMLElement; top: number };
+
+function placeOf(el: HTMLElement | null): Place | null {
+  return el ? { el, top: el.getBoundingClientRect().top } : null;
 }
 
 /**
@@ -169,10 +202,12 @@ function mostVisibleAnchor(): HTMLElement | null {
 }
 
 /**
- * Scrolls an anchor back into view. A day card inside the pinned sideways pan is reached by scrolling to
- * the point of the pan where that card is centred (the pan runs linearly over its ScrollTrigger).
+ * Scrolls an anchor back to where it was on screen. A day card inside the pinned sideways pan is reached by
+ * scrolling to the point of the pan where that card is centred (the pan runs linearly over its
+ * ScrollTrigger). Any other anchor returns to the same height on screen, so a reader deep inside a tall act
+ * sees the same part of it, kept covering the middle of the screen in case the act changed height.
  */
-function bringBack(el: HTMLElement) {
+function bringBack({ el, top }: Place) {
   const track = el.closest<HTMLElement>("[data-pan-track]");
   const pan = ScrollTrigger.getById("thirty-days");
   if (track && pan && track.parentElement) {
@@ -183,9 +218,10 @@ function bringBack(el: HTMLElement) {
     window.scrollTo(0, pan.start + progress * (pan.end - pan.start));
     return;
   }
-  el.scrollIntoView({
-    block: el.hasAttribute("data-day") ? "center" : "start",
-  });
+  const r = el.getBoundingClientRect();
+  const middle = window.innerHeight / 2;
+  const target = Math.min(Math.max(top, middle - r.height), middle);
+  window.scrollTo(0, window.scrollY + r.top - target);
 }
 
 /** The element named by the URL fragment; a malformed fragment such as #100% is ignored, not fatal. */

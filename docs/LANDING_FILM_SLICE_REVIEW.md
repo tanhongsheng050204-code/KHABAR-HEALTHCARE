@@ -111,7 +111,7 @@ Three more scenes are on `/preview/film`, in story order: hero → **Act 1** →
 
 ## Where the words come from
 
-Every clinical word on these acts is the product's own output, not copy written for the page:
+Every medicine line, dose instruction, draft row and safety finding on these acts is the product's own output, not copy written for the page. The labels around them ("Mak's care plan", "Safety check · Blocked", and the lock message on Nurul's phone) are page copy describing what the product does.
 - `services/agents/scripts/make_film_words.py` runs the real `parse_line`, `build_summary` and `evaluate` on the shorthand and the doctor's notes. It writes `web/components/film/product-words.json`, which the acts read.
 - `services/agents/tests/test_film_words.py` fails if the JSON and the agents' output ever differ. It also checks that the stamp really is a CRITICAL finding. If the parser or the dose rules change, rerun the script.
 - Building this found a real parser bug: lowercase shorthand like `bd pc` dropped the medicine. That fix shipped separately as PR #18.
@@ -132,7 +132,7 @@ With the preview in the first load, Lighthouse fell to 88 and LCP to 3.3 s. Load
 
 ## Checks
 
-- **Browser tests:** 106 pass, and 14 are skipped by design (desktop-only or phone-only).
+- **Browser tests:** 113 pass, and 15 are skipped by design (desktop-only or phone-only).
   - New for these acts:
     - revealing and hiding each line, including before it is reached;
     - the draft and the stamp, in both animated and reduced motion;
@@ -142,10 +142,30 @@ With the preview in the first load, Lighthouse fell to 88 and LCP to 3.3 s. Load
     - the thread to Nurul crossing no text;
     - pausing inside Act 2;
     - story order.
+  - Added after the independent review (below):
+    - the thirty-day pan pinning at the top after Tamil or the preview makes the page taller;
+    - Pause keeping the preview and the consent switch at the same height on screen;
+    - Pause stopping the preview's own animations;
+    - a screen-reader description for every act.
   - Every earlier test still passes.
 - **Unit tests:** 35 pass (`npm run test:unit`).
 - **Agents:** 241 pass (`pytest`).
 - **Lint and types:** clean.
+
+## Independent review (29 Sep)
+
+A fresh reviewer read the whole branch. It found 0 critical and 4 important issues; all 4 are fixed, each with a test that failed first:
+1. **The thirty-day pan pinned too early.** Switching to Tamil, or the app preview loading in, made the page taller after the pins were measured. The pan then pinned while still 64–300 px below the top, and jumped. The pins are now measured again whenever the film's height changes, and the preview's reserved space matches its real height.
+2. **Pause lost the reader's place inside tall acts.** It kept the act but scrolled to its top, so a phone reader looking at the preview ended up a full screen away. The part being looked at now stays at the same height on screen.
+3. **Pause did not stop the preview's own animations.** A floating note kept bobbing. The preview now sits inside the landing page's pausable motion root.
+4. **The new acts had no screen-reader description**, which the spec requires for every act. Each now has one sentence.
+
+The review also noted that the doc overstated which words come from the product. The "Where the words come from" section above now names the page copy.
+
+Eight minor points are recorded for phase 2b. Examples:
+- the consent switch's font weight is ignored because of an invalid `font` shorthand;
+- the off-state track of the switch is 2.9:1 against the dusk background;
+- the film-words generator builds the draft by hand instead of through `draft_from_notes`.
 
 ## Screenshots
 

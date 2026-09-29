@@ -65,3 +65,25 @@ test("the app preview's code waits until the reader nears it, keeping the first 
   });
   await expect(preview.getByRole("button").first()).toBeVisible();
 });
+
+test("pausing the film also stops the app preview's own animations", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.getByRole("button", { name: "Pause motion" }).click();
+  const preview = page.locator("#act2 [data-product-preview]");
+  await preview.scrollIntoViewIfNeeded();
+  await expect(preview).toHaveAttribute("data-loaded", "true");
+  await expect(preview.getByRole("button").first()).toBeVisible();
+  const running = await preview.evaluate(
+    (el) =>
+      el
+        .getAnimations({ subtree: true })
+        .filter((a) => a.playState === "running").length,
+  );
+  expect(running).toBe(0);
+});

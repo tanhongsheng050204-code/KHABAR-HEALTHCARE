@@ -252,7 +252,7 @@
 .act2Preview h3 { font-size: clamp(28px, 3.2vw, 40px); margin: 0 0 6px; }
 .act2Preview > p { color: var(--teh); margin: 0 0 18px; }
 /* Holds the preview's space before its code arrives, so loading it never shifts the page. */
-.previewSlot { min-height: 560px; }
+.previewSlot { min-height: 660px; }
 @media (max-width: 760px) { .previewSlot { min-height: 720px; } }
 @media (max-width: 760px) {
   .visit { grid-template-columns: minmax(0, 1fr); }
