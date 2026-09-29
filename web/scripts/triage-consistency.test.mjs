@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { DAY_REPLIES, LANGS, REPLY_STATE, REPLY_TEXT } from "../components/film/messages.ts";
+import { HOMES } from "../components/film/town.ts";
 
 const words = JSON.parse(await readFile(new URL("../../services/agents/data/triage_words.json", import.meta.url), "utf8"));
 const LATIN = /^[a-z' -]+$/;
@@ -41,4 +42,10 @@ for (const [reply, state] of Object.entries(REPLY_STATE)) {
       assert.equal(classify(REPLY_TEXT[reply][id]), state, REPLY_TEXT[reply][id]);
     });
   }
+}
+
+for (const { name, reply, status } of HOMES) {
+  test(`${name}'s reply in the town is triaged as the ${status} the town shows`, () => {
+    assert.equal(classify(reply), status, reply);
+  });
 }
