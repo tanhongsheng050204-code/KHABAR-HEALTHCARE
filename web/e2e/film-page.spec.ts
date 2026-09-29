@@ -385,3 +385,24 @@ test("a reader who scrolls before the page has finished loading stays where they
   await page.waitForTimeout(800);
   await expect(page.locator("#act2 [data-visit]")).toBeInViewport();
 });
+
+test("pausing inside Act 2 keeps the reader on Act 2", async ({ page }) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.locator("#act2 [data-visit]").scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "Pause motion" }).click();
+  await expect(page.locator("#act2 [data-visit]")).toBeInViewport();
+});
+
+test("the acts run in story order: hero, paper, visit, thirty days, daughter", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  const order = await page.evaluate(() =>
+    [...document.querySelectorAll("main section[id^='act']")].map((s) => s.id),
+  );
+  expect(order).toEqual(["act0", "act1", "act2", "act3", "act4"]);
+});
