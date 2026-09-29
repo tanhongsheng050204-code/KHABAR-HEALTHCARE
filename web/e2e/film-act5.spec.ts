@@ -161,3 +161,118 @@ test("the town's lights bob only while it is on screen and motion is on", async 
   await page.getByRole("button", { name: "Pause motion" }).click();
   await expect.poll(running).toBe(0);
 });
+
+const tiltX = (page: Page) =>
+  page
+    .locator("#act5 [data-world]")
+    .evaluate((el) =>
+      parseFloat((el as HTMLElement).style.getPropertyValue("--tilt-x") || "0"),
+    );
+
+/** Hydrated, with the town on screen and every home risen: what a reader sees before turning it. */
+async function settledTown(page: Page) {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page
+    .locator("#act5 [data-town]")
+    .evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await expect
+    .poll(async () => (await houseZ(page)).every((z) => z === 0))
+    .toBe(true);
+}
+
+test("dragging the town turns it", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "A mouse drag.");
+  await settledTown(page);
+  const box = (await page.locator("#act5 [data-town]").boundingBox())!;
+  await page.mouse.move(box.x + 30, box.y + 30);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 230, box.y + 30, { steps: 8 });
+  await page.mouse.up();
+  expect(await tiltX(page)).toBeGreaterThan(0.3);
+});
+
+test("a drag that starts on a home turns the town without selecting the home", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "A mouse drag.");
+  await settledTown(page);
+  const b = (await roof(page, "Mr Muthu").boundingBox())!;
+  const x = b.x + b.width / 2;
+  const y = b.y + b.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - 150, y, { steps: 8 });
+  await page.mouse.move(x, y, { steps: 8 });
+  await page.mouse.up();
+  await expect(home(page, "Mr Muthu")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#act5 [data-home-status]")).toContainText(
+    "Select a home",
+  );
+});
+
+test("mouse screens are not offered device tilt", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "A mouse screen.");
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await expect(
+    page.getByRole("button", { name: "Tilt to explore" }),
+  ).toHaveCount(0);
+});
+
+test("on a touch screen, tilting the phone turns the town once the reader asks for it", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "Touch screens only.");
+  // The reader allows motion access when the browser asks.
+  await page
+    .context()
+    .grantPermissions(["accelerometer", "gyroscope", "magnetometer"]);
+  await page.goto("/preview/film");
+  const tilt = page.getByRole("button", { name: "Tilt to explore" });
+  await tilt.click();
+  await expect(tilt).toHaveAttribute("aria-pressed", "true");
+  const turn = (gamma: number) =>
+    page.evaluate(
+      (g) =>
+        window.dispatchEvent(
+          new DeviceOrientationEvent("deviceorientation", {
+            beta: 50,
+            gamma: g,
+          }),
+        ),
+      gamma,
+    );
+  await turn(45);
+  expect(await tiltX(page)).toBeCloseTo(1, 2);
+  await tilt.click();
+  await expect(tilt).toHaveAttribute("aria-pressed", "false");
+  await turn(-45);
+  expect(await tiltX(page)).toBeCloseTo(1, 2);
+});
+
+test("refusing device tilt says so, and the town can still be dragged", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "Touch screens only.");
+  await page.addInitScript(() => {
+    (
+      DeviceOrientationEvent as unknown as {
+        requestPermission: () => Promise<string>;
+      }
+    ).requestPermission = async () => "denied";
+  });
+  await page.goto("/preview/film");
+  const tilt = page.getByRole("button", { name: "Tilt to explore" });
+  await tilt.click();
+  await expect(tilt).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#act5")).toContainText(
+    "Tilt is off. Drag the town to turn it instead.",
+  );
+});

@@ -329,3 +329,8 @@
   .townStage { height: 400px; }
   .world { --town-scale: 0.66; }
 }
+.townHint { font-size: 14px; color: var(--teh); margin: 12px 0 0; }
+.townStage { cursor: grab; }
+.world[data-dragging] { cursor: grabbing; }
+.tiltButton { margin-top: 12px; font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--kopi); background: transparent; color: var(--kopi); cursor: pointer; }
+.tiltButton[aria-pressed="true"] { background: var(--kopi); color: var(--santan); }

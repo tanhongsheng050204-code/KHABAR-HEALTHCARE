@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useFilm } from "../film-provider";
 import { useInView } from "../use-in-view";
+import { useTilt } from "../use-tilt";
 import { htmlLang } from "../messages";
 import { CLINIC, HOMES, type Home, type TownStatus } from "../town";
 import { SCRUB, ease } from "../tokens";
@@ -58,6 +59,9 @@ export function Act5Town() {
   const inView = useInView(root);
   const [selected, setSelected] = useState<number | null>(null);
   const chosen = HOMES.find((h) => h.id === selected);
+  const stage = useRef<HTMLDivElement>(null);
+  const world = useRef<HTMLDivElement>(null);
+  const { canTilt, tilting, refused, toggleDeviceTilt } = useTilt(stage, world);
 
   useGSAP(
     () => {
@@ -143,9 +147,30 @@ export function Act5Town() {
             <p>Select a home to see its latest reply.</p>
           )}
         </div>
+        <p className={styles.townHint}>
+          {canTilt
+            ? "Drag sideways to turn the town, or tilt your phone."
+            : "Drag to turn the town."}
+        </p>
+        {canTilt ? (
+          <>
+            <button
+              type="button"
+              className={styles.tiltButton}
+              aria-pressed={tilting}
+              onClick={toggleDeviceTilt}
+            >
+              Tilt to explore
+            </button>
+            <p className={styles.townHint} aria-live="polite">
+              {refused ? "Tilt is off. Drag the town to turn it instead." : ""}
+            </p>
+          </>
+        ) : null}
       </div>
-      <div className={styles.townStage} data-town="">
+      <div ref={stage} className={styles.townStage} data-town="">
         <div
+          ref={world}
           className={styles.world}
           data-world=""
           role="group"
