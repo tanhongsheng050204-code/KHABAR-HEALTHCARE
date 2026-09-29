@@ -8,6 +8,17 @@ const noHorizontalScroll = (page: Page) =>
 
 test("no accessibility violations with motion on", async ({ page }) => {
   await page.goto("/preview/film");
+  // Scroll through once so every reveal has played: contrast is judged on the text people see, and text
+  // that is still transparent while waiting for its reveal would otherwise count as unreadable.
+  for (let y = 0; y < 30; y++) {
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.8));
+    await page.waitForTimeout(60);
+  }
+  await page.waitForTimeout(1500);
+  // Back to the top: every reveal has played and stays revealed, and the hero is no longer faded out as it
+  // is while scrolled past.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(1200);
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual(
     [],
@@ -29,7 +40,7 @@ test("no horizontal scroll, even in Tamil at 320 px", async ({ page }) => {
   await page.goto("/preview/film");
   expect(await noHorizontalScroll(page)).toBe(true);
   await page.setViewportSize({ width: 320, height: 720 });
-  await page.getByRole("button", { name: "தமிழ்" }).click();
+  await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
   await page.getByRole("button", { name: "Chest pain" }).click();
   expect(await noHorizontalScroll(page)).toBe(true);
 });
@@ -210,7 +221,7 @@ test("in Tamil at 320 px no chip or bubble runs off the screen, even mid-scroll 
 }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/preview/film");
-  await page.getByRole("button", { name: "தமிழ்" }).click();
+  await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
   expect(await overflowing(page)).toEqual([]);
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.55));
   await page.waitForTimeout(700);
@@ -348,4 +359,29 @@ test("turning a phone sideways and back keeps the reader where they were", async
   await page.waitForTimeout(600);
   const y = await page.evaluate(() => window.scrollY);
   expect(y).toBeGreaterThan(500); // not sent back to the top of the page
+});
+
+test("a reader who scrolls before the page has finished loading stays where they scrolled to", async ({
+  page,
+}) => {
+  // Hold back the scripts, as a slow phone would, so the reader scrolls while the page is still static.
+  await page.route("**/_next/static/chunks/*.js", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.continue();
+  });
+  await page.goto("/preview/film", { waitUntil: "commit" });
+  await page.locator("#act2 [data-visit]").waitFor();
+  await page.evaluate(() =>
+    document
+      .querySelector("#act2 [data-visit]")!
+      .scrollIntoView({ block: "center" }),
+  );
+  // Once the scripts arrive, the pins attach above Act 2; the reader must still be looking at Act 2.
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+    { timeout: 20_000 },
+  );
+  await page.waitForTimeout(800);
+  await expect(page.locator("#act2 [data-visit]")).toBeInViewport();
 });

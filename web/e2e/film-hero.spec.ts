@@ -25,11 +25,11 @@ test("choosing a language changes the greeting, by mouse or keyboard", async ({
   page,
 }) => {
   await page.goto("/preview/film");
-  await page.getByRole("button", { name: "中文" }).click();
+  await page.getByRole("button", { name: "中文", exact: true }).click();
   await expect(page.locator("#act0 [data-from='khabar']")).toContainText(
     "阿姨，今天好吗？",
   );
-  const tamil = page.getByRole("button", { name: "தமிழ்" });
+  const tamil = page.getByRole("button", { name: "தமிழ்", exact: true });
   await tamil.focus();
   await expect(tamil).toBeInViewport();
   await page.keyboard.press("Enter");
@@ -152,7 +152,7 @@ test("the keyboard focus ring is dark enough to see on the cream background (3:1
   page,
 }) => {
   await page.goto("/preview/film");
-  const chip = page.getByRole("button", { name: "中文" });
+  const chip = page.getByRole("button", { name: "中文", exact: true });
   await chip.focus();
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab"); // keyboard focus, so :focus-visible applies
@@ -174,7 +174,7 @@ for (const size of [
     await page.setViewportSize(size);
     await page.goto("/preview/film");
     for (const label of ["BM", "中文", "தமிழ்", "EN"]) {
-      await page.getByRole("button", { name: label }).click();
+      await page.getByRole("button", { name: label, exact: true }).click();
       const hits = await page.evaluate(() => {
         const g = document
           .querySelector("#act0 [data-from='khabar']")!

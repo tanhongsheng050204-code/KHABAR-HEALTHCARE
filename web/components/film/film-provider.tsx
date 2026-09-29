@@ -67,6 +67,18 @@ export function FilmProvider({
   // scroll length above it after the browser's own jump. Child effects (the acts' timelines) run first.
   const keep = useRef<HTMLElement | null>(null);
   const arrived = useRef(false);
+  // Until motion first switches on, note what a reader who scrolls early is looking at: on a slow phone
+  // the pins attach seconds after the page appears, and would otherwise push them somewhere else.
+  const early = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (motion || arrived.current) return;
+    const note = () => {
+      early.current = window.scrollY > 0 ? mostVisibleAnchor() : null;
+    };
+    note();
+    window.addEventListener("scroll", note, { passive: true });
+    return () => window.removeEventListener("scroll", note);
+  }, [motion]);
   useEffect(() => {
     if (!motion && !keep.current) return;
     ScrollTrigger.refresh();
@@ -76,7 +88,9 @@ export function FilmProvider({
       bringBack(kept);
     } else if (motion && !arrived.current) {
       arrived.current = true;
-      hashTarget()?.scrollIntoView({ block: "start" });
+      const target = hashTarget();
+      if (target) target.scrollIntoView({ block: "start" });
+      else if (early.current) bringBack(early.current);
     }
   }, [motion]);
 

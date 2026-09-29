@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   MotionConfig,
   motion,
@@ -18,7 +24,11 @@ const noSubscription = () => () => {};
 export function LandingMotion({ children }: { children: ReactNode }) {
   // The server cannot know the device's reduced-motion setting, so the first render (and hydration)
   // assumes motion is on; the real setting applies straight after, without a hydration mismatch.
-  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
+  const hydrated = useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
   const prefersReduced = useReducedMotion();
   const reduced = hydrated && !!prefersReduced;
   const [paused, setPaused] = useState(false);
@@ -60,6 +70,23 @@ export function LandingMotion({ children }: { children: ReactNode }) {
             </span>
           </button>
         </div>
+      </MotionConfig>
+    </MotionContext.Provider>
+  );
+}
+
+/** Lets a host page (the film) switch the landing components' motion on or off with its own setting. */
+export function LandingMotionScope({
+  enabled,
+  children,
+}: {
+  enabled: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <MotionContext.Provider value={enabled}>
+      <MotionConfig reducedMotion={enabled ? "user" : "always"}>
+        {children}
       </MotionConfig>
     </MotionContext.Provider>
   );

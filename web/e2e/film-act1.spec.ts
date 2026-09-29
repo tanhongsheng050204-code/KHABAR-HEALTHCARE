@@ -47,7 +47,7 @@ test("the plain words follow the language chosen in the hero; the shorthand stay
   page,
 }) => {
   await page.goto("/preview/film");
-  await page.getByRole("button", { name: "中文" }).click();
+  await page.getByRole("button", { name: "中文", exact: true }).click();
   await page.locator("#act1").scrollIntoViewIfNeeded();
   const first = lines(page).first();
   await expect(first).toContainText("每次1粒，早上和晚上，饭后服用。");

@@ -119,7 +119,7 @@ test("the language chosen in the hero carries into the check-ins and answers", a
   page,
 }) => {
   await page.goto("/preview/film");
-  await page.getByRole("button", { name: "中文" }).click();
+  await page.getByRole("button", { name: "中文", exact: true }).click();
   await expect(
     page.locator("article[data-day='1'] [data-from='khabar']"),
   ).toContainText("今天感觉怎么样？吃药了吗？回复这条信息告诉诊所。");
@@ -151,6 +151,8 @@ test("on a short laptop screen the pinned days fit: every caption and thread is 
   test.skip(info.project.name !== "desktop", "Desktop pan.");
   await page.setViewportSize({ width: 1366, height: 650 });
   await page.goto("/preview/film");
+  // Wait for the pins to attach (as a visitor does, by reading for a moment) before scrolling to the act.
+  await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
