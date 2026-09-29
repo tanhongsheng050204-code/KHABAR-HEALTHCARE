@@ -287,3 +287,45 @@
   .kl { grid-template-columns: minmax(0, 1fr); }
   .nurulFigure { width: 120px; }
 }
+
+/* ---------- Act 5: the whole town ---------- */
+.act5 { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; padding: clamp(72px, 12vh, 140px) clamp(16px, 6vw, 96px); background: linear-gradient(180deg, #eaf3ee 0%, #dcebe3 60%, #cfe2d8 100%); }
+.act5Head { position: relative; z-index: 2; }
+.act5Head h2 { font-size: clamp(34px, 4.6vw, 60px); line-height: 1.02; margin: 0 0 18px; }
+.act5 [data-state="ok"] { --status: var(--pandan); }
+.act5 [data-state="watch"] { --status: var(--amber); }
+.act5 [data-state="red"] { --status: var(--cili); }
+.townKey { list-style: none; display: grid; gap: 8px; margin: 0 0 8px; padding: 0; font-size: 15px; }
+.townKey li::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; background: var(--status); box-shadow: 0 0 8px var(--status); }
+.illustrative { font-size: 13px; color: var(--teh); margin: 0 0 18px; }
+.homeStatus { min-height: 7.5em; padding: 14px 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(59, 42, 32, 0.15); }
+.homeStatus p { margin: 6px 0 0; }
+.homeStatus q { font-weight: 600; }
+.townStage { position: relative; height: 560px; perspective: 1400px; touch-action: pan-y; user-select: none; }
+.world { --town-scale: 0.95; position: absolute; left: 50%; top: 50%; width: 480px; height: 480px; margin: -240px 0 0 -240px; transform-style: preserve-3d; transform: rotateX(calc(58deg - var(--tilt-y, 0) * 14deg)) rotateZ(calc(-38deg + var(--tilt-x, 0) * 26deg)) scale(var(--town-scale)); }
+.film[data-motion="on"] .world:not([data-dragging]) { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.board { position: absolute; inset: 0; border-radius: 34px; background: linear-gradient(135deg, #f7fbf8, #e3efe8); box-shadow: 0 60px 90px rgba(18, 60, 45, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.8); }
+.road { position: absolute; background: #cfdcd4; border-radius: 12px; }
+/* The ground never takes a click: a press near a home's base reaches the home, or the stage for dragging. */
+.board, .road { pointer-events: none; }
+.house, .clinic { position: absolute; width: 40px; height: 40px; padding: 0; border: 0; background: none; overflow: visible; transform-style: preserve-3d; }
+.house { --side: #d8b894; --side2: #c9a57f; cursor: pointer; }
+.clinic { --top: #ffffff; --side: #cfe3d9; --side2: #b6d2c4; width: 76px; height: 76px; }
+.faceTop, .faceFront, .faceSide { position: absolute; display: block; }
+.faceTop { inset: 0; transform: translateZ(var(--h)); background: var(--top); border-radius: 6px; }
+.faceFront { left: 0; right: 0; bottom: 0; height: var(--h); transform-origin: bottom; transform: rotateX(-90deg); background: var(--side); }
+.faceSide { top: 0; bottom: 0; right: 0; width: var(--h); transform-origin: right; transform: rotateY(90deg); background: var(--side2); }
+/* The ring sits on the roof, where the eye is; the button's own outline would lie flat on the ground. */
+.film .house:focus-visible { outline: none; }
+.house:focus-visible .faceTop, .house[aria-pressed="true"] .faceTop { box-shadow: 0 0 0 3px var(--kopi); }
+.townLinks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform: translateZ(1px); pointer-events: none; }
+.townThread { fill: none; stroke: var(--status); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; }
+.townThread:not([data-state="ok"]) { stroke-width: 3.5; filter: drop-shadow(0 0 4px var(--status)); }
+.ping { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; background: var(--status); box-shadow: 0 0 20px var(--status); color: #fff; font-weight: 700; font-size: 14px; line-height: 26px; text-align: center; transform: translateZ(var(--z)) rotateZ(38deg) rotateX(-58deg); pointer-events: none; }
+.film[data-motion="on"] .act5[data-inview="true"] .ping { animation: townBob 2.4s ease-in-out infinite; }
+@keyframes townBob { 50% { transform: translateZ(calc(var(--z) + 12px)) rotateZ(38deg) rotateX(-58deg); } }
+@media (max-width: 760px) {
+  .act5 { grid-template-columns: minmax(0, 1fr); }
+  .townStage { height: 400px; }
+  .world { --town-scale: 0.66; }
+}

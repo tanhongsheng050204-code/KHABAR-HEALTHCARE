@@ -397,14 +397,14 @@ test("pausing inside Act 2 keeps the reader on Act 2", async ({ page }) => {
   await expect(page.locator("#act2 [data-visit]")).toBeInViewport();
 });
 
-test("the acts run in story order: hero, paper, visit, thirty days, daughter", async ({
+test("the acts run in story order", async ({
   page,
 }) => {
   await page.goto("/preview/film");
   const order = await page.evaluate(() =>
     [...document.querySelectorAll("main section[id^='act']")].map((s) => s.id),
   );
-  expect(order).toEqual(["act0", "act1", "act2", "act3", "act4"]);
+  expect(order).toEqual(["act0", "act1", "act2", "act3", "act4", "act5"]);
 });
 
 test("the thirty-day pan pins exactly at the top even after the content above it grows", async ({
@@ -490,7 +490,7 @@ test("every act describes its illustration for screen readers", async ({
   page,
 }) => {
   await page.goto("/preview/film");
-  for (const id of ["act0", "act1", "act2", "act3", "act4"]) {
+  for (const id of ["act0", "act1", "act2", "act3", "act4", "act5"]) {
     await expect(
       page.locator(`#${id}`).getByText(/^Illustration: /),
       id,
