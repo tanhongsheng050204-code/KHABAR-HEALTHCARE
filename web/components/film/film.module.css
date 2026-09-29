@@ -318,7 +318,11 @@
 .faceSide { top: 0; bottom: 0; right: 0; width: var(--h); transform-origin: right; transform: rotateY(90deg); background: var(--side2); }
 /* The ring sits on the roof, where the eye is; the button's own outline would lie flat on the ground. */
 .film .house:focus-visible { outline: none; }
-.house:focus-visible .faceTop, .house[aria-pressed="true"] .faceTop { box-shadow: 0 0 0 3px var(--kopi); }
+.house:focus-visible .faceTop { outline: 3px solid var(--kopi); outline-offset: 3px; }
+/* Selected is a filled roof in the home's status colour, never a ring: a ring means keyboard focus. */
+.house[aria-pressed="true"] .faceTop { background: var(--status); box-shadow: 0 0 18px var(--status); }
+@media (max-width: 760px) { .house:focus-visible .faceTop { outline-width: 5px; } }
+@media (forced-colors: active) { .house[aria-pressed="true"] .faceTop { forced-color-adjust: none; background: Highlight; } }
 .townLinks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform: translateZ(1px); pointer-events: none; }
 .townThread { fill: none; stroke: var(--status); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; }
 .townThread:not([data-state="ok"]) { stroke-width: 3.5; filter: drop-shadow(0 0 4px var(--status)); }
@@ -333,6 +337,8 @@
 .townHint { font-size: 14px; color: var(--teh); margin: 12px 0 0; }
 .townStage { cursor: grab; }
 .world[data-dragging] { cursor: grabbing; }
+.turnButtons { display: flex; gap: 10px; margin-top: 12px; }
+.turnButtons button { font: inherit; font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--kopi); background: transparent; color: var(--kopi); cursor: pointer; }
 .tiltButton { margin-top: 12px; font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--kopi); background: transparent; color: var(--kopi); cursor: pointer; }
 .tiltButton[aria-pressed="true"] { background: var(--kopi); color: var(--santan); }
 

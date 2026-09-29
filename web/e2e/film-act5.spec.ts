@@ -304,3 +304,100 @@ test("on a phone the whole town fits across the screen", async ({
   expect(board!.x).toBeGreaterThanOrEqual(0);
   expect(board!.x + board!.width).toBeLessThanOrEqual(width);
 });
+
+test("a drag released outside the town does not leave it following the mouse", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "A mouse drag.");
+  await settledTown(page);
+  const box = (await page.locator("#act5 [data-town]").boundingBox())!;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width - 3, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width + 40, y, { steps: 4 });
+  await page.mouse.up();
+  const before = await tiltX(page);
+  await page.mouse.move(box.x + box.width / 2, y, { steps: 8 });
+  expect(await tiltX(page)).toBe(before);
+  await expect(page.locator("#act5 [data-world]")).not.toHaveAttribute(
+    "data-dragging",
+  );
+});
+
+test("after a drag that ends without a click, the keyboard still selects a home", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Synthetic pointer drag.");
+  await settledTown(page);
+  // A finger drag ends without a click event; imitate that with pointer events alone.
+  await page.locator("#act5 [data-town]").evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const at = (type: string, x: number) =>
+      el.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          pointerId: 1,
+          isPrimary: true,
+          button: type === "pointermove" ? -1 : 0,
+          buttons: type === "pointerup" ? 0 : 1,
+          clientX: r.x + x,
+          clientY: r.y + 20,
+        }),
+      );
+    at("pointerdown", 20);
+    at("pointermove", 80);
+    at("pointerup", 80);
+  });
+  await home(page, "Pak Cik Rahim").focus();
+  await page.keyboard.press("Enter");
+  await expect(home(page, "Pak Cik Rahim")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("the town can be turned with buttons, by mouse or keyboard", async ({
+  page,
+}) => {
+  await settledTown(page);
+  await page.getByRole("button", { name: "Turn right" }).click();
+  expect(await tiltX(page)).toBeCloseTo(0.5, 2);
+  await page.getByRole("button", { name: "Turn left" }).focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  expect(await tiltX(page)).toBeCloseTo(-0.5, 2);
+});
+
+const roofStyle = (page: Page, name: string) =>
+  roof(page, name).evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { background: s.backgroundColor, outline: s.outlineStyle };
+  });
+
+test("the focused home and the selected home look different, even in forced colours", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Keyboard focus.");
+  for (const forcedColors of ["none", "active"] as const) {
+    await page.emulateMedia({ forcedColors });
+    await settledTown(page);
+    await roof(page, "Mr Muthu").click();
+    await page.keyboard.press("Tab");
+    await expect(home(page, "Encik Azman")).toBeFocused();
+    const selected = await roofStyle(page, "Mr Muthu");
+    const focused = await roofStyle(page, "Encik Azman");
+    expect(focused.outline, forcedColors).toBe("solid");
+    expect(selected.outline, forcedColors).toBe("none");
+    expect(selected.background, forcedColors).not.toBe(focused.background);
+  }
+});
+
+test("the emergency reply keeps the note that the clinic may not have seen it yet", async ({
+  page,
+}) => {
+  await settledTown(page);
+  await roof(page, "Mr Muthu").click();
+  await expect(page.locator("#act5 [data-home-status]")).toContainText(
+    "may not have seen it yet",
+  );
+});

@@ -15,7 +15,7 @@ import styles from "../film.module.css";
 const STATUS: Record<TownStatus, { label: string; detail: string }> = {
   ok: {
     label: "Doing well",
-    detail: "Replied that all is well, and Khabar thanked them.",
+    detail: "Replied with nothing of concern, and Khabar thanked them.",
   },
   watch: {
     label: "On the follow-up list",
@@ -25,7 +25,7 @@ const STATUS: Record<TownStatus, { label: string; detail: string }> = {
   red: {
     label: "Emergency advice given",
     detail:
-      "Khabar gave the 999 advice at once. The reply went to the top of the clinic’s follow-up list.",
+      "Khabar gave the 999 advice at once and said the clinic may not have seen it yet. The reply went to the top of the clinic’s follow-up list.",
   },
 };
 const ORDER: TownStatus[] = ["ok", "watch", "red"];
@@ -61,7 +61,10 @@ export function Act5Town() {
   const chosen = HOMES.find((h) => h.id === selected);
   const stage = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
-  const { canTilt, tilting, refused, toggleDeviceTilt } = useTilt(stage, world);
+  const { canTilt, tilting, refused, toggleDeviceTilt, turn } = useTilt(
+    stage,
+    world,
+  );
 
   useGSAP(
     () => {
@@ -184,6 +187,7 @@ export function Act5Town() {
               type="button"
               className={styles.house}
               data-house={h.id}
+              data-state={h.status}
               style={
                 {
                   left: h.x,
@@ -245,6 +249,18 @@ export function Act5Town() {
             ? "Drag sideways to turn the town, or tilt your phone."
             : "Drag to turn the town."}
         </p>
+        <div
+          className={styles.turnButtons}
+          role="group"
+          aria-label="Turn the town"
+        >
+          <button type="button" onClick={() => turn(-0.5)}>
+            Turn left
+          </button>
+          <button type="button" onClick={() => turn(0.5)}>
+            Turn right
+          </button>
+        </div>
         {canTilt ? (
           <>
             <button

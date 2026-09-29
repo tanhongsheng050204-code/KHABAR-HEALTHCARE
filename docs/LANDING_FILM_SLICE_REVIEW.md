@@ -220,36 +220,55 @@ These were measured on the production build, locally, on 29 Sep.
 
 | Budget | Target | Measured | Verdict |
 |---|---|---|---|
-| Lighthouse performance, mobile | ≥ 90 | 85–92 (main before this phase: 87–92) | **Met in about half the runs** (see below) |
+| Lighthouse performance, mobile | ≥ 90 | 85–92, **median 88.5** (4 of 8 runs ≥ 90). Main before this phase: 87–92, median 91 (3 of 5) | **Not met** (see below) |
 | LCP, mobile simulated | ≤ 2.5 s | 2.8 s in fast runs, 3.4 s in slow runs | Missed, as accepted at the slice gate |
 | CLS | ≤ 0.05 | 0 | Met |
-| JS added over `/` | ≤ 70 KB gzip | 65.2 KB | Met |
+| JS added over `/` | ≤ 70 KB gzip | 65.3 KB | Met |
 | Fonts / CSS | ≤ 130 KB / ≤ 45 KB | 67 KB / 34 KB | Met (held by a test) |
 
 **Why the score splits in two:**
 - **The two groups:** every run falls into one of two groups, on `main` too. Fast runs have FCP 0.9 s and score 91–92; slow runs have FCP 1.4–1.5 s and score 85–88.
-- **What differs:** both groups make the same 26 requests (400 KB). The difference is timing: Next.js prefetches the `/login` page (its CSS included) because the header's "Sign in" link is on screen. When that prefetch lands early, Lighthouse's simulation counts it against the first paint.
-- **This phase's share:** its slow runs are about 2 points lower than `main`'s, from the extra JS and CSS of the three acts.
+- **What differs:** both groups make the same 26 requests (400 KB). The difference is timing.
+  - The likely cause, not yet proven by an A/B run: Next.js prefetches the `/login` page (its CSS included) because the header's "Sign in" link is on screen.
+  - When that prefetch lands early, Lighthouse's simulation seems to count it against the first paint.
+- **This phase's share:** its slow runs are about 2 points lower than `main`'s, from the extra JS and CSS of the three acts, and its median fell from 91 to 88.5.
+- **Blocker:** Lighthouse ≥ 90 must be met before the film replaces `/` (phase 3).
 - **Levers, for your call:**
   - turn off prefetch on the header's "Sign in" link, so the login page loads a moment slower when clicked;
   - load GSAP after the first paint, which the slice review already named as the next lever.
 
 ## Checks
 
-- **Browser tests:** 155 pass, and 27 are skipped by design (desktop-only or phone-only). New for these acts:
+- **Browser tests:** 162 pass, and 30 are skipped by design (desktop-only or phone-only). New for these acts:
   - the town's key counts and "Illustrative";
   - selecting a home by mouse, tap and keyboard, and its reply appearing in view on a phone;
   - the end frame and the scroll-in rise;
   - pings and stars stopping off screen and when paused;
   - dragging (a drag never selects a home);
   - device tilt, allowed and refused, and no tilt button on mouse screens;
-  - the whole town fitting a phone, and 24 px target spacing at 320 px;
+  - the whole town fitting a 390 px phone;
+  - every home staying its own target at 320 px. The buttons' ground centres are at least 24 px apart. The roofs of Puan Rosnah's and Mr Lim's homes are 18 px apart there, but each still takes its own tap. At 320 px the board's corners are clipped by about 26 px;
   - Act 6 matching `/` word for word;
   - Act 7's heading and button, the way back to Act 3, and no thread running through its words;
   - the rail, including during the pinned pan;
   - story order and a scene description for every act.
 - **Unit tests:** 47 pass, including the town's 12 replies.
 - **Lint and types:** clean.
+
+## Independent review (29 Sep)
+
+A fresh reviewer read the whole branch and tried it on a build. It found 0 critical and 3 important issues. I raised a fourth to important, because the spec requires the wording. All four are fixed, each with a test that failed first:
+1. **Dragging could get stuck.**
+   - Releasing the mouse just outside the town left the town following the mouse.
+   - After a finger drag, the next keyboard press on a home was swallowed.
+2. **The town could only be turned by dragging.** "Turn left" and "Turn right" buttons now do it by keyboard or a single tap.
+3. **Focus looked the same as selection.** A focused home now gets a ring, and a selected home a roof filled in its status colour. Both stay visible in Windows high-contrast (forced colours) mode.
+4. **The emergency line was missing a caveat.** It dropped the note that the clinic may not have seen the reply yet, which spec §4 requires. The note is back, and the green line now says "nothing of concern" rather than "all is well".
+
+The docs also stated the phone geometry and the Lighthouse results too strongly; both are corrected above. Eight minor points are recorded for phase 3. Examples:
+- "Tilt to explore" can look on but do nothing on a phone without motion sensors;
+- the finale's screen-reader description says "from above" for a side-on skyline;
+- phones see only a third of the finale's homes.
 
 ## Screenshots
 

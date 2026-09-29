@@ -29,8 +29,8 @@ function apply(world: HTMLElement | null, store: Tilt, x: number, y: number) {
 /**
  * Turns the town. Dragging the stage (mouse or finger) sets --tilt-x / --tilt-y on the world, from -1 to 1;
  * a press that moves less than 6 px stays a click, so selecting a home still works, and a drag never
- * selects. Device tilt is offered only on touch screens and only after a tap, because iOS asks permission
- * then; refusing leaves drag working.
+ * selects. turn() steps it from buttons, for keyboards and single taps. Device tilt is offered only on touch
+ * screens and only after a tap, because iOS asks permission then; refusing leaves drag working.
  */
 export function useTilt(
   stage: RefObject<HTMLElement | null>,
@@ -57,6 +57,7 @@ export function useTilt(
     } | null = null;
     let dragged = false;
     const down = (e: PointerEvent) => {
+      if (!e.isPrimary || e.button !== 0) return;
       start = {
         x: e.clientX,
         y: e.clientY,
@@ -68,6 +69,11 @@ export function useTilt(
     };
     const move = (e: PointerEvent) => {
       if (!start || e.pointerId !== start.id) return;
+      // Released somewhere the stage never heard about (outside it, or under a context menu): not a drag.
+      if (e.buttons === 0) {
+        end();
+        return;
+      }
       const dx = e.clientX - start.x;
       const dy = e.clientY - start.y;
       if (!dragged && Math.hypot(dx, dy) < 6) return;
@@ -84,14 +90,20 @@ export function useTilt(
         start.ty + (dy / r.height) * 2,
       );
     };
-    const up = (e: PointerEvent) => {
-      if (!start || e.pointerId !== start.id) return;
+    const end = () => {
       start = null;
       world.current?.removeAttribute("data-dragging");
+      // The click a mouse drag ends with comes in this same task; a finger drag ends with none, and a
+      // later keyboard press must not be swallowed.
+      window.setTimeout(() => (dragged = false), 0);
     };
-    // Capture phase, before React's handlers: the click that ends a drag must not select a home.
+    const up = (e: PointerEvent) => {
+      if (start && e.pointerId === start.id) end();
+    };
+    // Capture phase, before React's handlers: the click that ends a drag must not select a home. Keyboard
+    // and assistive-technology clicks (detail 0) are never a drag's.
     const click = (e: MouseEvent) => {
-      if (!dragged) return;
+      if (!dragged || e.detail === 0) return;
       dragged = false;
       e.stopPropagation();
       e.preventDefault();
@@ -139,5 +151,8 @@ export function useTilt(
     setTilting(true);
   };
 
-  return { canTilt, tilting, refused, toggleDeviceTilt };
+  const turn = (step: number) =>
+    apply(world.current, tilt.current, tilt.current.x + step, tilt.current.y);
+
+  return { canTilt, tilting, refused, toggleDeviceTilt, turn };
 }
