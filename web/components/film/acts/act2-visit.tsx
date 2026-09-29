@@ -1,15 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ShieldAlert } from "lucide-react";
 import { useFilm } from "../film-provider";
 import { Backdrop } from "../backdrop";
 import { PRODUCT_WORDS } from "../product-words";
-import { LandingMotionScope } from "@/components/landing/landing-motion";
-import { ProductPreview } from "@/components/landing/product-preview";
 import styles from "../film.module.css";
+
+// The preview brings the Motion library; loading it only near the reader keeps the first load light
+// (with it in the first load, Lighthouse's mobile score fell from 91 to 88).
+const ScopedProductPreview = dynamic(
+  () => import("../scoped-product-preview").then((m) => m.ScopedProductPreview),
+  { ssr: false },
+);
 
 const { notes, draft, finding } = PRODUCT_WORDS.visit;
 const TIMING: Record<string, string> = {
@@ -26,6 +32,24 @@ export function Act2Visit() {
   const { motion } = useFilm();
   const root = useRef<HTMLElement>(null);
   const [reached, setReached] = useState(false);
+  const previewSlot = useRef<HTMLDivElement>(null);
+  const [previewNear, setPreviewNear] = useState(false);
+
+  useEffect(() => {
+    const slot = previewSlot.current;
+    if (!slot) return;
+    const watch = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setPreviewNear(true);
+          watch.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    watch.observe(slot);
+    return () => watch.disconnect();
+  }, []);
 
   useGSAP(
     () => {
@@ -114,12 +138,17 @@ export function Act2Visit() {
           </div>
         </div>
       </div>
-      <div className={styles.act2Preview} data-product-preview="">
+      <div
+        ref={previewSlot}
+        className={styles.act2Preview}
+        data-product-preview=""
+        data-loaded={previewNear}
+      >
         <h3>Explore the app</h3>
         <p>Switch between the clinic and the patient view.</p>
-        <LandingMotionScope enabled={motion}>
-          <ProductPreview />
-        </LandingMotionScope>
+        <div className={styles.previewSlot}>
+          {previewNear ? <ScopedProductPreview enabled={motion} /> : null}
+        </div>
       </div>
     </section>
   );

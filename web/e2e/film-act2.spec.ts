@@ -8,7 +8,10 @@ test.describe("with reduced motion", () => {
     page,
   }) => {
     await page.goto("/preview/film");
-    await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "true");
+    await expect(page.locator("#act2")).toHaveAttribute(
+      "data-revealed",
+      "true",
+    );
     await expect(page.locator("#act2 [data-draft-row]")).toHaveCount(2);
     await expect(page.locator("#act2 [data-stamp]")).toContainText(FINDING);
   });
@@ -37,9 +40,28 @@ test("pausing part-way shows everything, with no half-revealed state", async ({
   await expect(page.locator("#act2")).toHaveAttribute("data-revealed", "true");
 });
 
-test("the clinic and patient preview still switches views", async ({ page }) => {
+test("the clinic and patient preview still switches views", async ({
+  page,
+}) => {
   await page.goto("/preview/film");
   const preview = page.locator("#act2 [data-product-preview]");
   await preview.scrollIntoViewIfNeeded();
+  await expect(preview.getByRole("button").first()).toBeVisible();
+});
+
+test("the app preview's code waits until the reader nears it, keeping the first load light", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  const preview = page.locator("#act2 [data-product-preview]");
+  await expect(preview).toHaveAttribute("data-loaded", "false");
+  await preview.scrollIntoViewIfNeeded();
+  await expect(preview).toHaveAttribute("data-loaded", "true", {
+    timeout: 10_000,
+  });
   await expect(preview.getByRole("button").first()).toBeVisible();
 });
