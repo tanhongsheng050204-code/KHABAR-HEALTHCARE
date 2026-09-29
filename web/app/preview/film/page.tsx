@@ -10,6 +10,7 @@ import { Act3ThirtyDays } from "@/components/film/acts/act3-thirty-days";
 import { Act4Daughter } from "@/components/film/acts/act4-daughter";
 import { Act5Town } from "@/components/film/acts/act5-town";
 import { Act6Trust } from "@/components/film/acts/act6-trust";
+import { Act7Finale } from "@/components/film/acts/act7-finale";
 import styles from "@/components/film/film.module.css";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function FilmPreviewPage() {
         <Act4Daughter />
         <Act5Town />
         <Act6Trust />
+        <Act7Finale />
       </main>
       <footer className={styles.footer}>
         <Brand compact />
