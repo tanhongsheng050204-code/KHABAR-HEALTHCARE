@@ -1,0 +1,55 @@
+{
+  "rx": [
+    {
+      "shorthand": "Tab metformin 500mg bd pc",
+      "medicine": "metformin 500 mg",
+      "how": {
+        "ms": "1 biji, pagi dan malam, selepas makan.",
+        "en": "1 tablet, morning and night, after food.",
+        "zh": "每次1粒，早上和晚上，饭后服用。",
+        "ta": "1 மாத்திரை, காலை மற்றும் இரவு, சாப்பிட்ட பிறகு."
+      }
+    },
+    {
+      "shorthand": "Tab amlodipine 5mg od",
+      "medicine": "amlodipine 5 mg",
+      "how": {
+        "ms": "1 biji, setiap pagi.",
+        "en": "1 tablet, every morning.",
+        "zh": "每次1粒，每天早上。",
+        "ta": "1 மாத்திரை, தினமும் காலையில்."
+      }
+    },
+    {
+      "shorthand": "Tab paracetamol 1g prn",
+      "medicine": "paracetamol 1000 mg",
+      "how": {
+        "ms": "1 biji, bila perlu sahaja.",
+        "en": "1 tablet, only when needed.",
+        "zh": "每次1粒，需要时才服用。",
+        "ta": "1 மாத்திரை, தேவைப்படும்போது மட்டும்."
+      }
+    }
+  ],
+  "visit": {
+    "notes": "Dx: T2DM, HTN\nTab metformin 5000mg bd pc\nTab amlodipine 5mg od\nReview in 4 weeks",
+    "draft": [
+      {
+        "name": "metformin",
+        "strengthMg": 5000.0,
+        "timesPerDay": 2,
+        "timing": "after_food"
+      },
+      {
+        "name": "amlodipine",
+        "strengthMg": 5.0,
+        "timesPerDay": 1,
+        "timing": null
+      }
+    ],
+    "finding": {
+      "severity": "CRITICAL",
+      "detail": "Metformin 10000 mg a day is above the 3000 mg maximum."
+    }
+  }
+}
