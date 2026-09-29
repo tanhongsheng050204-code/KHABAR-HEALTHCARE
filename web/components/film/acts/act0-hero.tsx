@@ -95,6 +95,7 @@ export function Act0Hero() {
         <Thread
           name="hero"
           shape="wide"
+          fit="cover"
           d={HERO_THREAD}
           viewBox="0 0 1440 900"
           state="ok"
@@ -102,6 +103,7 @@ export function Act0Hero() {
         <Thread
           name="hero"
           shape="tall"
+          fit="cover"
           d={HERO_THREAD_TALL}
           viewBox="0 0 390 844"
           state="ok"
