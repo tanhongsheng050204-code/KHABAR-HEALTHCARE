@@ -20,3 +20,16 @@ def test_every_summary_line_reads_after_food_when_the_shorthand_says_pc():
     metformin = film_words()["rx"][0]
     assert metformin["shorthand"].lower().endswith("pc")
     assert metformin["how"]["en"].endswith("after food.")
+
+
+def test_the_draft_comes_from_the_report_agent_as_the_api_builds_it(monkeypatch):
+    """The film's draft must be what draft_from_notes makes of the notes, so a change there shows up here."""
+    from agents.report_agent import draft_from_notes as real
+
+    def reordered(notes):
+        draft = real(notes)
+        draft.prescription.reverse()
+        return draft
+
+    monkeypatch.setattr("scripts.make_film_words.draft_from_notes", reordered, raising=False)
+    assert [row["name"] for row in film_words()["visit"]["draft"]] == ["amlodipine", "metformin"]

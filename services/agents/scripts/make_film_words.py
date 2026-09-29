@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agents.evaluator import Draft, Rx, evaluate
 from agents.prescription import parse_line
+from agents.report_agent import draft_from_notes
 from agents.summary import build_summary
 
 OUTPUT = Path(__file__).resolve().parents[3] / "web" / "components" / "film" / "product-words.json"
@@ -29,10 +30,15 @@ def film_words() -> dict:
             "how": {lang: build_summary([rx], lang).medicines[0].how for lang in LANGS},
         })
 
-    parsed = [rx for rx in (parse_line(line) for line in NOTES.splitlines()) if rx]
+    # As the API does it: the report agent structures the notes, then the safety check reads that draft
+    # with the notes themselves as its source. The film shows the first CRITICAL finding (the product may
+    # also warn, for example that no plan was written; the film's point is the hard stop).
+    report = draft_from_notes(NOTES)
+    parsed = report.prescription
     draft = Draft(
         prescription=[Rx(name=rx.name, dose_mg=rx.dose_mg, times_per_day=rx.times_per_day) for rx in parsed],
-        report={"diagnosis": "T2DM, HTN", "plan": "Continue treatment", "follow_up": "Review in 4 weeks"},
+        report={"diagnosis": report.diagnosis, "plan": report.plan, "follow_up": report.follow_up},
+        source_text=NOTES,
     )
     critical = next(f for f in evaluate(draft) if f.severity == "CRITICAL")
     return {
