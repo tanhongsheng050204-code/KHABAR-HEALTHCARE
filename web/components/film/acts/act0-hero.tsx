@@ -84,6 +84,7 @@ export function Act0Hero() {
       <section
         ref={root}
         id="act0"
+        data-anchor=""
         className={styles.act0}
         aria-labelledby="act0-title"
       >

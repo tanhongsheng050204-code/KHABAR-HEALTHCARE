@@ -137,3 +137,55 @@ test("fonts and CSS stay light enough for a fast first paint on mobile", async (
   expect(bytes.font).toBeLessThanOrEqual(130 * 1024);
   expect(bytes.stylesheet).toBeLessThanOrEqual(45 * 1024);
 });
+
+test("pausing and resuming keep the reader on the day they were looking at", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "The pinned pan is desktop only.");
+  await page.goto("/preview/film");
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  const day14 = page.locator("article[data-day='14']");
+  // Scroll the pan until Day 14 is on screen.
+  await expect
+    .poll(
+      async () => {
+        await page.evaluate(() => window.scrollBy(0, 200));
+        return day14.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return r.left >= 0 && r.right <= window.innerWidth;
+        });
+      },
+      { timeout: 15_000, intervals: [150] },
+    )
+    .toBe(true);
+  const pause = page.getByRole("button", { name: "Pause motion" });
+  await pause.click();
+  await expect(day14).toBeInViewport();
+  await pause.click();
+  await expect(day14).toBeInViewport({ timeout: 5000 });
+});
+
+test("a malformed link fragment does not break the page", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/preview/film#100%");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.waitForTimeout(500);
+  expect(errors).toEqual([]);
+});
+
+test("after arriving by #act3 and going back up, pausing does not jump back to #act3", async ({
+  page,
+}) => {
+  await page.goto("/preview/film#act3");
+  await expect(page.locator("article[data-day='1']")).toBeInViewport({
+    timeout: 5000,
+  });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const pause = page.getByRole("button", { name: "Pause motion" });
+  await pause.click();
+  await pause.click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
+});

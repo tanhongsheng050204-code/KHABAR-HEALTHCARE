@@ -78,6 +78,7 @@ export function Act3ThirtyDays() {
           .timeline({
             defaults: { ease: ease.scrub, duration: 1 },
             scrollTrigger: {
+              id: "thirty-days",
               trigger: stage.current,
               start: "top top",
               end: () => `+=${distance() * 1.15}`,
@@ -145,12 +146,13 @@ export function Act3ThirtyDays() {
             <em>Keep it going.</em>
           </h2>
         </header>
-        <div ref={track} className={styles.act3Track}>
+        <div ref={track} className={styles.act3Track} data-pan-track="">
           {DAYS.map((d) => (
             <article
               key={d.day}
               className={styles.day}
               data-day={d.day}
+              data-anchor=""
               aria-labelledby={`day-${d.day}`}
             >
               <h3 id={`day-${d.day}`}>Day {d.day}</h3>
@@ -177,7 +179,7 @@ export function Act3ThirtyDays() {
         </div>
       </div>
 
-      <div ref={lab} className={styles.lab} data-lab="">
+      <div ref={lab} className={styles.lab} data-lab="" data-anchor="">
         <div className={styles.labCopy}>
           <h3 id="lab-title">Reply for Aminah</h3>
           <p>

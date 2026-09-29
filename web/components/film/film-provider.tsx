@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -60,17 +61,23 @@ export function FilmProvider({
   const motion = !reduced && !paused;
   const value = useMemo(() => ({ motion, lang, setLang }), [motion, lang]);
 
-  // A visitor who arrives by a link such as #act3 was scrolled there using the static layout. Pinning then
-  // adds scroll length above the target, so once the acts' timelines exist (child effects run first),
-  // scroll to the target again.
+  // Switching motion re-lays out the page (pins added or removed), so the reader's place is kept: the
+  // anchor most on screen before the switch is brought back into view after it. On the first switch to
+  // motion, a visitor who arrived by a link such as #act3 is taken there again, because pinning added
+  // scroll length above it after the browser's own jump. Child effects (the acts' timelines) run first.
+  const keep = useRef<HTMLElement | null>(null);
+  const arrived = useRef(false);
   useEffect(() => {
-    if (!motion || !window.location.hash) return;
-    const target = document.getElementById(
-      decodeURIComponent(window.location.hash.slice(1)),
-    );
-    if (!target) return;
+    if (!motion && !keep.current) return;
     ScrollTrigger.refresh();
-    target.scrollIntoView({ block: "start" });
+    const kept = keep.current;
+    keep.current = null;
+    if (kept) {
+      bringBack(kept);
+    } else if (motion && !arrived.current) {
+      arrived.current = true;
+      hashTarget()?.scrollIntoView({ block: "start" });
+    }
   }, [motion]);
 
   return (
@@ -83,7 +90,10 @@ export function FilmProvider({
         <button
           type="button"
           className={styles.motionToggle}
-          onClick={() => setPaused((was) => !was)}
+          onClick={() => {
+            keep.current = mostVisibleAnchor();
+            setPaused((was) => !was);
+          }}
           disabled={reduced}
           aria-pressed={!motion}
         >
@@ -98,4 +108,51 @@ export function FilmProvider({
       </div>
     </FilmContext.Provider>
   );
+}
+
+/** The [data-anchor] element with the largest area on screen, or null. */
+function mostVisibleAnchor(): HTMLElement | null {
+  let best: HTMLElement | null = null;
+  let bestArea = 0;
+  for (const el of document.querySelectorAll<HTMLElement>("[data-anchor]")) {
+    const r = el.getBoundingClientRect();
+    const w = Math.min(r.right, window.innerWidth) - Math.max(r.left, 0);
+    const h = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+    if (w > 0 && h > 0 && w * h > bestArea) {
+      best = el;
+      bestArea = w * h;
+    }
+  }
+  return best;
+}
+
+/**
+ * Scrolls an anchor back into view. A day card inside the pinned sideways pan is reached by scrolling to
+ * the point of the pan where that card is centred (the pan runs linearly over its ScrollTrigger).
+ */
+function bringBack(el: HTMLElement) {
+  const track = el.closest<HTMLElement>("[data-pan-track]");
+  const pan = ScrollTrigger.getById("thirty-days");
+  if (track && pan && track.parentElement) {
+    const distance = track.scrollWidth - track.parentElement.clientWidth;
+    const centred =
+      el.offsetLeft + el.offsetWidth / 2 - track.parentElement.clientWidth / 2;
+    const progress = Math.min(1, Math.max(0, centred / distance));
+    window.scrollTo(0, pan.start + progress * (pan.end - pan.start));
+    return;
+  }
+  el.scrollIntoView({
+    block: el.hasAttribute("data-day") ? "center" : "start",
+  });
+}
+
+/** The element named by the URL fragment; a malformed fragment such as #100% is ignored, not fatal. */
+function hashTarget(): HTMLElement | null {
+  const raw = window.location.hash.slice(1);
+  if (!raw) return null;
+  try {
+    return document.getElementById(decodeURIComponent(raw));
+  } catch {
+    return document.getElementById(raw);
+  }
 }
