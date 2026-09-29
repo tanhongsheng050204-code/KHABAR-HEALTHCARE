@@ -157,12 +157,18 @@
 .phoneAvatar { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pandan); color: #fff; font-size: 12px; }
 .phoneScreen { display: grid; gap: 10px; }
 
-@media (min-width: 761px) {
-  .act3[data-mode="animated"] .act3Stage { height: 100vh; min-height: 640px; }
+/* The pinned pan, only where a whole scene fits: wide enough and at least 600 px tall (tokens.ts media). */
+@media (min-width: 761px) and (min-height: 600px) {
+  .act3[data-mode="animated"] .act3Stage { height: 100vh; padding: clamp(24px, 6vh, 72px) 0 clamp(12px, 3vh, 56px); }
+  /* The heading shrinks with the screen height and, uncapped, keeps to its two lines, so the day cards fit. */
+  .act3[data-mode="animated"] .act3Head { max-width: none; }
+  .act3[data-mode="animated"] .act3Head h2 { font-size: clamp(30px, 6vh, 64px); margin-bottom: clamp(12px, 2.5vh, 28px); }
   .act3[data-mode="animated"] .act3Track { display: flex; width: max-content; gap: 56px; padding-right: 20vw; will-change: transform; }
-  .act3[data-mode="animated"] .day { width: min(420px, 34vw); flex: none; }
-  .act3[data-mode="animated"] .dayThread { margin-right: -56px; }
+  .act3[data-mode="animated"] .day { width: min(420px, 34vw); flex: none; gap: clamp(8px, 1.6vh, 14px); }
+  .act3[data-mode="animated"] .dayThread { margin-right: -56px; height: clamp(24px, 4vh, 40px); }
   .act3[data-mode="animated"] .dayCaption { min-height: 3.1em; } /* two lines, so every day's thread sits level */
+}
+@media (min-width: 761px) {
   .act3[data-mode="static"] .act3Track { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 }
 

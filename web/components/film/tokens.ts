@@ -10,10 +10,14 @@ export const ease = {
 
 export const duration = { tap: 0.25, enter: 0.7, pop: 0.5 } as const;
 
-/** gsap.matchMedia conditions; the 760 px split matches film.module.css. */
+/**
+ * gsap.matchMedia conditions, matching film.module.css. "desktop" (the pinned sideways pan) needs height as
+ * well as width: a short laptop or a phone turned sideways cannot fit a pinned scene, so it gets the
+ * stacked "mobile" layout instead.
+ */
 export const media = {
-  desktop: "(min-width: 761px)",
-  mobile: "(max-width: 760px)",
+  desktop: "(min-width: 761px) and (min-height: 600px)",
+  mobile: "(max-width: 760px), (max-height: 599px)",
 } as const;
 
 /** Seconds of catch-up smoothing on scrubbed timelines; small enough to feel attached to the finger. */

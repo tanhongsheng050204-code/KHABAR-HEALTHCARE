@@ -144,3 +144,45 @@ test("the day threads are solid lines, not dashes", async ({ page }) => {
     );
   expect(dash.every((d) => d === "none")).toBe(true);
 });
+
+test("on a short laptop screen the pinned days fit: every caption and thread is on screen", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Desktop pan.");
+  await page.setViewportSize({ width: 1366, height: 650 });
+  await page.goto("/preview/film");
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  await page.waitForTimeout(700);
+  const cut = await page.evaluate(() => {
+    const stage = document
+      .querySelector("#act3 > div")!
+      .getBoundingClientRect();
+    const limit = Math.min(stage.bottom, window.innerHeight);
+    return [...document.querySelectorAll("article[data-day]")]
+      .filter((a) => a.getBoundingClientRect().left < window.innerWidth)
+      .filter((a) => a.getBoundingClientRect().bottom > limit + 1)
+      .map((a) => a.getAttribute("data-day"));
+  });
+  expect(cut).toEqual([]);
+});
+
+test("a phone turned sideways stacks the days instead of pinning a pan taller than the screen", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "Landscape phone.");
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto("/preview/film");
+  await page.evaluate(() =>
+    document.getElementById("act3")!.scrollIntoView({ block: "start" }),
+  );
+  const [one, three] = await Promise.all(
+    ["1", "3"].map((d) =>
+      page
+        .locator(`article[data-day='${d}']`)
+        .evaluate((el) => el.getBoundingClientRect().toJSON()),
+    ),
+  );
+  expect(three.top).toBeGreaterThanOrEqual(one.bottom);
+});
