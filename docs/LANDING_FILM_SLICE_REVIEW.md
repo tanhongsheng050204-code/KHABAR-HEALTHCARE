@@ -93,3 +93,67 @@ They are in `.playwright-mcp/` next to the repository, not committed:
 4. **Reply for Aminah:** is it clear what happens for each reply?
 5. **LCP:** accept 2.9 s simulated for now (observed 0.4 s), or make GSAP load after first paint first?
 6. **Go or no-go for phase 2:** Acts 1, 2, 4, 5, 6 and 7, then the real backgrounds.
+
+---
+
+# Phase 2a: Acts 1, 2 and 4 (29 Sep 2026)
+
+Three more scenes are on `/preview/film`, in story order: hero → **Act 1** → **Act 2** → thirty days → **Act 4**. The page at `/` is still unchanged.
+
+- Plan: `docs/superpowers/plans/2026-09-29-landing-film-phase-2a.md`
+
+## What was added
+
+- **Act 1, the paper:** Aminah's prescription in the clinic's shorthand (`Tab metformin 500mg bd pc`). As the reader reaches each line, its plain meaning appears under it in her language ("1 biji, pagi dan malam, selepas makan."). Each line is also a button, so a reader can reveal it early or hide it again. The chips switch all four languages.
+- **Act 2, the fifteen minutes:** the doctor's notes, then Khabar's draft table, then a red stamp on the planted dose error: "Metformin 10000 mg a day is above the 3000 mg maximum." Below it sits the existing clinic and patient preview from `/`. Its code now loads only when the reader comes within 600 px of it (see the budgets below).
+- **Act 4, her daughter in KL:** the thread reaches Nurul's phone, which shows the approved care plan. The switch "Aminah shares her care plan with Nurul" turns sharing off, and her phone then shows only "This care plan is no longer shared with you." The switch works with a mouse, Space and Enter, and the change is announced to screen readers.
+- **Reader's place:** Pause motion now keeps the reader on the act they are looking at, in every act, as it already did in the thirty-day pan. A reader who scrolls before the page has finished loading stays where they scrolled to.
+
+## Where the words come from
+
+Every clinical word on these acts is the product's own output, not copy written for the page:
+- `services/agents/scripts/make_film_words.py` runs the real `parse_line`, `build_summary` and `evaluate` on the shorthand and the doctor's notes. It writes `web/components/film/product-words.json`, which the acts read.
+- `services/agents/tests/test_film_words.py` fails if the JSON and the agents' output ever differ. It also checks that the stamp really is a CRITICAL finding. If the parser or the dose rules change, rerun the script.
+- Building this found a real parser bug: lowercase shorthand like `bd pc` dropped the medicine. That fix shipped separately as PR #18.
+
+## Measured budgets
+
+Measured on the production build, locally, on 29 Sep. Mobile Lighthouse was run three times.
+
+| Budget | Target | Measured | Verdict |
+|---|---|---|---|
+| Lighthouse performance, mobile | ≥ 90 | 90–91 | Met |
+| LCP, mobile simulated | ≤ 2.5 s | 2.9 s simulated (unchanged from the slice); about 0.45 s observed | Missed by 0.4 s, as accepted at the slice gate |
+| CLS | ≤ 0.05 | 0 | Met |
+| JS added over `/` | ≤ 70 KB gzip | about 61 KB | Met |
+| Fonts / CSS | ≤ 130 KB / ≤ 45 KB | 67 KB / 32 KB | Met (held by a test) |
+
+With the preview in the first load, Lighthouse fell to 88 and LCP to 3.3 s. Loading it only when it is near brought both back.
+
+## Checks
+
+- **Browser tests:** 106 pass, and 14 are skipped by design (desktop-only or phone-only).
+  - New for these acts:
+    - revealing and hiding each line, including before it is reached;
+    - the draft and the stamp, in both animated and reduced motion;
+    - consent on and off, by keyboard;
+    - the care plan following the language chips;
+    - the preview loading late;
+    - the thread to Nurul crossing no text;
+    - pausing inside Act 2;
+    - story order.
+  - Every earlier test still passes.
+- **Unit tests:** 35 pass (`npm run test:unit`).
+- **Agents:** 241 pass (`pytest`).
+- **Lint and types:** clean.
+
+## Screenshots
+
+In `.playwright-mcp/` next to the repository (not committed): `p2a-{desktop,phone,reduced}-{act1,act2,act4}.png`.
+
+## Questions for the owner
+
+1. **Act 1:** is it clear that the lines can be tapped, or should the first line reveal on its own as a hint?
+2. **Act 2:** is the stamp strong enough without a sound or shake? (There are none on purpose.)
+3. **Act 4:** Nurul is code-drawn like Aminah. Keep her until the AI art arrives?
+4. **Go or no-go for phase 2b:** Act 5 (the clinic diorama), Act 6 (trust), Act 7 (the finale) and the progress rail.
