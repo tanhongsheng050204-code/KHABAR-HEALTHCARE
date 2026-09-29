@@ -54,13 +54,6 @@ export function Act4Daughter() {
       aria-labelledby="act4-title"
     >
       <Backdrop act="act4" />
-      <Thread
-        name="to-nurul"
-        d="M 0 60 C 300 10, 700 110, 1000 60"
-        viewBox="0 0 1000 120"
-        state="ok"
-        fit="cover"
-      />
       <header className={styles.act4Head}>
         <p className={styles.eyebrow}>Her daughter in Kuala Lumpur</p>
         <h2 id="act4-title">
@@ -69,6 +62,16 @@ export function Act4Daughter() {
           <em>chooses to share.</em>
         </h2>
       </header>
+      {/* Its own strip between the headline and Nurul, so the thread crosses no words. */}
+      <div className={styles.nurulThread}>
+        <Thread
+          name="to-nurul"
+          d="M 0 60 C 300 10, 700 110, 1000 60"
+          viewBox="0 0 1000 120"
+          state="ok"
+          fit="cover"
+        />
+      </div>
       <div className={styles.kl}>
         <div className={styles.nurulFigure}>
           <Nurul />
