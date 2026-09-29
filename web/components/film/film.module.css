@@ -289,19 +289,20 @@
 }
 
 /* ---------- Act 5: the whole town ---------- */
-.act5 { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; padding: clamp(72px, 12vh, 140px) clamp(16px, 6vw, 96px); background: linear-gradient(180deg, #eaf3ee 0%, #dcebe3 60%, #cfe2d8 100%); }
-.act5Head { position: relative; z-index: 2; }
+.act5 { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "head stage" "aside stage"; column-gap: clamp(24px, 4vw, 64px); row-gap: 18px; align-items: center; padding: clamp(72px, 12vh, 140px) clamp(16px, 6vw, 96px); background: linear-gradient(180deg, #eaf3ee 0%, #dcebe3 60%, #cfe2d8 100%); }
+.act5Head { position: relative; z-index: 2; grid-area: head; align-self: end; }
+.townAside { position: relative; z-index: 2; grid-area: aside; align-self: start; }
 .act5Head h2 { font-size: clamp(34px, 4.6vw, 60px); line-height: 1.02; margin: 0 0 18px; }
 .act5 [data-state="ok"] { --status: var(--pandan); }
 .act5 [data-state="watch"] { --status: var(--amber); }
 .act5 [data-state="red"] { --status: var(--cili); }
 .townKey { list-style: none; display: grid; gap: 8px; margin: 0 0 8px; padding: 0; font-size: 15px; }
 .townKey li::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; background: var(--status); box-shadow: 0 0 8px var(--status); }
-.illustrative { font-size: 13px; color: var(--teh); margin: 0 0 18px; }
+.illustrative { font-size: 13px; color: var(--teh); margin: 0; }
 .homeStatus { min-height: 7.5em; padding: 14px 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(59, 42, 32, 0.15); }
 .homeStatus p { margin: 6px 0 0; }
 .homeStatus q { font-weight: 600; }
-.townStage { position: relative; height: 560px; perspective: 1400px; touch-action: pan-y; user-select: none; }
+.townStage { grid-area: stage; position: relative; height: 560px; perspective: 1400px; touch-action: pan-y; user-select: none; }
 .world { --town-scale: 0.95; position: absolute; left: 50%; top: 50%; width: 480px; height: 480px; margin: -240px 0 0 -240px; transform-style: preserve-3d; transform: rotateX(calc(58deg - var(--tilt-y, 0) * 14deg)) rotateZ(calc(-38deg + var(--tilt-x, 0) * 26deg)) scale(var(--town-scale)); }
 .film[data-motion="on"] .world:not([data-dragging]) { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .board { position: absolute; inset: 0; border-radius: 34px; background: linear-gradient(135deg, #f7fbf8, #e3efe8); box-shadow: 0 60px 90px rgba(18, 60, 45, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.8); }
@@ -325,9 +326,9 @@
 .film[data-motion="on"] .act5[data-inview="true"] .ping { animation: townBob 2.4s ease-in-out infinite; }
 @keyframes townBob { 50% { transform: translateZ(calc(var(--z) + 12px)) rotateZ(38deg) rotateX(-58deg); } }
 @media (max-width: 760px) {
-  .act5 { grid-template-columns: minmax(0, 1fr); }
+  .act5 { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "stage" "aside"; }
   .townStage { height: 400px; }
-  .world { --town-scale: 0.66; }
+  .world { --town-scale: 0.56; }
 }
 .townHint { font-size: 14px; color: var(--teh); margin: 12px 0 0; }
 .townStage { cursor: grab; }
@@ -366,7 +367,8 @@
 .film[data-motion="on"] .act7[data-inview="true"] .star:nth-of-type(3n) { animation-delay: -1.1s; }
 .film[data-motion="on"] .act7[data-inview="true"] .star:nth-of-type(3n + 1) { animation-delay: -2.2s; }
 @keyframes twinkle { 50% { transform: scale(0.6); } }
-.act7Copy { position: relative; z-index: 2; max-width: 760px; }
+/* A calm patch of night behind the words, so the rising threads never run through them. */
+.act7Copy { position: relative; z-index: 2; max-width: 860px; padding: clamp(28px, 5vh, 56px) clamp(28px, 6vw, 88px); background: radial-gradient(closest-side, rgba(14, 20, 38, 0.96) 0%, rgba(14, 20, 38, 0.96) 78%, rgba(14, 20, 38, 0) 100%); }
 .act7 .eyebrow, .act7Copy h2 em { color: #9fd9bd; }
 .act7Copy h2 { font-size: clamp(36px, 5vw, 68px); line-height: 1.02; margin: 0 0 28px; }
 .act7Actions { display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: center; align-items: center; }

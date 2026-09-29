@@ -177,3 +177,88 @@ In `.playwright-mcp/` next to the repository (not committed): `p2a-{desktop,phon
 2. **Act 2:** is the stamp strong enough without a sound or shake? (There are none on purpose.)
 3. **Act 4:** Nurul is code-drawn like Aminah. Keep her until the AI art arrives?
 4. **Go or no-go for phase 2b:** Act 5 (the clinic diorama), Act 6 (trust), Act 7 (the finale) and the progress rail.
+
+---
+
+# Phase 2b: Acts 5, 6 and 7 and the progress rail (29 Sep 2026)
+
+The story on `/preview/film` is now complete: hero → paper → visit → thirty days → daughter → **town** → **trust** → **finale**. The page at `/` is still unchanged.
+
+- Plan: `docs/superpowers/plans/2026-09-29-landing-film-phase-2b.md`
+
+## What was added
+
+- **Act 5, the whole town:** one clinic and twelve fictional homes on a small 3D board, drawn with CSS (no WebGL).
+  - Each home has a thread from the clinic, coloured by its latest reply: green (doing well), amber (on the follow-up list) or red (emergency advice given).
+  - The key counts them (8 / 3 / 1) and says "Illustrative".
+  - Each home is a real button. Selecting one, by mouse, tap or keyboard, shows the patient's reply in their own language and what Khabar did, in Act 3's words. On phones the answer appears just below the town.
+  - Scrolling in raises the homes and draws the threads.
+  - The town can be turned by dragging. On phones, "Tilt to explore" asks for motion access after a tap; if that is refused, the page says so and dragging still works.
+- **Act 6, trust:** the three safety principles from `/`, word for word, arriving one at a time on a quiet night.
+- **Act 7, the finale:**
+  - Every home's thread rises into a sky of lights, behind a calm dark patch that keeps the words clear.
+  - It carries the same heading and "Enter the live prototype" button as `/`, plus "Explore the 30-day story", which returns to Act 3.
+  - The finale threads are all soft green, on purpose: a red thread "rising into the sky" could read as a death.
+- **Progress rail (desktop):** eight dots at the right edge.
+  - The current act is marked, including while the thirty-day pan is pinned. Its name shows while you scroll and on hover or focus.
+  - Every dot is a link that jumps to its act.
+  - Phones do not get the rail: only the hero pins there, and a fixed rail would cover text beside the Pause button.
+- **Looping lights:** the town's pings and the finale's stars move only while their act is on screen and motion is on (spec §8).
+
+## Where the words come from
+
+- **Town replies:** every reply in the town is one the film already shows. `web/scripts/triage-consistency.test.mjs` runs each through the product's triage word lists, so a home shown green really is triaged "ok".
+- **Act 6 principles:** a browser test reads them from `/` and from the film and requires them to match.
+- **Act 7 heading:** a browser test checks that `/` shows the same heading.
+- **Page copy:** the status labels ("Doing well", "On the follow-up list", "Emergency advice given") and the names are page copy. The names are fictional.
+
+## Measured budgets
+
+These were measured on the production build, locally, on 29 Sep.
+- **Lighthouse:** mobile, 8 runs on this branch and 5 on `main` (before phase 2b), both measured the same way.
+- **Weights:** from the browser tests.
+
+| Budget | Target | Measured | Verdict |
+|---|---|---|---|
+| Lighthouse performance, mobile | ≥ 90 | 85–92 (main before this phase: 87–92) | **Met in about half the runs** (see below) |
+| LCP, mobile simulated | ≤ 2.5 s | 2.8 s in fast runs, 3.4 s in slow runs | Missed, as accepted at the slice gate |
+| CLS | ≤ 0.05 | 0 | Met |
+| JS added over `/` | ≤ 70 KB gzip | 65.2 KB | Met |
+| Fonts / CSS | ≤ 130 KB / ≤ 45 KB | 67 KB / 34 KB | Met (held by a test) |
+
+**Why the score splits in two:**
+- **The two groups:** every run falls into one of two groups, on `main` too. Fast runs have FCP 0.9 s and score 91–92; slow runs have FCP 1.4–1.5 s and score 85–88.
+- **What differs:** both groups make the same 26 requests (400 KB). The difference is timing: Next.js prefetches the `/login` page (its CSS included) because the header's "Sign in" link is on screen. When that prefetch lands early, Lighthouse's simulation counts it against the first paint.
+- **This phase's share:** its slow runs are about 2 points lower than `main`'s, from the extra JS and CSS of the three acts.
+- **Levers, for your call:**
+  - turn off prefetch on the header's "Sign in" link, so the login page loads a moment slower when clicked;
+  - load GSAP after the first paint, which the slice review already named as the next lever.
+
+## Checks
+
+- **Browser tests:** 155 pass, and 27 are skipped by design (desktop-only or phone-only). New for these acts:
+  - the town's key counts and "Illustrative";
+  - selecting a home by mouse, tap and keyboard, and its reply appearing in view on a phone;
+  - the end frame and the scroll-in rise;
+  - pings and stars stopping off screen and when paused;
+  - dragging (a drag never selects a home);
+  - device tilt, allowed and refused, and no tilt button on mouse screens;
+  - the whole town fitting a phone, and 24 px target spacing at 320 px;
+  - Act 6 matching `/` word for word;
+  - Act 7's heading and button, the way back to Act 3, and no thread running through its words;
+  - the rail, including during the pinned pan;
+  - story order and a scene description for every act.
+- **Unit tests:** 47 pass, including the town's 12 replies.
+- **Lint and types:** clean.
+
+## Screenshots
+
+In `.playwright-mcp/` next to the repository (not committed): `p2b-{desktop,phone,reduced}-{act5,act6,act7}.png`.
+
+## Questions for the owner
+
+1. **The town:** do the simple box homes read well next to the painted acts, or should they get roofs and windows before the switch-over?
+2. **Tilt:** please try "Tilt to explore" on a real phone. Emulators cannot show how it feels.
+3. **The rail:** is the right edge the right place, and is desktop-only right?
+4. **Lighthouse:** turn off the "Sign in" prefetch now, or handle performance in phase 3?
+5. **Phase 3:** generate the AI backgrounds (the prompts are in the slice plan's appendix), then make the film the real `/`.

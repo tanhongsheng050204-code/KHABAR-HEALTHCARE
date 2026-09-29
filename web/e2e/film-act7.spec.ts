@@ -92,3 +92,34 @@ test("the stars twinkle only while the finale is on screen and motion is on", as
   await page.getByRole("button", { name: "Pause motion" }).click();
   await expect.poll(running).toBe(0);
 });
+
+test("no thread of light runs through the finale's words or buttons", async ({
+  page,
+}) => {
+  await page.goto("/preview/film");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(1500);
+  const sharp = (await import("sharp")).default;
+  for (const target of [
+    page.locator("#act7-title"),
+    page
+      .locator("#act7")
+      .getByRole("link", { name: "Enter the live prototype" }),
+    page
+      .locator("#act7")
+      .getByRole("link", { name: "Explore the 30-day story" }),
+  ]) {
+    const png = await page.screenshot({ clip: (await target.boundingBox())! });
+    const { data, info } = await sharp(png)
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    let glowing = 0;
+    for (let i = 0; i < data.length; i += info.channels) {
+      const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+      // The thread's bright green (#7fd1a8): green well above red, and bright. The heading's own green
+      // italic (#9fd9bd) is paler: its red is above 140.
+      if (g > 170 && g - r > 60 && r < 140 && b > 130) glowing++;
+    }
+    expect(glowing, (await target.textContent()) ?? "").toBe(0);
+  }
+});

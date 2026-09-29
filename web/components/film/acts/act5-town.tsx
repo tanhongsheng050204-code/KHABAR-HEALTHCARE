@@ -128,45 +128,6 @@ export function Act5Town() {
         <p className={styles.illustrative}>
           Illustrative: fictional homes, names and replies.
         </p>
-        <div
-          className={styles.homeStatus}
-          data-home-status=""
-          aria-live="polite"
-        >
-          {chosen ? (
-            <>
-              <strong>
-                {chosen.name} · {STATUS[chosen.status].label}
-              </strong>
-              <p>
-                Replied <q lang={htmlLang(chosen.lang)}>{chosen.reply}</q>
-              </p>
-              <p>{STATUS[chosen.status].detail}</p>
-            </>
-          ) : (
-            <p>Select a home to see its latest reply.</p>
-          )}
-        </div>
-        <p className={styles.townHint}>
-          {canTilt
-            ? "Drag sideways to turn the town, or tilt your phone."
-            : "Drag to turn the town."}
-        </p>
-        {canTilt ? (
-          <>
-            <button
-              type="button"
-              className={styles.tiltButton}
-              aria-pressed={tilting}
-              onClick={toggleDeviceTilt}
-            >
-              Tilt to explore
-            </button>
-            <p className={styles.townHint} aria-live="polite">
-              {refused ? "Tilt is off. Drag the town to turn it instead." : ""}
-            </p>
-          </>
-        ) : null}
       </div>
       <div ref={stage} className={styles.townStage} data-town="">
         <div
@@ -257,6 +218,48 @@ export function Act5Town() {
             </span>
           ))}
         </div>
+      </div>
+      {/* After the town, so on a phone the reply a reader taps for shows up just below it. */}
+      <div className={styles.townAside}>
+        <div
+          className={styles.homeStatus}
+          data-home-status=""
+          aria-live="polite"
+        >
+          {chosen ? (
+            <>
+              <strong>
+                {chosen.name} · {STATUS[chosen.status].label}
+              </strong>
+              <p>
+                Replied <q lang={htmlLang(chosen.lang)}>{chosen.reply}</q>
+              </p>
+              <p>{STATUS[chosen.status].detail}</p>
+            </>
+          ) : (
+            <p>Select a home to see its latest reply.</p>
+          )}
+        </div>
+        <p className={styles.townHint}>
+          {canTilt
+            ? "Drag sideways to turn the town, or tilt your phone."
+            : "Drag to turn the town."}
+        </p>
+        {canTilt ? (
+          <>
+            <button
+              type="button"
+              className={styles.tiltButton}
+              aria-pressed={tilting}
+              onClick={toggleDeviceTilt}
+            >
+              Tilt to explore
+            </button>
+            <p className={styles.townHint} aria-live="polite">
+              {refused ? "Tilt is off. Drag the town to turn it instead." : ""}
+            </p>
+          </>
+        ) : null}
       </div>
     </section>
   );

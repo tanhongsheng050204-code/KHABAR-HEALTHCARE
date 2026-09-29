@@ -276,3 +276,31 @@ test("refusing device tilt says so, and the town can still be dragged", async ({
     "Tilt is off. Drag the town to turn it instead.",
   );
 });
+
+test("on a phone, tapping a home shows its reply where the reader is looking", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "The phone layout.");
+  await settledTown(page);
+  await roof(page, "Mr Muthu").click();
+  await expect(page.locator("#act5 [data-home-status]")).toContainText(
+    "நெஞ்சு வலி.",
+  );
+  await expect(page.locator("#act5 [data-home-status]")).toBeInViewport({
+    ratio: 1,
+  });
+});
+
+test("on a phone the whole town fits across the screen", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "The phone layout.");
+  await settledTown(page);
+  const board = await page
+    .locator("#act5 [data-world] > div")
+    .first()
+    .boundingBox();
+  const width = page.viewportSize()!.width;
+  expect(board!.x).toBeGreaterThanOrEqual(0);
+  expect(board!.x + board!.width).toBeLessThanOrEqual(width);
+});
