@@ -281,3 +281,67 @@ In `.playwright-mcp/` next to the repository (not committed): `p2b-{desktop,phon
 3. **The rail:** is the right edge the right place, and is desktop-only right?
 4. **Lighthouse:** turn off the "Sign in" prefetch now, or handle performance in phase 3?
 5. **Phase 3:** generate the AI backgrounds (the prompts are in the slice plan's appendix), then make the film the real `/`.
+
+---
+
+# Phase 3: polish, performance and the switch-over (30 Sep 2026)
+
+**The storybook film is now the landing page at `/`.**
+- `/preview/film` permanently redirects to it.
+- The old hero, care-story, care-thread and followup-story sections are gone.
+- The page keeps the old title ("Care that carries on") and is open to search engines.
+
+- Plan: `docs/superpowers/plans/2026-09-30-landing-film-phase-3.md`
+
+## What changed
+
+- **Every deferred minor from the slice, phase 2a and phase 2b is fixed or ruled on.** The main ones:
+  - **Pause:** it stops everything at once, including hover lifts and colour fades. It comes first in keyboard order, and the served page no longer claims "Reduced motion is on" before the browser has said so.
+  - **Loops:** the hero, the day threads, the blinks and the scroll cue loop only while on screen. The thread breathes with opacity, not a blurred stroke width.
+  - **The Act 3 caption:** Day 7 quotes her reply in the chosen language.
+  - **Bold labels:** the chips, reply buttons and consent switch get their bold labels (the font declaration was invalid). The switch's off track now reaches 3:1.
+  - **Reloading mid-page:** a reload part-way down no longer hides and re-shows what the reader already passed.
+  - **The town:**
+    - the homes sit on an even ring, so every roof is its own target (at least 32 px apart at 320 px), and the whole town fits a 320 px phone;
+    - pressing a selected home again clears it;
+    - the amber threads are drawn darker, for 3:1 against the board;
+    - tilt switches itself off, and says so, when no sensor answers.
+  - **The finale:** its description matches the drawing, and phones get a tall sky that shows every home.
+  - **The visit draft:** it is built exactly as the API builds it, through the report agent, then the safety check with the notes as its source.
+  - **The art pipeline:**
+    - batches merge instead of overwriting;
+    - duplicate source files are refused;
+    - Act 3's wide art keeps its morning end in view;
+    - the hero art, once it exists, is preloaded.
+- **`landing.module.css`** keeps only what the app preview uses: 37.7 KB → 12.9 KB. Five preview states on desktop and phone are pixel-identical before and after.
+
+## Measured
+
+On the production build, locally, 30 Sep:
+
+| Budget | Target | Measured | Verdict |
+|---|---|---|---|
+| Lighthouse performance, mobile | ≥ 90 | 94, 95, 95, 95, 95 (median 95) | **Met** |
+| LCP, mobile simulated | ≤ 2.5 s | 2.8 s | Missed by 0.3 s (see below) |
+| FCP / TBT / CLS | — | 0.9 s / 120–140 ms / 0 | — |
+| JS over the old landing page | ≤ 70 KB | +1.7 KB | Met |
+| Fonts / CSS | ≤ 130 / 45 KB | 67 / 25 KB | Met |
+
+**About LCP:**
+- **The element:** the LCP element is the hero's lede text.
+- **What delays it:** even with JavaScript off, its first paint waits for one long layout of the whole page, about 150 ms on this Windows machine.
+  - Bisecting found Act 1 the largest share. Part of it is shaping the Chinese and Tamil text, and part is looking up the named monospace fonts.
+  - Both are local system-font lookups, which differ on phones.
+- **Next levers,** if the owner wants the last 0.3 s:
+  - `content-visibility: auto` on the acts below the fold (it needs care with the pinned scenes);
+  - a plain `monospace` font stack.
+
+## Checks
+
+- **Browser tests:** about 200 pass, all against `/`, on desktop and phone. The copy tests compare with the old landing page's words as recorded before the switch. The JS budget compares with the old page's recorded size.
+- **Unit tests:** 49 pass. **Agents:** 242 pass. **Lint and types:** clean.
+
+## Still for the owner
+
+- **The painted AI backgrounds:** the prompts are in the slice plan's appendix. Drop the files in a folder and run `node scripts/film-assets.mjs <folder>` from `web/`. Until then, every act uses its gradient placeholder.
+- **Real devices:** try "Tilt to explore" on a real phone.
