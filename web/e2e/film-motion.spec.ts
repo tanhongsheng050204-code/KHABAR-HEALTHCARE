@@ -189,3 +189,34 @@ test.describe("with reduced motion, the page does no layout work while scrolling
     ).toBe(0);
   });
 });
+
+test("the words paint before the film's motion is set up, even on a slow phone", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "A slow phone.");
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await page.addInitScript(() => {
+    const w = window as unknown as { motionOnAt: number };
+    new MutationObserver(() => {
+      const film = document.querySelector("[data-motion]");
+      if (film?.getAttribute("data-motion") === "on" && !w.motionOnAt)
+        w.motionOnAt = performance.now();
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-motion"],
+    });
+  });
+  await page.goto("/");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  const { fcp, motionOnAt } = await page.evaluate(() => ({
+    fcp: performance.getEntriesByName("first-contentful-paint")[0]?.startTime,
+    motionOnAt: (window as unknown as { motionOnAt: number }).motionOnAt,
+  }));
+  expect(fcp).toBeDefined();
+  expect(fcp).toBeLessThan(motionOnAt);
+});
