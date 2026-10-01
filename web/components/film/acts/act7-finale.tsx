@@ -9,7 +9,7 @@ import { useFilm } from "../film-provider";
 import { useInView } from "../use-in-view";
 import { Backdrop } from "../backdrop";
 import { HOMES } from "../town";
-import { SCRUB, ease } from "../tokens";
+import { SCRUB, ease, media } from "../tokens";
 import styles from "../film.module.css";
 
 /**
@@ -113,28 +113,38 @@ export function Act7Finale() {
   useGSAP(
     () => {
       if (!motion) return;
-      gsap
-        .timeline({
-          defaults: { duration: 1, ease: ease.scrub },
-          scrollTrigger: {
-            trigger: root.current,
-            start: "top 70%",
-            end: "bottom bottom",
-            scrub: SCRUB,
-          },
-        })
-        .fromTo(
-          "[data-sky-thread]",
-          { strokeDashoffset: 1 },
-          { strokeDashoffset: 0, autoRound: false, stagger: 0.04 },
-          0,
-        )
-        .fromTo(
-          "[data-star]",
-          { opacity: 0 },
-          { opacity: 1, stagger: 0.04 },
-          0.6,
-        );
+      // Animate only the sky this screen shows: the hidden one would stretch the staggers.
+      const mm = gsap.matchMedia();
+      for (const [query, shape] of [
+        [media.wideSky, "wide"],
+        [media.tallSky, "tall"],
+      ] as const) {
+        mm.add(query, () => {
+          const sky = `[data-shape="${shape}"]`;
+          gsap
+            .timeline({
+              defaults: { duration: 1, ease: ease.scrub },
+              scrollTrigger: {
+                trigger: root.current,
+                start: "top 70%",
+                end: "bottom bottom",
+                scrub: SCRUB,
+              },
+            })
+            .fromTo(
+              `${sky} [data-sky-thread]`,
+              { strokeDashoffset: 1 },
+              { strokeDashoffset: 0, autoRound: false, stagger: 0.04 },
+              0,
+            )
+            .fromTo(
+              `${sky} [data-star]`,
+              { opacity: 0 },
+              { opacity: 1, stagger: 0.04 },
+              0.6,
+            );
+        });
+      }
     },
     { scope: root, dependencies: [motion], revertOnUpdate: true },
   );

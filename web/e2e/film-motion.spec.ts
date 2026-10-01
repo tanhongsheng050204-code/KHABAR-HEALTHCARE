@@ -95,6 +95,9 @@ test("while paused nothing animates, not even hover lifts or the thread's colour
     "off",
   );
   await page.getByRole("button", { name: "EN", exact: true }).hover();
+  // The site-wide buttons too: the header's Sign in and the hero's call to action.
+  await page.getByRole("link", { name: "Sign in" }).hover();
+  await page.getByRole("link", { name: "Find your care space" }).hover();
   await page.getByRole("button", { name: "A bit dizzy" }).click();
   const running = await page.evaluate(
     () =>
@@ -219,4 +222,21 @@ test("the words paint before the film's motion is set up, even on a slow phone",
   }));
   expect(fcp).toBeDefined();
   expect(fcp).toBeLessThan(motionOnAt);
+});
+
+test("the skip link comes first in keyboard order, then Pause motion", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "Keyboard order.");
+  await page.goto("/");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: /^Skip to/ })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Pause motion" }),
+  ).toBeFocused();
 });

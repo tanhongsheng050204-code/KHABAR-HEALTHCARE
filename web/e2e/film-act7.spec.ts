@@ -164,3 +164,42 @@ test("on a phone the finale shows every home and its thread", async ({
   );
   expect(homes).toBe(12);
 });
+
+test("the finale's scroll animation drives only the sky on screen", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator("[data-motion]")).toHaveAttribute(
+    "data-motion",
+    "on",
+  );
+  // GSAP writes inline styles on what it animates; the hidden sky must be left alone.
+  const touched = await page
+    .locator("#act7 [data-sky-thread], #act7 [data-star]")
+    .evaluateAll(
+      (els) =>
+        els
+          .filter((el) => el.getBoundingClientRect().width === 0)
+          .filter((el) => (el as SVGElement).style.length > 0).length,
+    );
+  expect(touched).toBe(0);
+});
+
+test("on a portrait tablet the finale still shows every home", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "desktop", "A tablet-sized window.");
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(800);
+  const homes = await page.locator("#act7 [data-sky-home]").evaluateAll(
+    (els, w) =>
+      els.filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.left >= 0 && r.right <= w;
+      }).length,
+    768,
+  );
+  expect(homes).toBe(12);
+});

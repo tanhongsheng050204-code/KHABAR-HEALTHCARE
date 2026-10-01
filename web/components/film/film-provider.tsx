@@ -47,9 +47,12 @@ function subscribe(onChange: () => void) {
 export function FilmProvider({
   children,
   className,
+  skipLink,
 }: {
   children: ReactNode;
   className?: string;
+  /** The page's skip link: first in keyboard order, with Pause motion right after it. */
+  skipLink?: ReactNode;
 }) {
   // The server cannot see the device setting, so it renders every act's static end frame (motion off);
   // the scenes switch to their animated layout once the browser confirms motion is allowed.
@@ -155,7 +158,9 @@ export function FilmProvider({
         className={`${styles.film} ${className ?? ""}`}
         data-motion={motion ? "on" : "off"}
       >
-        {/* First in keyboard order: the way to stop motion should not sit behind the whole story. */}
+        {skipLink}
+        {/* Second in keyboard order, after the skip link: the way to stop motion should not sit behind the
+            whole story. */}
         <button
           type="button"
           className={styles.motionToggle}

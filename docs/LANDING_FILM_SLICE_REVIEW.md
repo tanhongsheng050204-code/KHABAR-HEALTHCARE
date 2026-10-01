@@ -341,6 +341,21 @@ On the production build, locally, 30 Sep:
 - **Browser tests:** about 200 pass, all against `/`, on desktop and phone. The copy tests compare with the old landing page's words as recorded before the switch. The JS budget compares with the old page's recorded size.
 - **Unit tests:** 49 pass. **Agents:** 242 pass. **Lint and types:** clean.
 
+## Independent review (1 Oct)
+
+A fresh reviewer read the whole branch. It found 0 critical and 1 important issue, and I raised three of its minor points to important because each costs visitors something visible. All four are fixed, each with a test that failed first:
+1. **Pause missed the site-wide buttons.** "Sign in", "Find your care space" and "Enter the live prototype" still lifted on hover while paused; they no longer do.
+2. **The finale's scroll animation also drove the hidden sky.** The visible finale finished early on desktop and stalled at first on phones. It now animates only the sky on screen.
+3. **Portrait tablets lost half the finale's homes.** Any window taller than wide now gets the tall sky.
+4. **The skip link had become the second Tab stop.** It is first again, with Pause right after it.
+
+Five minor points are recorded:
+- a reload can skip Act 6's reveal on desktop (cosmetic);
+- the stray-transition cleanup covers the whole document, not just the film;
+- the redirect test checks the landing URL but not that the redirect is permanent;
+- old in-page links such as `/#safety` now land at the top;
+- one orphan comment is left in `landing.module.css`.
+
 ## Still for the owner
 
 - **The painted AI backgrounds:** the prompts are in the slice plan's appendix. Drop the files in a folder and run `node scripts/film-assets.mjs <folder>` from `web/`. Until then, every act uses its gradient placeholder.

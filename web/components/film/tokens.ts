@@ -18,6 +18,9 @@ export const duration = { tap: 0.25, enter: 0.7, pop: 0.5 } as const;
 export const media = {
   desktop: "(min-width: 761px) and (min-height: 600px)",
   mobile: "(max-width: 760px), (max-height: 599px)",
+  /** The finale's tall sky: phones, and any window taller than it is wide (film.module.css matches). */
+  tallSky: "(max-width: 760px), (max-aspect-ratio: 1/1)",
+  wideSky: "(min-width: 761px) and (min-aspect-ratio: 1/1)",
 } as const;
 
 /** Seconds of catch-up smoothing on scrubbed timelines; small enough to feel attached to the finger. */

@@ -27,6 +27,8 @@
 .film [lang="ta"] { font-family: var(--film-ta), var(--film-body), sans-serif; }
 /* Kopi on santan is ~13:1; the focus ring must reach 3:1 against the page (WCAG 1.4.11). */
 .film :where(a, button):focus-visible { outline: 3px solid var(--kopi); outline-offset: 3px; border-radius: 10px; }
+/* Paused (or reduced motion), no link or button animates, the site-wide .button-* styles included. */
+.film[data-motion="off"] :is(a, button) { transition: none; }
 
 .srOnly {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -376,7 +378,8 @@
 .backdrop[data-act="act7"]:not(:has(picture)) { background: radial-gradient(70% 45% at 50% 100%, rgba(127, 209, 168, 0.18) 0%, transparent 70%); }
 .sky { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .sky[data-shape="tall"] { display: none; }
-@media (max-width: 760px) {
+/* Phones and portrait tablets get the tall sky (tokens.ts media.tallSky): the wide one is cropped at its sides there. */
+@media (max-width: 760px), (max-aspect-ratio: 1/1) {
   .sky[data-shape="wide"] { display: none; }
   .sky[data-shape="tall"] { display: block; }
 }

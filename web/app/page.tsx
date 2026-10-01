@@ -19,10 +19,14 @@ export const metadata: Metadata = { title: "Care that carries on" };
 /** The landing page: Aminah's day as a storybook film (docs/superpowers/specs/2026-09-28-...-design.md). */
 export default function LandingPage() {
   return (
-    <FilmProvider className={fontVariables}>
-      <a className={styles.skipLink} href="#act3">
-        Skip to the thirty days at home
-      </a>
+    <FilmProvider
+      className={fontVariables}
+      skipLink={
+        <a className={styles.skipLink} href="#act3">
+          Skip to the thirty days at home
+        </a>
+      }
+    >
       <header className={styles.header}>
         <Brand />
         <Link className="button-secondary" href="/login">
