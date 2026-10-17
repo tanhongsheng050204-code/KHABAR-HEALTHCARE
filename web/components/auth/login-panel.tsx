@@ -120,6 +120,19 @@ export function LoginPanel() {
     }
   }
 
+  // The landing page's "open the demo" links arrive as /login?demo=doctor (or patient) and start
+  // that demo straight away, so a visitor reaches the workspace in one click.
+  const demoStarted = useRef(false);
+  useEffect(() => {
+    if (demoStarted.current) return;
+    const role = new URLSearchParams(window.location.search).get("demo");
+    if (role !== "doctor" && role !== "patient") return;
+    demoStarted.current = true;
+    void demo(role);
+    // demo() only reads state owned by this component; running it once on arrival is the intent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function demo(role: "doctor" | "patient" | "caregiver") {
     setBusy(role);
     setMessage(null);
@@ -472,7 +485,7 @@ export function LoginPanel() {
       <div className={styles.divider}>
         <span>Take a look around with fictional data</span>
       </div>
-      <div className={styles.demoGrid}>
+      <div className={styles.demoGrid} id="demo">
         <button onClick={() => void demo("doctor")} disabled={!!busy}>
           <span>
             <Stethoscope size={18} />

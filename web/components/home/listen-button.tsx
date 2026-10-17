@@ -66,7 +66,8 @@ export function ListenButton({ text, language }: { text: string; language: Summa
   if (voice === undefined) return null;
   if (voice === null)
     return (
-      <small style={{ color: "var(--ink-soft)" }}>
+      // Inherits the card's text colour, so it stays readable on the dark care-plan card and on white.
+      <small style={{ color: "inherit", opacity: 0.78 }}>
         Read aloud needs a {LANGUAGE_NAME[language]} voice on this device.
       </small>
     );

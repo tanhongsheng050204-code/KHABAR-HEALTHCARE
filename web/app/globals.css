@@ -342,23 +342,26 @@
   }
 }
 :root {
-  --night: #071f24;
-  --night-2: #0b3033;
+  --night: #10241f;
+  --night-2: #1b3631;
   --tidal: #0c6662;
   --tidal-bright: #18847d;
   --glass: #bfe3db;
-  --porcelain: #f8fbfa;
+  --porcelain: #f6f8f7;
+  --mist: #eef2f0;
+  --ink-mute: #61716c;
   --paper: #fff;
   --amber: #d8912b;
   --urgent: #c64037;
   --blue: #3d6f8d;
-  --ink-soft: #587073;
-  --line: #dbe8e5;
-  --shadow-soft: 0 20px 60px rgb(7 31 36 / 9%);
-  --shadow-float: 0 30px 90px rgb(7 31 36 / 16%);
-  --radius-sm: 10px;
-  --radius: 18px;
-  --radius-lg: 30px;
+  --ink-soft: #4f625c;
+  --line: #e3e9e6;
+  --line-strong: #d3dcd8;
+  --shadow-soft: 0 1px 2px rgb(16 36 31 / 5%);
+  --shadow-float: 0 18px 48px rgb(16 36 31 / 12%);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
 }
 * {
   box-sizing: border-box;
@@ -373,7 +376,8 @@ body {
   margin: 0;
   color: var(--night);
   background: var(--porcelain);
-  font-family: var(--font-sans),Arial,sans-serif;
+  font-family: var(--font-inter),var(--font-sans),Arial,sans-serif;
+  font-feature-settings: "cv11", "ss01";
 }
 button,input,textarea,select {
   font: inherit;
@@ -396,7 +400,7 @@ a {
   background: var(--glass);
 }
 :focus-visible {
-  outline: 3px solid #5fbeb5;
+  outline: 2px solid var(--tidal);
   outline-offset: 3px;
 }
 .brand {
@@ -404,54 +408,51 @@ a {
   align-items: center;
   gap: 10px;
   color: inherit;
-  font-weight: 780;
-  font-size: 1.08rem;
-  letter-spacing: -.04em;
+  font-family: var(--font-display),var(--font-sans),sans-serif;
+  font-weight: 800;
+  font-size: 1.12rem;
+  letter-spacing: -.035em;
   text-decoration: none;
 }
 .brand-symbol {
   display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  color: var(--night);
-  background: var(--glass);
-  border-radius: 12px;
-  box-shadow: inset 0 0 0 1px rgb(7 31 36 / 8%);
+  width: 34px;
+  height: 34px;
+  color: white;
+  background: var(--tidal);
+  border-radius: 9px;
 }
 .button-primary,.button-secondary,.button-quiet,.button-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 17px;
-  border-radius: 12px;
-  font-weight: 720;
-  font-size: .9rem;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: .92rem;
   text-decoration: none;
-  transition: transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
+  transition: background .15s ease,border-color .15s ease,color .15s ease;
 }
 .button-primary {
   color: white;
-  background: var(--tidal);
-  border: 1px solid var(--tidal);
-  box-shadow: 0 8px 24px rgb(12 102 98 / 18%);
+  background: var(--night);
+  border: 1px solid var(--night);
 }
 .button-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
   background: var(--night-2);
   border-color: var(--night-2);
-  box-shadow: 0 12px 30px rgb(7 31 36 / 20%);
 }
 .button-secondary {
   color: var(--night);
   background: white;
-  border: 1px solid #aac8c3;
+  border: 1px solid var(--line-strong);
 }
 .button-secondary:hover:not(:disabled),.button-quiet:hover:not(:disabled) {
-  background: #edf6f4;
-  border-color: var(--tidal);
+  background: var(--porcelain);
+  border-color: var(--night);
 }
 .button-quiet {
   min-height: 38px;
@@ -469,11 +470,11 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 25px;
-  padding: 4px 8px;
+  min-height: 24px;
+  padding: 3px 9px;
   border-radius: 999px;
   font-size: .72rem;
-  font-weight: 790;
+  font-weight: 600;
   letter-spacing: .01em;
 }
 .status-red {
@@ -505,7 +506,7 @@ a {
   color: var(--night);
   background: rgb(255 255 255 / 96%);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: var(--shadow-float);
   transform: translateX(-50%);
 }
@@ -539,13 +540,15 @@ a {
 }
 .section-heading p {
   margin: 0 0 5px;
-  color: var(--tidal);
-  font-size: .72rem;
-  font-weight: 790;
+  color: var(--ink-mute);
+  font-size: .76rem;
+  font-weight: 600;
 }
 .section-heading h2 {
   margin: 0;
-  font-size: 1.15rem;
+  font-family: var(--font-display),var(--font-sans),sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
   letter-spacing: -.03em;
 }
 .empty-state {
@@ -561,8 +564,8 @@ a {
   width: 40px;
   height: 40px;
   color: var(--tidal);
-  background: #e6f3f0;
-  border-radius: 13px;
+  background: var(--mist);
+  border-radius: 10px;
 }
 .empty-state strong {
   color: var(--night);

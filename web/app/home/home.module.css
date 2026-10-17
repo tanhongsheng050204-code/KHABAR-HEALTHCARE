@@ -1,5 +1,5 @@
 .shell {
-  --lavender: #ece5f5;
+  --lavender: var(--mist);
   min-height: 100svh;
   background: #f3f7f6;
 }
@@ -178,11 +178,11 @@
 .workspaceIntro h1,
 .patientHero h1 {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(3rem, 5vw, 5.2rem);
-  font-weight: 450;
-  line-height: 0.88;
-  letter-spacing: -0.065em;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2.2rem, 3.6vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
 }
 .workspaceIntro > div > span,
 .patientHero > div > span {
@@ -198,7 +198,7 @@
   overflow: hidden;
   background: white;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: var(--shadow-soft);
 }
 .metricStrip > div {
@@ -266,8 +266,8 @@
 .staffInvite { display: flex; align-items: end; gap: 12px; padding: 0 22px 16px; }
 .staffInvite label { display: grid; flex: 1; gap: 7px; color: #526e70; font-size: .73rem; font-weight: 700; }
 .staffInvite select { min-height: 42px; padding: 0 12px; color: #173c3f; background: white; border: 1px solid var(--line); border-radius: 9px; }
-.inviteCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 22px 8px; padding: 12px; background: #f6f2fc; border: 1px solid #e2d8f2; border-radius: 10px; }
-.inviteCode code { color: #2d425e; font-size: 1.1rem; letter-spacing: .14em; }
+.inviteCode { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 22px 8px; padding: 12px; background: var(--porcelain); border: 1px solid var(--line); border-radius: 10px; }
+.inviteCode code { color: var(--night); font-size: 1.1rem; letter-spacing: .14em; }
 .errorNotice { margin: 0 0 18px; color: #a02e2e; }
 @media (max-width: 760px) {
   .staffRow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
@@ -294,8 +294,8 @@
 .caregiverHero {
   background: white;
   border: 1px solid var(--line);
-  border-radius: 17px;
-  box-shadow: 0 10px 35px rgb(7 31 36 / 5%);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
 }
 .priorityCard {
   overflow: hidden;
@@ -533,7 +533,7 @@
   width: min(520px, 100%);
   padding: 24px;
   background: white;
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: var(--shadow-float);
 }
 .modalHead {
@@ -549,9 +549,10 @@
 }
 .modalHead h2 {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 2.3rem;
-  font-weight: 500;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 .modalHead > button {
   width: 34px;
@@ -616,7 +617,7 @@
   height: 50px;
   color: #237362;
   background: #e2f3ee;
-  border-radius: 15px;
+  border-radius: 12px;
 }
 .inviteSuccess h3 {
   margin: 15px 0 5px;
@@ -651,7 +652,7 @@
   background: white;
   border: 1px solid var(--line);
   border-radius: 13px;
-  box-shadow: 0 8px 24px rgb(7 31 36 / 5%);
+  box-shadow: var(--shadow-soft);
 }
 .careStatus > i {
   width: 9px;
@@ -686,8 +687,8 @@
   background:
     radial-gradient(circle at 85% 15%, rgb(88 171 161 / 32%), transparent 33%),
     linear-gradient(135deg, var(--night), #0b4748);
-  border-radius: 20px;
-  box-shadow: 0 20px 50px rgb(7 31 36 / 14%);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
 }
 .focusLabel {
   display: flex;
@@ -719,9 +720,10 @@
 .summaryFocus blockquote {
   max-width: 730px;
   margin: 53px 0 25px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.8rem, 3vw, 3rem);
-  font-weight: 450;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-weight: 600;
   line-height: 1.12;
   white-space: pre-line;
 }
@@ -768,7 +770,7 @@
   padding: 26px;
   background: white;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: var(--shadow-soft);
 }
 .nextCard > span {
@@ -787,9 +789,10 @@
 }
 .nextCard h2 {
   margin: 7px 0 8px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.7rem;
-  font-weight: 520;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 1.45rem;
+  font-weight: 700;
   line-height: 1.05;
 }
 .nextCard p {
@@ -826,7 +829,7 @@
 .quickRow > button:hover {
   transform: translateY(-2px);
   border-color: #91bbb5;
-  box-shadow: 0 10px 24px rgb(7 31 36 / 6%);
+  box-shadow: var(--shadow-soft);
 }
 .quickRow > button > span {
   display: grid;
@@ -1044,7 +1047,9 @@
 }
 .booked strong {
   margin-top: 14px;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-weight: 700;
   font-size: 1.4rem;
 }
 .booked span {
@@ -1105,13 +1110,14 @@
   height: 50px;
   color: var(--tidal);
   background: #e3f2ef;
-  border-radius: 15px;
+  border-radius: 12px;
 }
 .intakeStart h3 {
   margin: 17px 0 7px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.8rem;
-  font-weight: 520;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 .intakeStart p {
   max-width: 480px;
@@ -1137,8 +1143,10 @@
   color: var(--tidal);
 }
 .chatPanel .panelSide h3 {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.7rem;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-size: 1.4rem;
 }
 .chatPanel .panelSide ul {
   display: grid;
@@ -1167,7 +1175,7 @@
 .segmented .segmentActive {
   color: var(--night);
   background: white;
-  box-shadow: 0 3px 9px rgb(7 31 36 / 8%);
+  box-shadow: var(--shadow-soft);
 }
 .readingForm {
   display: grid;
@@ -1263,7 +1271,7 @@
   height: 50px;
   color: var(--tidal);
   background: #e4f2ef;
-  border-radius: 15px;
+  border-radius: 12px;
 }
 .permissionCard > div > p:first-child {
   margin: 0;
@@ -1273,9 +1281,10 @@
 }
 .permissionCard h2 {
   margin: 8px 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 2.1rem;
-  font-weight: 510;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 1.7rem;
+  font-weight: 700;
 }
 .permissionCard p:last-child {
   max-width: 580px;
@@ -1303,7 +1312,7 @@
   height: 52px;
   color: var(--tidal);
   background: #e3f2ef;
-  border-radius: 15px;
+  border-radius: 12px;
 }
 .caregiverHero p {
   margin: 0;
@@ -1312,9 +1321,10 @@
 }
 .caregiverHero h2 {
   margin: 3px 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.8rem;
-  font-weight: 520;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 .caregiverHero > div > div > span {
   color: #657779;
@@ -1340,8 +1350,10 @@
 }
 .caregiverSummary {
   margin: 20px 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.5rem;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  font-size: 1.25rem;
   line-height: 1.35;
   white-space: pre-line;
 }
@@ -1423,7 +1435,7 @@
   color: var(--tidal);
   background: white;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: var(--shadow-soft);
 }
 .loading p {
@@ -1637,7 +1649,7 @@
 /* Connected-care workspace: generous cards, legible priorities, purposeful motion. */
 .shell {
   background:
-    radial-gradient(ellipse at 95% 0%, #eee8f5 0, transparent 42%), #f7f9f5;
+    radial-gradient(ellipse at 95% 0%, var(--mist) 0, transparent 42%), #f7f9f5;
 }
 .rail {
   background: linear-gradient(175deg, #0d3033, #102a2e);
@@ -1679,38 +1691,8 @@
   border-radius: inherit;
   background: #d8e7dc;
 }
-.railStory {
-  margin: auto 10px 38px;
-  padding-top: 60px;
-  color: #d1c4e6;
-}
-.railStory p {
-  margin: 15px 0 12px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.65rem;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
-}
-.railStory p em {
-  color: #d0e0d7;
-}
-.railStory > span {
-  font-size: 0.7rem;
-  color: #adc3bc;
-}
-.railFoot {
-  margin-top: 0;
-}
 .rail > * {
   flex-shrink: 0;
-}
-@media (min-width: 761px) and (max-height: 850px) {
-  .railStory {
-    display: none;
-  }
-  .railFoot {
-    margin-top: auto;
-  }
 }
 .dialogNotice {
   padding: 12px 16px;
@@ -1753,9 +1735,9 @@
   display: none;
 }
 .demoPill {
-  color: #665177;
-  background: #ece5f5;
-  border-color: #d9cde7;
+  color: var(--ink-soft);
+  background: var(--mist);
+  border-color: var(--line);
   font-size: 0.67rem;
 }
 .workspace {
@@ -1793,23 +1775,23 @@
 .metricStrip > div {
   padding: 21px;
   border: 1px solid #dce5de !important;
-  border-radius: 19px;
+  border-radius: 12px;
   background: white;
-  box-shadow: 0 5px 20px #193d3010;
+  box-shadow: var(--shadow-soft);
   transition:
     transform 0.3s,
     box-shadow 0.3s;
 }
 .metricStrip > div:nth-child(2) {
-  background: #eee8f5;
-  border-color: #ddd3e8 !important;
+  background: var(--mist);
+  border-color: var(--line) !important;
 }
 .metricStrip > div:nth-child(4) {
   background: #e6f0e7;
 }
 .metricStrip > div:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 13px 28px #193d3019;
+  transform: none;
+  box-shadow: var(--shadow-soft);
 }
 .metricStrip span {
   color: #435d59;
@@ -1830,8 +1812,8 @@
 .patientPanel,
 .nextCard {
   border-color: #dce5de;
-  border-radius: 21px;
-  box-shadow: 0 8px 25px #243e3210;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
 }
 .priorityRow {
   padding: 19px;
@@ -1912,7 +1894,7 @@
 .summaryFocus {
   min-height: 285px;
   padding: 28px;
-  border-radius: 24px;
+  border-radius: 12px;
   background:
     radial-gradient(ellipse at 90% 0, #38695e, transparent 60%),
     linear-gradient(130deg, #123b3b, #153f38);
@@ -1925,7 +1907,7 @@
 }
 .summaryFocus :global(.button-quiet) {
   position: static;
-  color: #e2d7f0;
+  color: var(--night);
   padding: 8px 0;
   min-height: 44px;
   margin-top: 8px;
@@ -1938,17 +1920,17 @@
   line-height: 1.7;
 }
 .nextCard {
-  background: #eee8f5;
-  border-color: #ddd1e8;
+  background: var(--mist);
+  border-color: var(--line);
   padding: 25px;
 }
 .nextCard > span {
-  color: #63517c;
-  background: #fbf8ff;
+  color: var(--ink-soft);
+  background: white;
 }
 .nextCard > small {
   margin-top: 20px;
-  color: #635b71;
+  color: var(--ink-mute);
   font-size: 0.77rem;
 }
 .nextCard h2 {
@@ -1957,13 +1939,13 @@
 }
 .nextCard p {
   font-size: 0.82rem;
-  color: #5f586b;
+  color: var(--ink-mute);
 }
 .quickRow {
   gap: 12px;
 }
 .quickRow > button {
-  border-radius: 17px;
+  border-radius: 12px;
   min-height: 82px;
   transition:
     transform 0.25s,
@@ -1971,14 +1953,14 @@
     border-color 0.25s;
 }
 .quickRow > button:hover {
-  transform: translateY(-4px);
+  transform: none;
 }
 .quickRow > button:active {
   transform: translateY(-1px) scale(0.98);
 }
 .quickRow > button:nth-child(even) > span {
-  color: #66517e;
-  background: #eee7f6;
+  color: var(--night);
+  background: var(--mist);
 }
 .quickRow > button > span {
   transition: transform 0.3s;
@@ -1999,7 +1981,7 @@
   border: 1px solid #dfe5db;
   padding: 5px;
   background: #eef2e9;
-  border-radius: 15px;
+  border-radius: 12px;
   width: fit-content;
   max-width: 100%;
 }
@@ -2015,7 +1997,7 @@
 }
 .patientTabs .activeTab {
   background: white;
-  box-shadow: 0 3px 10px #264b3020;
+  box-shadow: var(--shadow-soft);
 }
 .patientTabs .activeTab::after {
   display: none;
@@ -2078,13 +2060,14 @@
   padding: 40px;
   background: #fffefa;
   border: 1px solid #dce5de;
-  border-radius: 24px;
+  border-radius: 12px;
 }
 .loadError h1 {
   margin: 24px 0 14px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 2.6rem;
-  font-weight: 450;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.03em;
+  font-size: 2rem;
+  font-weight: 700;
   line-height: 1.1;
 }
 .loadError p {
@@ -2127,10 +2110,10 @@
 }
 .skeletonGrid > div,
 .skeletonPanel i {
-  background: linear-gradient(100deg, #e7ede5 20%, #f7f5fa 50%, #e7ede5 80%);
+  background: linear-gradient(100deg, #e7ede5 20%, #f6f8f7 50%, #e7ede5 80%);
   background-size: 200% 100%;
   animation: loadingSweep 1.7s linear infinite;
-  border-radius: 18px;
+  border-radius: 12px;
 }
 .skeletonGrid > div {
   height: 130px;
@@ -2142,7 +2125,7 @@
   margin-top: 25px;
   background: #fff;
   border: 1px solid #e4e8df;
-  border-radius: 22px;
+  border-radius: 12px;
 }
 .skeletonPanel i {
   height: 65px;
@@ -2330,8 +2313,8 @@
     width: auto;
     padding: 6px 5px calc(6px + env(safe-area-inset-bottom));
     border: 1px solid #dbe4d7;
-    border-radius: 21px;
-    box-shadow: 0 8px 28px #153e3820;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
     background: #fafcf9ed;
   }
   .mobileNav a {
@@ -2395,7 +2378,7 @@
   margin-bottom: 28px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: var(--paper);
 }
 .telegramCard > div { flex: 1; display: grid; gap: 2px; }
@@ -2403,4 +2386,230 @@
 @media (max-width: 560px) {
   .telegramCard { flex-wrap: wrap; }
   .telegramCard > a { flex-basis: 100%; justify-content: center; text-align: center; }
+}
+
+/*
+ * Ledger look (Oct 2026): a quiet, light workspace. One ink, one teal accent, pale surfaces,
+ * thin dividers and flat cards. Colour is kept for meaning (urgent, watch, ok), not decoration.
+ * This layer comes last so it wins over the earlier "connected-care" layer above.
+ */
+.shell {
+  background: white;
+}
+.rail {
+  color: var(--night);
+  background: var(--porcelain);
+  border-right: 1px solid var(--line);
+  padding: 22px 14px 16px;
+}
+.railBrand {
+  color: var(--night);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.railBrand > span,
+.mobileMark {
+  width: 32px;
+  height: 32px;
+  color: white;
+  background: var(--tidal);
+  border-radius: 9px;
+}
+.workspaceLabel {
+  margin: 34px 10px 10px;
+  color: var(--ink-mute);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.rail nav {
+  gap: 2px;
+}
+.rail nav a {
+  min-height: 40px;
+  padding: 9px 10px;
+  color: var(--ink-soft);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.rail nav a:hover {
+  color: var(--night);
+  background: var(--mist);
+}
+.rail nav .activeNav,
+.rail nav a.activeNav:hover {
+  color: var(--night);
+  font-weight: 600;
+}
+.navIndicator {
+  background: #e4eae7;
+}
+.railFoot {
+  margin-top: auto;
+  border-top-color: var(--line);
+}
+.railFoot strong {
+  color: var(--night);
+}
+.railFoot span,
+.railFoot button {
+  color: var(--ink-mute);
+}
+.railFoot button:hover {
+  color: var(--night);
+  background: var(--mist);
+}
+.profileMark {
+  color: var(--tidal);
+  background: white;
+  border: 1px solid var(--line);
+}
+.contextBar {
+  min-height: 60px;
+  background: rgb(255 255 255 / 92%);
+}
+.contextBar p {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.contextBar button {
+  border-color: var(--line-strong);
+  border-radius: 10px;
+}
+.demoPill {
+  color: var(--ink-soft);
+  background: var(--porcelain);
+  border-color: var(--line-strong);
+  font-weight: 600;
+}
+.workspaceIntro > div > p,
+.patientHero > div > p {
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.workspaceIntro h1,
+.patientHero h1 {
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  line-height: 1.05;
+}
+.metricStrip > div,
+.metricStrip > div:nth-child(2),
+.metricStrip > div:nth-child(4) {
+  min-height: 112px;
+  background: white;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.metricStrip > div:hover {
+  transform: none;
+  border-color: var(--line-strong) !important;
+  box-shadow: none;
+}
+.metricStrip .urgentMetric {
+  background: white;
+}
+.metricStrip span {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.metricStrip svg {
+  color: var(--ink-mute);
+}
+.metricStrip strong {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.priorityCard,
+.todayCard,
+.peopleCard,
+.patientPanel,
+.permissionCard,
+.caregiverHero,
+.nextCard {
+  border-color: var(--line);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.nextCard {
+  background: white;
+}
+.priorityRow:hover {
+  background: var(--porcelain);
+}
+.summaryFocus,
+.booked,
+.followupSignal {
+  background: var(--night);
+  border-radius: 12px;
+}
+.summaryFocus :global(.button-quiet) {
+  color: #cfe3dd;
+}
+.quickRow > button {
+  border-color: var(--line);
+  border-radius: 10px;
+  box-shadow: none;
+}
+.quickRow > button:hover {
+  transform: none;
+  border-color: var(--line-strong);
+  background: var(--porcelain);
+}
+.quickRow > button:hover > span {
+  transform: none;
+}
+.quickRow > button > span,
+.quickRow > button:nth-child(even) > span {
+  color: var(--tidal);
+  background: var(--mist);
+  border-radius: 8px;
+}
+.patientTabs {
+  background: var(--mist);
+  border-color: var(--line);
+  border-radius: 10px;
+}
+.patientTabs button {
+  border-radius: 7px;
+  color: var(--ink-soft);
+}
+.patientTabs .activeTab {
+  color: var(--night);
+}
+.panelSide {
+  background: var(--porcelain);
+}
+.showMore {
+  color: var(--night);
+  background: white;
+  border-color: var(--line-strong);
+  border-radius: 10px;
+}
+.loadError {
+  background: white;
+  border-color: var(--line);
+}
+@media (max-width: 760px) {
+  .mobileNav {
+    background: rgb(255 255 255 / 96%);
+    border-top: 1px solid var(--line);
+  }
+  .mobileNav .navIndicator {
+    background: var(--mist);
+  }
+}
+/* Care-plan wording is read, not scanned: body face, normal tracking. */
+.summaryFocus blockquote,
+.caregiverSummary {
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
 }

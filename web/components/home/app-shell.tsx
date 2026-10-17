@@ -123,17 +123,8 @@ export function AppShell({
             </span>
             Khabar
           </Link>
-          <div className={styles.workspaceLabel}>YOUR CARE SPACE</div>
+          <div className={styles.workspaceLabel}>Your care space</div>
           <nav aria-label="Workspace navigation">{navItems(false)}</nav>
-          <div className={styles.railStory}>
-            <HeartPulse size={25} />
-            <p>
-              Small check-ins.
-              <br />
-              <em>Meaningful continuity.</em>
-            </p>
-            <span>Care that carries on.</span>
-          </div>
           <div className={styles.railFoot}>
             <div className={styles.profileMark}>
               <RoleIcon size={17} />

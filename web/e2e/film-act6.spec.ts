@@ -30,14 +30,14 @@ const LANDING_PRINCIPLES = [
 test("the trust principles are word for word the ones the old landing page promised", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/story");
   expect(await principles(page, "#act6 article")).toEqual(LANDING_PRINCIPLES);
 });
 
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
   test("all three principles are shown at once", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/story");
     const shown = await page
       .locator("#act6 [data-principle]")
       .evaluateAll((els) => els.map((el) => el.getAttribute("data-shown")));
@@ -48,7 +48,7 @@ test.describe("with reduced motion", () => {
 test("the principles arrive as the reader reaches them, and pausing shows them all", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/story");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",

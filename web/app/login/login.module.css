@@ -1,5 +1,5 @@
 .page {
-  --lavender: #eee7f7;
+  --lavender: var(--mist);
   display: grid;
   grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
   min-height: 100svh;
@@ -79,11 +79,11 @@
 .storyCopy h1 {
   max-width: 530px;
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(4.4rem, 7vw, 7.3rem);
-  font-weight: 420;
-  line-height: 0.85;
-  letter-spacing: -0.067em;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2.7rem, 4.4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
 }
 .storyCopy > span {
   display: block;
@@ -122,30 +122,9 @@
   color: white;
   font-size: 0.72rem;
 }
-.storyThread {
-  position: absolute;
-  top: 22%;
-  right: 5%;
-  display: grid;
-  gap: 35px;
-}
-.storyThread i {
-  display: block;
-  width: 7px;
-  height: 7px;
-  background: var(--glass);
-  border-radius: 50%;
-  box-shadow: 0 0 0 8px rgb(191 227 219 / 7%);
-}
-.storyThread::before {
-  position: absolute;
-  content: "";
-  top: 7px;
-  bottom: 7px;
-  left: 3px;
-  width: 1px;
-  background: rgb(191 227 219 / 25%);
-}
+
+
+
 .formSide {
   display: grid;
   place-items: center;
@@ -164,11 +143,11 @@
 }
 .formHeading h2 {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2.8rem, 4.5vw, 4.2rem);
-  font-weight: 480;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 700;
   line-height: 0.95;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.035em;
 }
 .formHeading > span {
   display: block;
@@ -293,7 +272,7 @@
 .demoGrid > button:hover:not(:disabled) {
   transform: translateY(-2px);
   border-color: #7fb8b1;
-  box-shadow: 0 10px 24px rgb(7 31 36 / 8%);
+  box-shadow: var(--shadow-soft);
 }
 .demoGrid > button > span {
   display: grid;
@@ -427,7 +406,7 @@
   line-height: 0.99;
 }
 .storyCopy h1 em {
-  color: #d8cbea;
+  color: var(--line-strong);
   font-weight: inherit;
 }
 .storyCopy > span {
@@ -437,66 +416,19 @@
 .story {
   padding-inline: clamp(28px, 4vw, 70px);
 }
-.careNote {
-  position: relative;
-  z-index: 2;
-  max-width: 440px;
-  margin: 0 0 48px;
-  padding: 25px;
-  background: #e6e0f1;
-  color: #302a41;
-  border: 1px solid #f0e9fd;
-  border-radius: 22px;
-  box-shadow: 0 18px 40px #071f2430;
-  animation: arrive 0.9s 0.15s both;
-}
-.careNote > div:first-child {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-.careNote > div > span:first-child {
-  font-family: Georgia, serif;
-  font-size: 2rem;
-}
-.careNote p {
-  margin: 0;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-}
-.careNote strong {
-  display: block;
-  margin-top: 9px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 2rem;
-  font-weight: 450;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-}
-.careNoteSteps {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 23px;
-  padding-top: 18px;
-  border-top: 1px solid #cbc0db;
-}
-.careNoteSteps span,
-.careNoteSteps > span:first-child {
-  font-size: 0.65rem;
-  font-family: inherit;
-  white-space: nowrap;
-}
-.careNoteSteps i {
-  flex: 1;
-  height: 1px;
-  background: #92829e;
-}
+
+
+
+
+
+
+
+
 .formSide {
   position: relative;
   padding: 98px clamp(24px, 5vw, 84px) 60px;
   background:
-    radial-gradient(ellipse at 80% 10%, #eee7f7, transparent 60%), #fafbf8;
+    radial-gradient(ellipse at 80% 10%, var(--mist), transparent 60%), #fafbf8;
 }
 .formUtility {
   position: absolute;
@@ -558,15 +490,9 @@
   opacity: 0.65;
   cursor: default;
 }
-.storyThread i {
-  animation: notePulse 3s ease-in-out 2;
-}
-.storyThread i:nth-child(2) {
-  animation-delay: 0.4s;
-}
-.storyThread i:nth-child(3) {
-  animation-delay: 0.8s;
-}
+
+
+
 .formHeading,
 .message {
   animation: arrive 0.4s both;
@@ -583,7 +509,7 @@
 }
 @keyframes notePulse {
   50% {
-    box-shadow: 0 0 0 15px #d8cbea18;
+    box-shadow: 0 0 0 15px var(--line-strong)18;
   }
 }
 @media (max-width: 900px) {
@@ -599,12 +525,7 @@
     line-height: 1.06;
     max-width: 620px;
   }
-  .storyCopy > p,
-  .storyCopy > span,
-  .careNote,
-  .storyThread {
-    display: none;
-  }
+
   .formSide {
     padding: 76px 24px 42px;
   }
@@ -659,5 +580,89 @@
   }
   .demoGrid small {
     font-size: 0.65rem;
+  }
+}
+
+/* Ledger look (Oct 2026): flat ink story panel, white form side, thin lines, no glow. */
+.page {
+  background: white;
+}
+.story {
+  background: var(--night);
+}
+.story::after {
+  display: none;
+}
+.storyTop :global(.brand-symbol) {
+  color: white;
+  background: var(--tidal);
+}
+.storyCopy {
+  margin: 14vh 0 60px;
+}
+.storyCopy > p {
+  color: #9fcfc4;
+  font-weight: 600;
+}
+.storyCopy h1 {
+  font-size: clamp(2.6rem, 4.2vw, 3.9rem);
+  line-height: 1.04;
+}
+.storyCopy h1 em {
+  color: #9fcfc4;
+  font-style: normal;
+}
+.assurance strong {
+  font-size: 0.8rem;
+}
+.assurance span {
+  color: #a9bfba;
+  font-size: 0.76rem;
+}
+.formSide {
+  background: white;
+}
+.formHeading > p {
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.formHeading h2 {
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  line-height: 1.05;
+}
+.inputWrap {
+  height: 46px;
+  border-color: var(--line-strong);
+  border-radius: 10px;
+}
+.inputWrap:focus-within {
+  border-color: var(--night);
+  box-shadow: 0 0 0 3px rgb(16 36 31 / 12%);
+}
+.demoGrid {
+  scroll-margin-top: 40px;
+}
+.demoGrid > button {
+  border-color: var(--line);
+  border-radius: 10px;
+}
+.demoGrid > button:hover:not(:disabled) {
+  transform: none;
+  border-color: var(--night);
+  box-shadow: none;
+}
+.demoGrid > button > span {
+  background: var(--mist);
+  border-radius: 8px;
+}
+.demoGrid strong {
+  font-size: 0.85rem;
+}
+.demoGrid small {
+  font-size: 0.7rem;
+}
+@media (max-width: 900px) {
+  .storyCopy h1 {
+    font-size: clamp(2.3rem, 7vw, 3.2rem);
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { siteFontVariables } from "./fonts"
 
 export const metadata: Metadata = {
   title: { default: "Khabar — Care that carries on", template: "%s · Khabar" },
@@ -18,7 +19,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className="antialiased"
+      className={`antialiased ${siteFontVariables}`}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>

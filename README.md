@@ -7,15 +7,15 @@
 **Problem Statement:** Self-defined, SDG 3 (Good Health and Well-being): patients lose track of their treatment once they leave the clinic.
 **Video Presentation:** [Unlisted YouTube link: to be added after recording]
 **Presentation Slides:** [Public link: to be added]
-**UI Prototype (live):** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app), a working app, not a mock-up. Press **Doctor view** or **Patient view** on the sign-in page to explore with fictional data.
+**UI Prototype (live):** [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app), a working app, not a mock-up. Press **Open the demo clinic** on the landing page (or **Doctor view** / **Patient view** on the sign-in page) to explore with fictional data.
 **API reference (live):** [khabar-api.vercel.app/docs](https://khabar-api.vercel.app/docs)
 **Code:** [github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE](https://github.com/tanhongsheng050204-code/KHABAR-HEALTHCARE)
 
-[![Khabar landing page](artifacts/readme/01-landing.png)](https://khabar-landing-six.vercel.app)
+[![Khabar landing page](artifacts/readme/00-landing.png)](https://khabar-landing-six.vercel.app)
 
-> ⚠️ **Status (1 Oct 2026):** working prototype, deployed.
-> - **Landing page:** the new landing page, a scroll-driven "storybook film" of one patient's 30 days, went live at `/` on 1 Oct.
-> - **Web checks (1 Oct):** 204 browser tests on desktop and phone layouts, 49 unit tests, lint and type checks all passed. Lighthouse mobile performance scored 94–95.
+> ⚠️ **Status (18 Oct 2026):** working prototype, deployed.
+> - **Landing page:** on 18 Oct the web app moved to a quieter "ledger" look (one ink, one teal accent, thin grid lines; Manrope headings, Inter text). `/` is now a product page that replays the clinic's own screens and opens the demo clinic in one click. The storybook film of Aminah's 30 days moved to `/story`.
+> - **Web checks (18 Oct):** 226 browser tests on desktop and phone layouts (36 layout-specific skips), 49 unit tests, lint and type checks all passed. Lighthouse mobile performance: `/` 93–97, `/login` 96, `/story` 86–88 (the live film scored 82–85 on the same machine that day; the 94–95 of 1 Oct was measured on a quieter machine).
 > - **Agent tests:** 242 passed on 30 Sep. A local rerun on 1 Oct was blocked by a Windows security policy on the build machine.
 > - **API tests:** last full run on 28 Sep: 240 tests, 0 failures, 1 optional PostgreSQL test skipped.
 > - **Deployment:** the web app deploys automatically on every push to `main`. The API and agents are deployed manually.
@@ -212,9 +212,16 @@ flowchart LR
 
 This is the working app, not a clickable mock-up. On the sign-in page, **Doctor view** and **Patient view** sign you in as fictional demo people, with no account needed. Every screen below was captured from the app itself, running on fictional data.
 
-### 1. Landing page: a storybook film
-![Landing page hero: "The visit ends. Care should not."](artifacts/readme/01-landing.png)
-*The landing page tells Mak Cik Aminah's day as eight scroll-driven acts:*
+### 1. Landing page: the product, shown with its own screens
+![Landing page hero: "Know who is slipping before they are back in the queue."](artifacts/readme/00-landing.png)
+*A dark banner and the hero open the demo clinic in one click (`/login?demo=doctor` signs straight in). Below the hero, a replay of the clinic workspace steps through one check-in reply: it arrives, a doctor takes it, calls, and records the outcome. It plays once when scrolled into view, shows the finished state under reduced motion, and can be stepped by hand.*
+
+![The product replay: Aminah's day-7 reply at the top of "Who needs you first"](artifacts/readme/00b-landing-replay.png)
+*Further down: who Khabar is for; a grid of channels, each marked Live, Prototype or Not connected; a side-by-side of what a patient types and what the AI reads (`[NAME]`, `[IC]`, `[PHONE]`); "one day with Aminah" from 08:00 to 20:00; the safety rules; an FAQ that states the limits plainly (no automatic staff alerts, not a medical device).*
+
+### 1b. Aminah's story: the storybook film (`/story`)
+![Film hero: "The visit ends. Care should not."](artifacts/readme/01-landing.png)
+*The film tells Mak Cik Aminah's day as eight scroll-driven acts:*
 
 1. *She leaves the clinic.*
 2. *Her prescription turns from the doctor's shorthand into her own language.*
@@ -238,6 +245,8 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 ### 2. Sign-in: one door for three roles
 ![Sign-in page](artifacts/readme/02-login.png)
 *Clinic staff sign in with email and password; patients and caregivers get a one-time email code (Supabase Auth). Invitation codes link a new sign-in to the right patient record. The two demo buttons are for reviewers.*
+
+*Screens 3, 4, 5 and 7 below were captured before the 18 Oct restyle; the layout and content are the same, with the older serif headings and rounder cards.*
 
 ### 3. Doctor home: who needs you first
 ![Doctor home with the ranked call list](artifacts/readme/03-doctor-home.png)
@@ -300,7 +309,7 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 
 | Layer | Choice | Why we chose it | Constraints we expect |
 |---|---|---|---|
-| **Frontend** | **Next.js 16**, React 19, TypeScript. A web app that installs on phones. The landing page is built with **GSAP ScrollTrigger** and code-drawn SVG. | One codebase for doctor, patient and caregiver. Reviewers open a link, with nothing to install. The camera works in the browser for packet photos. GSAP keeps normal scrolling (no scroll-jacking) and adds about 2 KB of JavaScript over the old landing page. | No push notifications without a native app, so reminders go through Telegram instead. The landing page's painted backgrounds are not made yet; each act shows a gradient placeholder until they are. |
+| **Frontend** | **Next.js 16**, React 19, TypeScript. A web app that installs on phones. The landing page is mostly server-rendered, with two small client components; the `/story` film is built with **GSAP ScrollTrigger** and code-drawn SVG. | One codebase for doctor, patient and caregiver. Reviewers open a link, with nothing to install. The camera works in the browser for packet photos. GSAP keeps normal scrolling (no scroll-jacking). | No push notifications without a native app, so reminders go through Telegram instead. The film's painted backgrounds are not made yet; each act shows a gradient placeholder until they are. |
 | **Clinical API** | **Spring Boot 3.3** (Java 21) | Strong typing and structure for clinical data, access checks and encryption. It is the only service that holds the encryption key and the only one that touches the database. | A steep learning curve for a first backend. Cold starts on serverless hosting (~15 s after idle). |
 | **AI service** | **FastAPI + LangGraph** (Python) | Agents with explicit control flow: intake, report, evaluator, triage, summary, packet reader. Python has the best AI libraries. | A second language and service to deploy and secure (it only accepts calls signed with an internal service key). |
 | **Database and sign-in** | **Supabase** (Postgres + Auth) | Free tier; built-in email one-time codes and passwords; managed Postgres. | Free projects pause when idle. Its built-in email only reaches team members and its links are meant for local development, so patient codes go through a custom SMTP sender (currently a Gmail account, with Gmail's daily sending limit). The connection pool is small, so the API uses the transaction pooler. |
@@ -369,7 +378,8 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 - **Deployed rehearsal (23 Sep):** pre-visit → draft → safety review → finalise → summary → follow-up reply → call list, run on the public URLs with demo sign-in.
 - **Local rehearsal (25 Sep):** guided intake → pre-visit report → doctor visit and duplicate-safety gate → final summary → patient follow-up reply → doctor call list, plus caregiver access/revocation and agent-outage fallback, all exercised with fictional data. It did not verify the current public deployment, real sign-in, or graph/provider readiness; see [the local run record](docs/DEMO_RUN_2026-09-25_LOCAL.md).
 - **Privacy test:** a test proves that the patient's name, IC number and phone number cannot reach the Neo4j graph, and the live AuraDB instance was checked directly. The graph stores structured facts (conditions, medicines, matched symptom words), not free-text answers.
-- **Landing page (1 Oct):**
+- **Ledger look and new landing page (18 Oct):** 22 new browser tests cover the landing page (one-click demo links, the replay by click, autoplay and reduced motion, the day timeline by click and arrow keys, honest connector statuses, the FAQ) with zero axe violations, and the film's 200+ tests now run against `/story`. An axe pass over the signed-in doctor and patient homes and the sign-in page found one low-contrast note on the dark care-plan card, which was fixed.
+- **Storybook film (1 Oct, now at `/story`):**
   - **Tests:** 204 browser tests (Playwright, at 1440×900 and on a 390 px phone) cover:
     - every act's finished frame and every interaction, by mouse, touch and keyboard;
     - zero automated accessibility (axe) violations, with motion on and off;
@@ -384,7 +394,7 @@ One builder, so the scope is tiered. **Tier 1 alone is a complete, demonstrable 
 
 ## 7. Run it yourself
 
-**Easiest:** open [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app), press **Sign in**, then **Doctor view** or **Patient view**. The first load may take ~15 s while the API wakes up.
+**Easiest:** open [khabar-landing-six.vercel.app](https://khabar-landing-six.vercel.app) and press **Open the demo clinic** (or **Sign in**, then **Doctor view** or **Patient view**). The first load may take ~15 s while the API wakes up.
 
 **Locally** (Java 21, Python 3.11+, Node 20+; no accounts needed):
 
@@ -401,7 +411,7 @@ Details, environment variables and tests: [services/README.md](services/README.m
 
 | Folder | What's in it |
 |---|---|
-| [web/](web/) | The Next.js app (deployed). The landing film is in [web/components/film/](web/components/film/), and its browser tests are in [web/e2e/](web/e2e/) |
+| [web/](web/) | The Next.js app (deployed). The landing page is in [web/components/site/](web/components/site/), the `/story` film in [web/components/film/](web/components/film/), and their browser tests in [web/e2e/](web/e2e/) |
 | [services/api/](services/api/) | Spring Boot clinical API |
 | [services/agents/](services/agents/) | FastAPI + LangGraph agents, DDInter subset and import script |
 | [docs/](docs/) | Design notes, the daily [EXPLAIN.md](docs/EXPLAIN.md), bug bash, demo checklist, pitch scripts, earlier static screens |

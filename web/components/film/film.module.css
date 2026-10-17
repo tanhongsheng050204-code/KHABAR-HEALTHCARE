@@ -410,3 +410,5 @@
 .railName { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: rgba(246, 239, 228, 0.96); color: var(--kopi); font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; }
 .film[data-motion="on"] .railName { transition: opacity 0.3s; }
 .rail[data-moving="true"] a[aria-current="step"] .railName, .rail a:hover .railName, .rail a:focus-visible .railName { opacity: 1; }
+/* The site's brand mark uses Manrope; on the film it keeps the film's own face, so /story downloads no extra font. */
+.header :global(.brand) { font-family: var(--film-body), sans-serif; }

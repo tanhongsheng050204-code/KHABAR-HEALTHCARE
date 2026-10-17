@@ -5,3 +5,58 @@
 @media(max-width:1050px){.clinicalGrid,.visitGrid,.toolsGrid{grid-template-columns:1fr}.recordSide{grid-template-columns:repeat(3,1fr)}.draftGrid{grid-template-columns:1fr}.draftGrid .rxBlock{grid-column:1}.auditTimeline{grid-template-columns:1fr}}
 @media(max-width:760px){.record,.visit{padding:24px 14px 70px}.recordTop,.visitTop{align-items:flex-start;gap:14px}.recordTop>:global(.button-primary){min-height:40px;padding:0 12px;font-size:.7rem}.patientIdentity{align-items:flex-start;flex-wrap:wrap}.identityTrust{width:100%;padding-top:12px;border-top:1px solid var(--line)}.clinicalGrid,.visitGrid{grid-template-columns:1fr}.recordSide{grid-template-columns:1fr}.contextColumns{grid-template-columns:1fr}.auditTimeline{grid-template-columns:1fr}.visitIdentity{align-items:flex-start}.draftGrid{grid-template-columns:1fr}.overrideBox{grid-template-columns:1fr}.finalGate{align-items:stretch;flex-direction:column}.confirmFinal{align-items:stretch;flex-direction:column}.confirmFinal p{max-width:none}.summaryResult{padding:18px}}
 .notesLabel { display:block; margin:10px 0 6px; color:var(--night); font-size:.74rem; font-weight:720; }
+
+/* Ledger look (Oct 2026): Manrope headings, flat cards and solid ink instead of gradients. */
+.patientIdentity,
+.visitIdentity,
+.previsitCard,
+.recordSide > section,
+.auditCard,
+.notesCard,
+.previsitAside,
+.draftCard,
+.safetyCard,
+.clinicTools {
+  border-radius: 12px;
+  box-shadow: none;
+}
+.patientIdentity p,
+.visitIdentity p,
+.toolsHead p {
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.patientIdentity h1,
+.visitIdentity h1 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.toolsHead h2 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.patientAvatar {
+  background: var(--mist);
+  border-radius: 12px;
+}
+.reasonBlock,
+.gateReady {
+  background: var(--night);
+  border-radius: 12px;
+}
+.reasonBlock blockquote,
+.summaryResult blockquote {
+  font-family: var(--font-inter), var(--font-sans), sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.finalGate,
+.summaryResult {
+  border-radius: 12px;
+}

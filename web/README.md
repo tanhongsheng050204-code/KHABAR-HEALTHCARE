@@ -9,9 +9,26 @@ npm run dev -- -p 3001
 
 Copy `.env.example` to `.env.local` when using Supabase email OTP. The local doctor and patient demos use the API at `http://localhost:8080`.
 
-## The landing page: a storybook film
+## The look
 
-`/` (`app/page.tsx`) tells Mak Cik Aminah's day in eight scroll-driven acts. The code is in `components/film/`:
+The app uses one quiet "ledger" look: one ink (`--night`), one teal accent (`--tidal`), pale surfaces and thin grid lines. Tokens are in `app/globals.css`; fonts are in `app/fonts.ts` (Manrope for headings, Inter for text). The signed-in app's CSS modules end with a "Ledger look" layer that overrides their older, rounder styles.
+
+## The landing page
+
+`/` (`app/page.tsx`) shows the product with its own screens and fictional data. The code is in `components/site/`:
+
+| Path | What it is |
+|---|---|
+| `product-replay.tsx` | The clinic-workspace replay: four steps, played once when on screen, finished at once under reduced motion, steppable by hand |
+| `day-timeline.tsx` | "One day with Aminah": a tab list (click or arrow keys) with a small mock of each screen |
+| `hero-font.ts` | Preloads Manrope on `/` only, so the hero headline does not reflow late |
+| `site.module.css` | The page's styles |
+
+`/login?demo=doctor` (or `patient`) starts that demo straight away; the banner and the call-to-action buttons use it.
+
+## Aminah's story: the storybook film
+
+`/story` (`app/story/page.tsx`) tells Mak Cik Aminah's day in eight scroll-driven acts. The code is in `components/film/`:
 
 | Path | What it is |
 |---|---|

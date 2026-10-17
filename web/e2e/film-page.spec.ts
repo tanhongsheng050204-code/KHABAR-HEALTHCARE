@@ -7,7 +7,7 @@ const noHorizontalScroll = (page: Page) =>
   );
 
 test("no accessibility violations with motion on", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/story");
   // Scroll through once so every reveal has played: contrast is judged on the text people see, and text
   // that is still transparent while waiting for its reveal would otherwise count as unreadable.
   for (let y = 0; y < 30; y++) {
@@ -28,7 +28,7 @@ test("no accessibility violations with motion on", async ({ page }) => {
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
   test("no accessibility violations", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/story");
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual(
       [],
@@ -37,7 +37,7 @@ test.describe("with reduced motion", () => {
 });
 
 test("no horizontal scroll, even in Tamil at 320 px", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/story");
   expect(await noHorizontalScroll(page)).toBe(true);
   await page.setViewportSize({ width: 320, height: 720 });
   await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
@@ -49,7 +49,7 @@ test("pausing inside the pinned pan unpins it and stacks the days", async ({
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The pin is desktop only.");
-  await page.goto("/");
+  await page.goto("/story");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
@@ -112,7 +112,7 @@ test("the film adds at most 70 KB of JavaScript over the old landing page", asyn
   baseURL,
 }) => {
   const budget = Number(process.env.FILM_JS_BUDGET_KB ?? 70);
-  const film = await scriptSizes(browser, baseURL, "/");
+  const film = await scriptSizes(browser, baseURL, "/story");
   const total = [...film.values()].reduce((sum, bytes) => sum + bytes, 0);
   const added = total / 1024 - OLD_LANDING_JS_KB;
   console.log(
@@ -141,7 +141,7 @@ test("fonts and CSS stay light enough for a fast first paint on mobile", async (
         }),
     );
   });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/story", { waitUntil: "networkidle" });
   await Promise.all(reads);
   await context.close();
   console.log(
@@ -157,7 +157,7 @@ test("pausing and resuming keep the reader on the day they were looking at", asy
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The pinned pan is desktop only.");
-  await page.goto("/");
+  await page.goto("/story");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
@@ -185,7 +185,7 @@ test("pausing and resuming keep the reader on the day they were looking at", asy
 test("a malformed link fragment does not break the page", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/#100%");
+  await page.goto("/story#100%");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.waitForTimeout(500);
   expect(errors).toEqual([]);
@@ -194,7 +194,7 @@ test("a malformed link fragment does not break the page", async ({ page }) => {
 test("after arriving by #act3 and going back up, pausing does not jump back to #act3", async ({
   page,
 }) => {
-  await page.goto("/#act3");
+  await page.goto("/story#act3");
   await expect(page.locator("article[data-day='1']")).toBeInViewport({
     timeout: 5000,
   });
@@ -224,7 +224,7 @@ test("in Tamil at 320 px no chip or bubble runs off the screen, even mid-scroll 
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 720 });
-  await page.goto("/");
+  await page.goto("/story");
   await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
   expect(await overflowing(page)).toEqual([]);
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.55));
@@ -238,7 +238,7 @@ test("reloading mid-way through the pan shows the days, not an empty pinned area
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "Desktop pan.");
-  await page.goto("/");
+  await page.goto("/story");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
@@ -270,7 +270,7 @@ test("resizing to phone width mid-pan stacks the days, and back to desktop the p
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "Desktop pan.");
-  await page.goto("/");
+  await page.goto("/story");
   await page.evaluate(() =>
     document.getElementById("act3")!.scrollIntoView({ block: "start" }),
   );
@@ -311,7 +311,7 @@ test("resizing to phone width mid-pan stacks the days, and back to desktop the p
 test("the keyboard alone reaches the language chips and the replies, each on screen when focused", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/story");
   const reach = async (name: string, limit: number) => {
     for (let i = 0; i < limit; i++) {
       await page.keyboard.press("Tab");
@@ -354,7 +354,7 @@ test("turning a phone sideways and back keeps the reader where they were", async
   page,
 }, info) => {
   test.skip(info.project.name !== "phone", "Phone rotation.");
-  await page.goto("/");
+  await page.goto("/story");
   await page.locator("article[data-day='7']").scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
   await page.setViewportSize({ width: 844, height: 390 });
@@ -373,7 +373,7 @@ test("a reader who scrolls before the page has finished loading stays where they
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await route.continue();
   });
-  await page.goto("/", { waitUntil: "commit" });
+  await page.goto("/story", { waitUntil: "commit" });
   await page.locator("#act2 [data-visit]").waitFor();
   await page.evaluate(() =>
     document
@@ -391,7 +391,7 @@ test("a reader who scrolls before the page has finished loading stays where they
 });
 
 test("pausing inside Act 2 keeps the reader on Act 2", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/story");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -402,7 +402,7 @@ test("pausing inside Act 2 keeps the reader on Act 2", async ({ page }) => {
 });
 
 test("the acts run in story order", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/story");
   const order = await page.evaluate(() =>
     [...document.querySelectorAll("main section[id^='act']")].map((s) => s.id),
   );
@@ -422,7 +422,7 @@ test("the thirty-day pan pins exactly at the top even after the content above it
   page,
 }, info) => {
   test.skip(info.project.name !== "desktop", "The pan is desktop only.");
-  await page.goto("/");
+  await page.goto("/story");
   await expect(page.locator("#act3")).toHaveAttribute("data-mode", "animated");
   // Tamil makes Act 1 taller, and the app preview loads in after the pins were measured.
   await page.getByRole("button", { name: "தமிழ்", exact: true }).click();
@@ -456,7 +456,7 @@ test("the thirty-day pan pins exactly at the top even after the content above it
 test("pausing and resuming deep inside an act keep what the reader was looking at in place", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/story");
   await expect(page.locator("[data-motion]")).toHaveAttribute(
     "data-motion",
     "on",
@@ -500,7 +500,7 @@ test("pausing and resuming deep inside an act keep what the reader was looking a
 test("every act describes its illustration for screen readers", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/story");
   for (const id of [
     "act0",
     "act1",

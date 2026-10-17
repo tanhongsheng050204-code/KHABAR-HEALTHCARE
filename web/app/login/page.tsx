@@ -19,7 +19,7 @@ export default function LoginPage() {
           <div className={styles.storyTop}>
             <Brand />
             <Link href="/">
-              <ArrowLeft size={16} /> Back to the story
+              <ArrowLeft size={16} /> Back to Khabar
             </Link>
           </div>
           <div className={styles.storyCopy}>
@@ -33,26 +33,6 @@ export default function LoginPage() {
               One sign-in brings the right context to each person—clinician,
               patient, or invited family member.
             </span>
-          </div>
-          <div className={styles.careNote} aria-hidden="true">
-            <div>
-              <span>♡</span>
-              <p>
-                A LITTLE CONTINUITY
-                <strong>
-                  From your clinic.
-                  <br />
-                  To your everyday.
-                </strong>
-              </p>
-            </div>
-            <div className={styles.careNoteSteps}>
-              <span>Check in</span>
-              <i />
-              <span>Stay connected</span>
-              <i />
-              <span>Carry on</span>
-            </div>
           </div>
           <div className={styles.assurance}>
             <div>
@@ -76,11 +56,6 @@ export default function LoginPage() {
                 useful action, not the whole system.
               </span>
             </div>
-          </div>
-          <div className={styles.storyThread} aria-hidden="true">
-            <i />
-            <i />
-            <i />
           </div>
         </section>
         <section className={styles.formSide} id="sign-in" tabIndex={-1}>
