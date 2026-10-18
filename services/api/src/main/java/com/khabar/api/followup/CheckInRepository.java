@@ -14,5 +14,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, UUID> {
 
     List<CheckIn> findByPatientIdAndStatus(UUID patientId, CheckIn.Status status);
 
+    List<CheckIn> findByStatusAndSentAtBeforeAndReminderSentAtIsNull(CheckIn.Status status, java.time.Instant cutoff);
+
     List<CheckIn> findByPatientClinicIdAndStatusAndSentAtBefore(UUID clinicId, CheckIn.Status status, java.time.Instant cutoff);
 }

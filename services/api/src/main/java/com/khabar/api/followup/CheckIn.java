@@ -45,6 +45,9 @@ public class CheckIn {
 
     private Instant sentAt;
 
+    /** When the one gentle re-ask went out, a day after an unanswered check-in. */
+    private Instant reminderSentAt;
+
     protected CheckIn() {
     }
 
@@ -61,6 +64,14 @@ public class CheckIn {
     public void markSent(Instant when) {
         this.status = Status.SENT;
         this.sentAt = when;
+    }
+
+    public void markReminded(Instant when) {
+        this.reminderSentAt = when;
+    }
+
+    public Instant getReminderSentAt() {
+        return reminderSentAt;
     }
 
     public void markAnswered() {

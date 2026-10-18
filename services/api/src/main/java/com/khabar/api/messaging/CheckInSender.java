@@ -27,6 +27,31 @@ public class CheckInSender {
         this.clock = clock;
     }
 
+    /** A check-in unanswered for this long gets one gentle re-ask. */
+    static final java.time.Duration REMIND_AFTER = java.time.Duration.ofHours(24);
+
+    /**
+     * The no-reply sequence, step one: one gentle re-ask a day after an unanswered check-in. Step two needs no
+     * message: after 48 hours the patient is on the clinic's call list, and a caregiver with alert consent sees
+     * that the patient has gone quiet. Returns how many re-asks were delivered.
+     */
+    @Transactional
+    public int sendReminders() {
+        int delivered = 0;
+        for (CheckIn checkIn : checkIns.findByStatusAndSentAtBeforeAndReminderSentAtIsNull(CheckIn.Status.SENT, clock.instant().minus(REMIND_AFTER))) {
+            Messenger.Result result = messages.send(checkIn.getPatient(), PatientMessages.reminderText(checkIn.getPatient().getPreferredLanguage()),
+                    Messenger.Kind.CHECK_IN);
+            // Marked either way: a failed re-ask is not retried, so a patient never gets several.
+            checkIn.markReminded(clock.instant());
+            if (result.delivered()) {
+                delivered++;
+            } else {
+                log.warn("Re-ask for check-in {} not delivered: {}", checkIn.getId(), result.error());
+            }
+        }
+        return delivered;
+    }
+
     /** Returns how many check-ins were delivered. */
     @Transactional
     public int sendDue() {

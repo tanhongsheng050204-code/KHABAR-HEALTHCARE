@@ -1,5 +1,8 @@
 package com.khabar.api.patients;
 
+import com.khabar.api.config.AdjustableClock;
+import com.khabar.api.followup.CheckIn;
+import com.khabar.api.followup.CheckInRepository;
 import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
@@ -29,13 +32,19 @@ public class PatientController {
     private final PatientAccessPolicy policy;
     private final AuditLog auditLog;
     private final AiReceipts aiReceipts;
+    private final CheckInRepository checkIns;
+    private final AdjustableClock clock;
 
-    public PatientController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AuditLog auditLog, AiReceipts aiReceipts) {
+    static final java.time.Duration QUIET_AFTER = java.time.Duration.ofHours(48);
+
+    public PatientController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AuditLog auditLog, AiReceipts aiReceipts, CheckInRepository checkIns, AdjustableClock clock) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
         this.auditLog = auditLog;
         this.aiReceipts = aiReceipts;
+        this.checkIns = checkIns;
+        this.clock = clock;
     }
 
     public record PatientView(UUID id, String fullName, String icMasked, String preferredLanguage, String clinicName) {
@@ -86,6 +95,29 @@ public class PatientController {
             auditLog.record(user, patient.getId(), AuditAction.VIEWED_RECORD);
         }
         return aiReceipts.latest(patient.getId(), 50);
+    }
+
+    public record Quiet(boolean quiet, Integer dayNumber, Instant since) {
+    }
+
+    /** The no-reply sequence, step two for a caregiver with alert consent: has the patient gone quiet for two days? */
+    @GetMapping("/{id}/quiet")
+    @Transactional
+    public Quiet quiet(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        AppUser user = currentUser.from(jwt);
+        Patient patient = find(id);
+        if (!policy.canView(user, patient)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        if (user.getRole() != Role.PATIENT && user.getRole() != Role.CAREGIVER) {
+            auditLog.record(user, patient.getId(), AuditAction.VIEWED_RECORD);
+        }
+        Instant cutoff = clock.instant().minus(QUIET_AFTER);
+        return checkIns.findByPatientIdAndStatus(patient.getId(), CheckIn.Status.SENT).stream()
+                .filter(c -> c.getSentAt() != null && c.getSentAt().isBefore(cutoff))
+                .min(java.util.Comparator.comparing(CheckIn::getSentAt))
+                .map(c -> new Quiet(true, c.getDayNumber(), c.getSentAt()))
+                .orElse(new Quiet(false, null, null));
     }
 
     private Patient find(UUID id) {

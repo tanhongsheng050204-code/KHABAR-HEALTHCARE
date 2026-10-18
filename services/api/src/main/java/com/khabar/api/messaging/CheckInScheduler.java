@@ -18,5 +18,6 @@ public class CheckInScheduler {
     @Scheduled(fixedDelayString = "${khabar.checkins.poll-ms:60000}", initialDelayString = "${khabar.checkins.poll-ms:60000}")
     public void run() {
         sender.sendDue();
+        sender.sendReminders();
     }
 }

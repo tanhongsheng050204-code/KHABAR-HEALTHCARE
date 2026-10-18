@@ -17,6 +17,13 @@ public class PatientMessages {
             "zh", "今天感觉怎么样？吃药了吗？回复这条信息告诉诊所。",
             "ta", "இன்று எப்படி இருக்கிறீர்கள்? மருந்து சாப்பிட்டீர்களா? இந்த செய்திக்கு பதில் அனுப்பி கிளினிக்கிற்கு தெரியப்படுத்துங்கள்.");
 
+    /** One gentle re-ask, a day after a check-in went unanswered. zh and ta need fluent-reader review. */
+    private static final Map<String, String> REMINDER = Map.of(
+            "ms", "Kami belum dengar khabar anda sejak semalam. Semuanya baik? Balas mesej ini bila sempat, walaupun hanya \"baik\".",
+            "en", "We haven't heard from you since yesterday. Is everything all right? Reply when you can, even just \"fine\".",
+            "zh", "从昨天起还没有收到您的回复。一切都好吗？有空请回复，哪怕只是“好”。",
+            "ta", "நேற்றிலிருந்து உங்களிடமிருந்து பதில் வரவில்லை. எல்லாம் சரியா? நேரம் கிடைக்கும்போது பதில் அனுப்புங்கள், \"நலம்\" என்று மட்டும் கூட.");
+
     private static final Map<String, String> CHECK_IN_FASTING = Map.of(
             "ms", "Apa khabar? Ada rasa pening, berpeluh atau menggeletar sebelum berbuka? Balas mesej ini untuk beritahu klinik.",
             "en", "How are you? Any dizziness, sweating or shakiness before berbuka? Reply to this message to let the clinic know.",
@@ -77,6 +84,10 @@ public class PatientMessages {
     public static String checkInText(String language, boolean fasting) {
         Map<String, String> texts = fasting ? CHECK_IN_FASTING : CHECK_IN;
         return texts.getOrDefault(language, texts.get("en"));
+    }
+
+    public static String reminderText(String language) {
+        return REMINDER.getOrDefault(language, REMINDER.get("en"));
     }
 
     public static String urgentText(String language) {
