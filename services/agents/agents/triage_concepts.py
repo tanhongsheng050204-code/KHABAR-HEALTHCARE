@@ -164,10 +164,22 @@ def _any(text: str, terms: Terms) -> Optional[str]:
 
 
 def detect(text: str) -> Optional[ConceptHit]:
-    """The most urgent concept in the reply, or None."""
-    if len(text) > MAX_TEXT:
-        # Too long to check cheaply: never treated as fine; a person looks at it.
-        return ConceptHit("watch", "reply too long to check automatically", f"{len(text)} characters")
+    """The most urgent concept in the reply, or None. A long reply is read in overlapping pieces, all of it."""
+    if len(text) <= MAX_TEXT:
+        return _detect(text)
+    # Never treated as fine: at least 'watch', and red if any piece is red.
+    best = ConceptHit("watch", "long reply", f"{len(text)} characters")
+    step = MAX_TEXT - NEAR - 50
+    for start in range(0, len(text), step):
+        hit = _detect(text[start:start + MAX_TEXT])
+        if hit and URGENCY[hit.level] > URGENCY[best.level]:
+            best = hit
+            if best.level == "red":
+                break
+    return best
+
+
+def _detect(text: str) -> Optional[ConceptHit]:
     best: Optional[ConceptHit] = None
     for c in CONCEPTS:
         lowered = text.lower()

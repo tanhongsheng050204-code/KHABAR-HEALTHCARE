@@ -57,3 +57,8 @@ def test_pairs_must_be_near_each_other():
 def test_a_reply_too_long_to_check_cheaply_is_never_left_as_fine():
     hit = detect("saya sihat " * 1000)
     assert hit is not None and hit.level == "watch"
+
+
+def test_a_red_flag_anywhere_in_a_long_reply_is_still_red():
+    assert detect("saya sihat " * 800 + " pengsan tadi").level == "red"
+    assert detect("pengsan tadi " + "saya sihat " * 800).level == "red"
