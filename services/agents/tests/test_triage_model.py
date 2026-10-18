@@ -17,7 +17,7 @@ class FakeModel:
 
 
 def test_the_model_can_raise_a_reply_the_word_lists_missed():
-    result = triage("tercungap-cungap walaupun baring", model=FakeModel("red"))
+    result = triage("rasa lain macam sangat hari ni", model=FakeModel("red"))
     assert result.level == "red"
     assert result.source == "model"
     assert result.reason == "fake reason"

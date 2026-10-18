@@ -24,7 +24,8 @@ from agents.triage import MODEL_PROMPT, URGENCY, TriageVerdict, classify_reply, 
 from core.config import settings  # noqa: E402
 from core.deid import scrub  # noqa: E402
 
-SETS = {"cases": ROOT / "evals" / "triage_cases.json", "holdout": ROOT / "evals" / "triage_holdout.json"}
+SETS = {"cases": ROOT / "evals" / "triage_cases.json", "holdout": ROOT / "evals" / "triage_holdout.json",
+        "holdout2": ROOT / "evals" / "triage_holdout_v2.json"}
 CASES: list[dict] = []
 
 
@@ -90,8 +91,8 @@ def main() -> int:
     CASES[:] = json.loads(SETS[args.set].read_text(encoding="utf-8"))["cases"]
 
     keywords = score([classify_reply(c["text"]).level for c in CASES])
-    rows = [("Word lists alone", keywords, "no model, no network")]
-    details = [("Word lists alone", keywords)]
+    rows = [("Word lists + concept rules", keywords, "no model, no network")]
+    details = [("Word lists + concept rules", keywords)]
     if args.models and not settings.GEMINI_API_KEY:
         print("GEMINI_API_KEY is not set, so only the word lists were measured.", file=sys.stderr)
         args.models = []

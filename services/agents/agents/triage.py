@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from core.config import settings
 from core.deid import scrub
+from agents.triage_concepts import detect
 
 WORDS_FILE = Path(__file__).resolve().parents[1] / "data" / "triage_words.json"
 LEVELS = ("red", "watch", "ok")
@@ -30,7 +31,7 @@ log = logging.getLogger(__name__)
 class TriageResult:
     level: str  # red | watch | ok | review
     matched: Optional[str] = None
-    source: str = "keywords"  # keywords | model
+    source: str = "keywords"  # keywords | concept | model
     reason: Optional[str] = None
     missed_dose: bool = False  # the patient says they skipped or forgot a dose
 
@@ -96,7 +97,11 @@ def classify_reply(text: str) -> TriageResult:
             break
     sugar = _sugar_level(lowered)
     if sugar and URGENCY[sugar.level] > URGENCY[words.level]:
-        return replace(sugar, missed_dose=missed)
+        words = replace(sugar, missed_dose=missed)
+    concept = detect(text)
+    if concept and URGENCY[concept.level] > URGENCY[words.level]:
+        return TriageResult(level=concept.level, matched=concept.evidence, source="concept",
+                            reason=concept.concept, missed_dose=missed)
     return words
 
 
