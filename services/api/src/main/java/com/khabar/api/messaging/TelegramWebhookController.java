@@ -145,6 +145,12 @@ public class TelegramWebhookController {
             return;
         }
         String text = message.path("text").asText("");
+        if (TelegramMedia.READ_BUTTON.equals(text.strip())) {
+            if (!media.confirmPhoto(patient.get(), chat)) {
+                messages.send(patient.get(), PatientMessages.photoUnreadText(language), Messenger.Kind.NOTICE);
+            }
+            return;
+        }
         if (TelegramMedia.SEND_BUTTON.equals(text.strip())) {
             if (!media.confirmVoice(patient.get(), chat)) {
                 messages.send(patient.get(), PatientMessages.textOnlyText(language), Messenger.Kind.NOTICE);

@@ -62,12 +62,19 @@ public class TelegramBotClient {
             if (!(result instanceof Map<?, ?> file) || file.get("file_path") == null) {
                 return null;
             }
-            Object size = file.get("file_size");
-            if (size instanceof Number n && n.longValue() > MAX_DOWNLOAD) {
+            // A file without a stated size is refused, and the download stops at the cap whatever the server sends.
+            if (!(file.get("file_size") instanceof Number n) || n.longValue() > MAX_DOWNLOAD) {
                 return null;
             }
-            byte[] bytes = http.get().uri("/file" + botPath + "/" + file.get("file_path")).retrieve().body(byte[].class);
-            return bytes == null || bytes.length > MAX_DOWNLOAD ? null : bytes;
+            return http.get().uri("/file" + botPath + "/" + file.get("file_path")).exchange((request, response) -> {
+                if (!response.getStatusCode().is2xxSuccessful()) {
+                    return null;
+                }
+                try (java.io.InputStream in = response.getBody()) {
+                    byte[] bytes = in.readNBytes(MAX_DOWNLOAD + 1);
+                    return bytes.length > MAX_DOWNLOAD ? null : bytes;
+                }
+            });
         } catch (RuntimeException e) {
             return null;
         }

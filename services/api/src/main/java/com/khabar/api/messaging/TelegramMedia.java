@@ -6,6 +6,7 @@ import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.identity.Role;
 import com.khabar.api.medications.MedicationItem;
 import com.khabar.api.medications.MedicationItemRepository;
+import com.khabar.api.medications.MedicationPacketController;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.service.AgentClientService;
@@ -23,8 +24,9 @@ import java.util.UUID;
 
 /**
  * Voice notes and medicine-packet photos sent to the Telegram bot. A voice note is transcribed and shown back to
- * the patient; only when they tap Send does it become a reply. A packet photo is read and what was read is added
- * to the medicine list marked "please verify", for the clinic to check. Neither file is kept.
+ * the patient; only when they tap Send does it become a reply. A packet photo is read only after the patient taps
+ * Read label, and what was read is added to the medicine list marked "please verify", for the clinic to check.
+ * Neither file is kept.
  */
 @Service
 public class TelegramMedia {
@@ -36,6 +38,10 @@ public class TelegramMedia {
             "keyboard", List.of(List.of(Map.of("text", SEND_BUTTON))),
             "one_time_keyboard", true, "resize_keyboard", true);
     static final Map<String, Object> REMOVE_KEYBOARD = Map.of("remove_keyboard", true);
+    public static final String READ_BUTTON = "📷 Baca label / Read label";
+    static final Map<String, Object> READ_KEYBOARD = Map.of(
+            "keyboard", List.of(List.of(Map.of("text", READ_BUTTON))),
+            "one_time_keyboard", true, "resize_keyboard", true);
     /** A transcript left unconfirmed this long is no longer offered. */
     static final Duration DRAFT_LIFETIME = Duration.ofHours(6);
     static final String PHOTO_SOURCE = "Packet photo via Telegram — please verify";
@@ -44,17 +50,19 @@ public class TelegramMedia {
     private final AgentClientService agents;
     private final AiReceipts aiReceipts;
     private final VoiceDraftRepository drafts;
+    private final PhotoDraftRepository photoDrafts;
     private final FollowUpService followUp;
     private final MedicationItemRepository medications;
     private final PatientGraphSync graphSync;
     private final AdjustableClock clock;
 
     public TelegramMedia(TelegramBotClient bot, AgentClientService agents, AiReceipts aiReceipts, VoiceDraftRepository drafts,
-                         FollowUpService followUp, MedicationItemRepository medications, PatientGraphSync graphSync, AdjustableClock clock) {
+                         PhotoDraftRepository photoDrafts, FollowUpService followUp, MedicationItemRepository medications, PatientGraphSync graphSync, AdjustableClock clock) {
         this.bot = bot;
         this.agents = agents;
         this.aiReceipts = aiReceipts;
         this.drafts = drafts;
+        this.photoDrafts = photoDrafts;
         this.followUp = followUp;
         this.medications = medications;
         this.graphSync = graphSync;
@@ -108,16 +116,36 @@ public class TelegramMedia {
         drafts.findById(patient.getId()).ifPresent(drafts::delete);
     }
 
+    /**
+     * A photo arrived. Like the web app's consent box, nothing is sent to the AI service until the patient taps
+     * Read label; until then only Telegram's file id is kept, never the image.
+     */
     @Transactional
     public void photo(Patient patient, long chatId, String fileId) {
+        photoDrafts.save(new PhotoDraft(patient.getId(), fileId, clock.instant()));
+        bot.sendMessage(chatId, PatientMessages.photoConsentText(patient.getPreferredLanguage()), READ_KEYBOARD);
+    }
+
+    /** The patient agreed: the photo is downloaded, checked to be an image, read, and what was read is listed. */
+    @Transactional
+    public boolean confirmPhoto(Patient patient, long chatId) {
+        PhotoDraft draft = photoDrafts.findById(patient.getId()).orElse(null);
+        if (draft == null) {
+            return false;
+        }
+        photoDrafts.delete(draft);
+        if (clock.instant().isAfter(draft.getCreatedAt().plus(DRAFT_LIFETIME))) {
+            return false;
+        }
         String language = patient.getPreferredLanguage();
-        byte[] image = bot.downloadFile(fileId);
+        byte[] image = bot.downloadFile(draft.getFileId());
+        String mimeType = image == null ? null : MedicationPacketController.detectedImageType(image);
         Map<String, Object> result = null;
-        if (image != null) {
+        if (mimeType != null) {
             aiReceipts.media(patient, AiReceipts.Purpose.PACKET_PHOTO, "/agents/packet/read",
                     "A photo of a medicine packet sent on Telegram (" + Math.max(1, image.length / 1024) + " KB). The AI reads the printed label; the photo is not kept.");
             try {
-                result = agents.readMedicinePacket(image, "image/jpeg");
+                result = agents.readMedicinePacket(image, mimeType);
             } catch (RuntimeException e) {
                 log.warn("Packet photo not read: {}", e.getClass().getSimpleName());
             }
@@ -139,11 +167,12 @@ public class TelegramMedia {
             }
         }
         if (added.isEmpty()) {
-            bot.sendMessage(chatId, PatientMessages.photoUnreadText(language));
-            return;
+            bot.sendMessage(chatId, PatientMessages.photoUnreadText(language), REMOVE_KEYBOARD);
+            return true;
         }
         graphSync.changed(patient.getId());
-        bot.sendMessage(chatId, PatientMessages.photoReadText(language, String.join(", ", added)));
+        bot.sendMessage(chatId, PatientMessages.photoReadText(language, String.join(", ", added)), REMOVE_KEYBOARD);
+        return true;
     }
 
     private static String nameOf(Map<?, ?> candidate) {

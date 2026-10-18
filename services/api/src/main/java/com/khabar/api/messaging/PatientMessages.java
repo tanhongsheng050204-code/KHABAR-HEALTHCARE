@@ -78,6 +78,13 @@ public class PatientMessages {
             "zh", "抱歉，我们听不清这条语音。请用文字回复。紧急情况请拨打999。",
             "ta", "மன்னிக்கவும், அந்தக் குரல் செய்தியைப் புரிந்துகொள்ள முடியவில்லை. தயவுசெய்து தட்டச்சு செய்யவும். அவசரநிலையில் 999 ஐ அழைக்கவும்.");
 
+    /** Before a packet photo is read: the same consent the web app asks for. */
+    private static final Map<String, String> PHOTO_CONSENT = Map.of(
+            "ms", "Mahu kami baca label ubat dalam gambar ini? Gambar akan dihantar kepada AI untuk dibaca dan tidak disimpan. Tekan “📷 Baca label / Read label” untuk setuju.",
+            "en", "Shall we read the medicine label in this photo? It is sent to an AI to read and is not kept. Tap “📷 Baca label / Read label” to agree.",
+            "zh", "要读取这张照片里的药品标签吗？照片会交给AI读取，不会保存。同意请点“📷 Baca label / Read label”。",
+            "ta", "இந்தப் புகைப்படத்தில் உள்ள மருந்து லேபிளைப் படிக்கலாமா? இது படிக்க AI-க்கு அனுப்பப்படும், சேமிக்கப்படாது. ஒப்புக்கொள்ள “📷 Baca label / Read label” ஐ அழுத்தவும்.");
+
     /** After a packet photo. %s lists what was read. */
     private static final Map<String, String> PHOTO_READ = Map.of(
             "ms", "Terima kasih. Daripada gambar itu kami baca: %s. Ia ditambah ke senarai ubat anda sebagai “perlu disemak”; klinik anda akan menyemaknya.",
@@ -126,6 +133,10 @@ public class PatientMessages {
 
     public static String photoReadText(String language, String items) {
         return PHOTO_READ.getOrDefault(language, PHOTO_READ.get("en")).formatted(items);
+    }
+
+    public static String photoConsentText(String language) {
+        return PHOTO_CONSENT.getOrDefault(language, PHOTO_CONSENT.get("en"));
     }
 
     public static String photoUnreadText(String language) {

@@ -76,7 +76,8 @@ public class MedicationPacketController {
         }
     }
 
-    private static String detectedImageType(byte[] bytes) {
+    /** JPEG, PNG or WebP by their first bytes, whatever the file claims to be; null for anything else. */
+    public static String detectedImageType(byte[] bytes) {
         if (bytes.length >= 3 && (bytes[0] & 0xff) == 0xff && (bytes[1] & 0xff) == 0xd8 && (bytes[2] & 0xff) == 0xff) {
             return "image/jpeg";
         }

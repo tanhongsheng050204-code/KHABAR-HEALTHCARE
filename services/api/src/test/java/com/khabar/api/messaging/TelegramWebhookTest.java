@@ -192,23 +192,31 @@ class TelegramWebhookTest {
         deliver(message(chat, chat, "private", 13, "\"photo\":[{\"file_id\":\"x\",\"width\":1,\"height\":1}]"), SECRET)
                 .andExpect(status().isOk());
         assertThat(replies.findAll()).noneMatch(r -> r.getPatient().getId().equals(aminah.getId()));
-        verify(bot).sendMessage(chat, PatientMessages.photoUnreadText("ms"));
+        verify(bot).sendMessage(eq(chat), eq(PatientMessages.photoConsentText("ms")),
+                argThat(markup -> markup != null && markup.toString().contains(TelegramMedia.READ_BUTTON)));
+        verify(bot, never()).downloadFile(anyString());
+
+        deliver(text(20, TelegramMedia.READ_BUTTON), SECRET).andExpect(status().isOk());
+        verify(bot).sendMessage(eq(chat), eq(PatientMessages.photoUnreadText("ms")), any());
     }
 
     @Test
     void aPacketPhotoIsReadIntoTheMedicineListForTheClinicToVerify() throws Exception {
         link(aminah);
-        when(bot.downloadFile("big")).thenReturn(new byte[]{1, 2, 3});
+        when(bot.downloadFile("big")).thenReturn(new byte[]{(byte) 0xff, (byte) 0xd8, (byte) 0xff, 0x00});
         when(agents.readMedicinePacket(any(), anyString())).thenReturn(Map.of("candidates",
                 List.of(Map.of("kind", "MEDICINE", "brand", "Glucophage", "strength", "500 mg"))));
         deliver(message(chat, chat, "private", 14,
                 "\"photo\":[{\"file_id\":\"small\",\"width\":1,\"height\":1},{\"file_id\":\"big\",\"width\":9,\"height\":9}]"), SECRET)
                 .andExpect(status().isOk());
+        assertThat(medications.findByPatientIdOrderByAddedAt(aminah.getId())).as("nothing is read before consent").isEmpty();
+        deliver(text(21, TelegramMedia.READ_BUTTON), SECRET).andExpect(status().isOk());
+        verify(agents).readMedicinePacket(any(), eq("image/jpeg"));
         assertThat(medications.findByPatientIdOrderByAddedAt(aminah.getId())).singleElement().satisfies(item -> {
             assertThat(item.getName()).isEqualTo("Glucophage 500 mg");
             assertThat(item.getSource()).isEqualTo(TelegramMedia.PHOTO_SOURCE);
         });
-        verify(bot).sendMessage(chat, PatientMessages.photoReadText("ms", "Glucophage 500 mg"));
+        verify(bot).sendMessage(eq(chat), eq(PatientMessages.photoReadText("ms", "Glucophage 500 mg")), any());
     }
 
     @Test
