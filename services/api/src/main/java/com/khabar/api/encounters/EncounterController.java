@@ -224,11 +224,13 @@ public class EncounterController {
 
     /** The take-home plan built at finalising, with whether the plan check held it back. */
     @GetMapping("/api/encounters/{id}/summary")
-    @Transactional(readOnly = true)
+    @Transactional
     public SummaryStatus summary(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
-        Encounter encounter = load(id, requireDoctor(jwt));
+        AppUser doctor = requireDoctor(jwt);
+        Encounter encounter = load(id, doctor);
         VisitSummary s = summaries.findFirstByEncounterIdOrderByCreatedAtDesc(encounter.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No take-home plan for this visit yet."));
+        auditLog.record(doctor, encounter.getPatient().getId(), AuditAction.VIEWED_SUMMARY);
         return new SummaryStatus(encounter.getId(), s.getText(), s.isHeld(), s.getHeldReason(), s.getReleasedAt(), s.getReleaseNote());
     }
 
@@ -240,7 +242,9 @@ public class EncounterController {
     @Transactional
     public SummaryStatus release(@PathVariable UUID id, @RequestBody ReleaseRequest request, @AuthenticationPrincipal Jwt jwt) {
         AppUser doctor = requireDoctor(jwt);
-        Encounter encounter = load(id, doctor);
+        // Locking the visit serialises two releases of the same plan, so it is sent once.
+        Encounter encounter = encounters.lockById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        requireSameClinic(doctor, encounter.getPatient());
         VisitSummary s = summaries.findFirstByEncounterIdOrderByCreatedAtDesc(encounter.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No take-home plan for this visit yet."));
         if (!s.isHeld()) {
@@ -252,6 +256,8 @@ public class EncounterController {
         }
         s.release(doctor.getId(), note.length() > 500 ? note.substring(0, 500) : note, clock.instant());
         summaries.save(s);
+        // Releasing a held plan overrides a safety check, so it is in the patient's access log like any override.
+        auditLog.record(doctor, encounter.getPatient().getId(), AuditAction.OVERRODE_SAFETY_FINDING);
         messages.send(encounter.getPatient(), s.getText(), Messenger.Kind.SUMMARY);
         return new SummaryStatus(encounter.getId(), s.getText(), false, s.getHeldReason(), s.getReleasedAt(), s.getReleaseNote());
     }
