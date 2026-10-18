@@ -56,6 +56,17 @@ local services, pass the API base URL and agents health URL separately, for exam
 `node scripts/check-health.mjs http://localhost:8080 http://localhost:8000/health`. The script exits
 nonzero when either endpoint is unavailable or returns an unexpected status.
 
+## Settings added in October 2026
+
+| Variable | Default | What it does |
+|---|---|---|
+| `KHABAR_STAFF_ALERTS_ENABLED` | `true` (`false` in the `pilot` profile) | Runs the staff-alert and morning-briefing check. Each clinic must still switch alerts on in Staff & access. |
+| `KHABAR_STAFF_ALERTS_POLL_MS` | `120000` | How often the check runs. |
+| `KHABAR_AUDIT_SEAL_MS` | `60000` | How often new access-log entries are sealed into the hash chain. |
+| `WEB_APP_URL` | empty | Used for the link in staff alerts. |
+
+Staff chats are linked from Telegram: add the bot to the staff group and send the `/staff KB-…` code shown in Staff & access. The audit anchor (`GET /api/audit/anchor`, public: position and hash only) is copied daily by `.github/workflows/audit-anchor.yml`; compare anchors with the live chain with `node scripts/check-audit-anchors.mjs`. Migrations V8–V15 add the new tables; the demo's Hibernate-managed schema picks them up on redeploy.
+
 ## Run it on your machine (no accounts needed)
 
 Shortcut on Windows: `powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1` starts both services and the screens (see `docs/FRONTEND.md`).

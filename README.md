@@ -16,8 +16,9 @@
 > ⚠️ **Status (18 Oct 2026):** working prototype, deployed.
 > - **Landing page:** on 18 Oct the web app moved to a quieter "ledger" look (one ink, one teal accent, thin grid lines; Manrope headings, Inter text). `/` is now a product page that replays the clinic's own screens and opens the demo clinic in one click. The storybook film of Aminah's 30 days moved to `/story`.
 > - **Web checks (18 Oct):** 226 browser tests on desktop and phone layouts (36 layout-specific skips), 49 unit tests, lint and type checks all passed. Lighthouse mobile performance: `/` 93–97, `/login` 96, `/story` 86–88 (the live film scored 82–85 on the same machine that day; the 94–95 of 1 Oct was measured on a quieter machine).
-> - **Agent tests:** 242 passed on 30 Sep. A local rerun on 1 Oct was blocked by a Windows security policy on the build machine.
-> - **API tests:** last full run on 28 Sep: 240 tests, 0 failures, 1 optional PostgreSQL test skipped.
+> - **New on 18 Oct (in the code; the API needs a manual redeploy before they appear on the live site):** counts-only staff alerts and a morning briefing to a clinic's Telegram group, an independent check that holds a take-home plan whose medicines or numbers do not match the prescription, "What the AI saw" receipts, a tamper-evident (hash-chained, daily-anchored) access log, a one-gentle-re-ask no-reply sequence, a clinic impact panel, case notes with @mentions, PDPA export/erasure/correction requests and a breach register, voice notes and packet photos through Telegram, and the patient and caregiver screens in BM, 中文 and தமிழ். See [New in October 2026](#new-in-october-2026).
+> - **Agent tests:** 242 passed on 18 Oct.
+> - **API tests:** 18 Oct: 290 tests, 0 failures, 1 optional PostgreSQL test skipped. Web: 226 browser tests and 53 unit tests passed.
 > - **Deployment:** the web app deploys automatically on every push to `main`. The API and agents are deployed manually.
 >
 > All patient data is **fictional**. Khabar is **not a medical device** and is not for clinical use. Full plan: [plan.md](plan.md). Open work: [UNDONE_WORK.md](UNDONE_WORK.md).
@@ -271,6 +272,23 @@ This is the working app, not a clickable mock-up. On the sign-in page, **Doctor 
 *This scripted example uses a phrase in the current word list. Khabar replies with fixed BM wording (call 999 or go to the nearest emergency department) and adds it to the clinic's list. This is an illustration of the flow, not evidence that Khabar reliably detects emergencies; the recorded word-list score on held-out replies was 2/12.*
 
 ---
+
+### New in October 2026
+
+Ideas taken from a sister project's finance copilot and reshaped for a clinic. Each is in the code with tests; none sends anything clinical on its own.
+
+| Feature | What it does | Safeguard |
+|---|---|---|
+| **Staff alerts and morning briefing** | A clinic links its Telegram staff group with a one-time `/staff` code. When patients wait, the group hears how many, how many are urgent and how many are past the clinic's acknowledgement time, with a link to the call list; optionally a morning briefing (call list, appointments, who is on duty). | Counts only, never a name or a patient's words. Off until a clinic switches it on; off in the `pilot` profile until approved. Every message, sent or only recorded, is in a log. |
+| **Plan check** | Before a take-home plan is sent, the API checks every medicine and number in it against the finalised prescription and follow-up date. | A plan that fails is held: not sent and not shown to the patient or caregivers until a doctor releases it with a written reason, which is logged like a safety override. |
+| **What the AI saw** | A receipt each time a patient's words, a photo or a recording leave the clinical API for the AI service: exactly what was sent and how many names, IC and phone numbers were replaced. | Shown to the patient and their clinic; reading it is in the access log. |
+| **Tamper-evident access log** | "Who viewed my record" entries are sealed into an HMAC hash chain; doctors and admins can verify it, and a daily workflow copies the newest link into [`audit-anchors/`](audit-anchors/). | Editing or deleting any entry breaks the chain; rewriting the whole chain no longer matches an anchor (`node services/scripts/check-audit-anchors.mjs`). |
+| **No-reply sequence** | An unanswered check-in gets one gentle re-ask after a day; after two days the patient is on the call list and a caregiver with alert consent sees a notice. | One re-ask only, in the patient's language. |
+| **Impact panel** | From the clinic's own records over 7, 30 or 90 days: cases acknowledged in time, cases closed after contact, urgent replies, check-ins answered, duplicates flagged, plans held, median time to acknowledge. | Counts with what they are out of; no estimates or benchmarks. |
+| **Case notes and @mentions** | Team notes on a follow-up case; `@Name` puts the note in a colleague's mentions. | Doctors and nurses only; encrypted; never sent to the patient or the AI. |
+| **PDPA rights** | Patients download everything held about them and ask for erasure or correction; the clinic decides and records what it did. A breach register walks each incident through containment, assessment, Commissioner notice, notice to people affected, and closure. | Erasure removes identity and sign-in but keeps the clinical record for the legal retention period. |
+| **Telegram voice and photos** | A voice note is transcribed and shown back; it becomes a reply only when the patient taps Send. A packet photo is read only after the patient taps Read label; what is read joins the medicine list as "please verify". | Files are not kept; each read leaves an AI receipt. |
+| **Patient app in four languages** | Patient and caregiver screens follow the patient's language, with a switcher for BM, EN, 中文 and தமிழ். | A unit test checks every phrase has all three translations. The Chinese and Tamil wording needs a fluent reader's review. |
 
 ## 4. What Makes It Different
 
