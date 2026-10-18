@@ -105,6 +105,9 @@ URGENCY = {"ok": 0, "review": 1, "watch": 2, "red": 3}
 # A place and a sign count together only when this close (in characters), so "doktor cakap ... tak boleh makan"
 # is not read as a speech problem.
 NEAR = 30
+# Bounds on the work for one reply: replies are short, and this keeps a pasted essay from costing much.
+MAX_TEXT = 4000
+MAX_SPANS = 50
 
 
 @dataclass(frozen=True)
@@ -121,10 +124,17 @@ def _latin(term: str) -> bool:
 def _spans(text: str, term: str) -> list[tuple[int, int]]:
     """Where a term occurs. Latin terms respect word starts (and word ends unless they end in *)."""
     if not _latin(term):
-        return [(m.start(), m.end()) for m in re.finditer(re.escape(term), text)]
-    stem = term.rstrip("*")
-    end = "" if term.endswith("*") else r"(?![a-z])"
-    return [(m.start(), m.end()) for m in re.finditer(rf"(?<![a-z]){re.escape(stem)}{end}", text)]
+        pattern = re.escape(term)
+    else:
+        stem = term.rstrip("*")
+        end = "" if term.endswith("*") else r"(?![a-z])"
+        pattern = rf"(?<![a-z]){re.escape(stem)}{end}"
+    spans = []
+    for m in re.finditer(pattern, text):
+        spans.append((m.start(), m.end()))
+        if len(spans) >= MAX_SPANS:
+            break
+    return spans
 
 
 def _find(text: str, term: str) -> Optional[str]:
@@ -157,7 +167,7 @@ def detect(text: str) -> Optional[ConceptHit]:
     """The most urgent concept in the reply, or None."""
     best: Optional[ConceptHit] = None
     for c in CONCEPTS:
-        lowered = text.lower()
+        lowered = text[:MAX_TEXT].lower()
         for phrase in c.ignore:
             lowered = lowered.replace(phrase, " " * len(phrase))
         evidence = None
