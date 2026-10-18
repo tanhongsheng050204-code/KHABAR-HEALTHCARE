@@ -1,5 +1,6 @@
 package com.khabar.api.patients;
 
+import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.identity.AppUser;
@@ -27,12 +28,14 @@ public class PatientController {
     private final PatientRepository patients;
     private final PatientAccessPolicy policy;
     private final AuditLog auditLog;
+    private final AiReceipts aiReceipts;
 
-    public PatientController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AuditLog auditLog) {
+    public PatientController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AuditLog auditLog, AiReceipts aiReceipts) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
         this.auditLog = auditLog;
+        this.aiReceipts = aiReceipts;
     }
 
     public record PatientView(UUID id, String fullName, String icMasked, String preferredLanguage, String clinicName) {
@@ -67,6 +70,18 @@ public class PatientController {
         return auditLog.forPatient(patient.getId()).stream()
                 .map(e -> new AccessLogEntry(e.getAt(), e.getActorLabel(), e.getAction()))
                 .toList();
+    }
+
+    /** "What the AI saw": what left the clinical API for the AI service about this patient, newest first. */
+    @GetMapping("/{id}/ai-receipts")
+    @Transactional(readOnly = true)
+    public List<AiReceipts.ReceiptView> aiReceipts(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        AppUser user = currentUser.from(jwt);
+        Patient patient = find(id);
+        if (!policy.isPatientOrTheirClinic(user, patient)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        return aiReceipts.latest(patient.getId(), 50);
     }
 
     private Patient find(UUID id) {

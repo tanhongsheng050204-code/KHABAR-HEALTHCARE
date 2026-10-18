@@ -26,3 +26,8 @@ khabar:
     bootstrap-token: test-bootstrap-token
   favoriot:
     device-secret: test-device-secret
+  audit:
+    # Tests seal explicitly; a background sealer would race them.
+    sealer-enabled: false
+  staff-alerts:
+    scheduler-enabled: false

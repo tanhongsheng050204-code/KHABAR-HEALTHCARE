@@ -8,6 +8,8 @@ import com.khabar.api.identity.ClinicStaffAccess;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.messaging.Messenger;
 import com.khabar.api.service.AgentClientService;
+import com.khabar.api.staffalerts.StaffAlerts;
+import com.khabar.api.staffalerts.StaffChannel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -53,13 +55,15 @@ public class ClinicOpsController {
     private final boolean schedulerEnabled;
     private final boolean realSignIn;
     private final AdjustableClock clock;
+    private final StaffAlerts staffAlerts;
 
     public ClinicOpsController(CurrentUser currentUser, ClinicStaffAccess staffAccess, ClinicSettingsRepository settings,
                                RotaEntryRepository rota, ClinicActivityRepository activity, ClinicOps clinicOps,
                                AppUserRepository users, AgentClientService agents, Messenger messenger, PatientGraph graph,
                                @Value("${khabar.checkins.scheduler-enabled:true}") boolean schedulerEnabled,
                                @Value("${khabar.security.supabase-jwks-url:}") String jwksUrl,
-                               AdjustableClock clock) {
+                               AdjustableClock clock, StaffAlerts staffAlerts) {
+        this.staffAlerts = staffAlerts;
         this.currentUser = currentUser;
         this.staffAccess = staffAccess;
         this.settings = settings;
@@ -156,7 +160,9 @@ public class ClinicOpsController {
     /** Whether each outside service is working, so a gap is visible instead of silently assumed away. */
     @GetMapping("/integrations")
     public List<Integration> integrations(@AuthenticationPrincipal Jwt jwt) {
-        requireManager(jwt);
+        AppUser actor = requireManager(jwt);
+        StaffChannel staffChat = staffAlerts.channelFor(actor.getClinic().getId());
+        boolean chatReady = staffChat.isAlertsOn() && staffChat.getChatId() != null && staffAlerts.telegramConfigured();
         Map<String, Object> health = agents.checkAgentHealth();
         if (health == null) {
             health = Map.of();
@@ -172,6 +178,10 @@ public class ClinicOpsController {
                         schedulerEnabled ? "Check-ins go out on their due days." : "No check-ins are sent until it is turned on."),
                 new Integration("Patient graph", graph.enabled() ? "OK" : "OFF",
                         graph.enabled() ? "Context is written and read by random ID." : "Not configured; checks use the main database only."),
+                new Integration("Staff alerts", chatReady ? "OK" : staffChat.isAlertsOn() ? "LIMITED" : "OFF",
+                        chatReady ? "Counts-only alerts go to the clinic's staff chat."
+                                : staffChat.isAlertsOn() ? "Switched on, but recorded only: link a staff chat (and Telegram must be configured)."
+                                : "Off. Nobody is told when a patient is added to the call list; check the list in Khabar."),
                 new Integration("Real sign-in", realSignIn ? "OK" : "OFF",
                         realSignIn ? "Supabase sign-ins are verified with the project's published keys." : "Only demo or shared-secret tokens are accepted."));
     }

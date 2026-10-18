@@ -8,6 +8,7 @@ import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.patients.PhoneIndex;
 import com.khabar.api.patients.TelegramChatIndex;
+import com.khabar.api.staffalerts.StaffAlerts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,10 @@ public class TelegramWebhookController {
             + "We couldn't find a clinic record for this number. Please ask your clinic.";
     static final String AMBIGUOUS = "Nombor ini didaftarkan untuk lebih daripada seorang pesakit. Sila minta klinik anda mengemas kini rekod.\n\n"
             + "This number is registered for more than one patient. Please ask your clinic to update the record.";
+    static final String STAFF_LINKED = "This chat now gets Khabar staff alerts for %s: how many patients wait and how urgent, "
+            + "with a link to the call list. Patient names and messages are never sent here.";
+    static final String STAFF_BAD_CODE = "That staff-chat code is not valid or has expired. Make a new one in Khabar: "
+            + "Staff & access, Staff chat.";
     static final Map<String, Object> REMOVE_KEYBOARD = Map.of("remove_keyboard", true);
     static final Map<String, Object> SHARE_KEYBOARD = Map.of(
             "keyboard", List.of(List.of(Map.of("text", SHARE_BUTTON, "request_contact", true))),
@@ -59,11 +64,13 @@ public class TelegramWebhookController {
     private final PatientMessages messages;
     private final VisitSummaryRepository summaries;
     private final TelegramBotClient bot;
+    private final StaffAlerts staffAlerts;
 
     public TelegramWebhookController(@Value("${khabar.telegram.webhook-secret:}") String secret, ObjectMapper json,
                                      PatientRepository patients, PhoneIndex phoneIndex, TelegramChatIndex chatIndex,
                                      FollowUpService followUp, PatientMessages messages, VisitSummaryRepository summaries,
-                                     TelegramBotClient bot) {
+                                     TelegramBotClient bot, StaffAlerts staffAlerts) {
+        this.staffAlerts = staffAlerts;
         this.secret = secret;
         this.json = json;
         this.patients = patients;
@@ -100,7 +107,13 @@ public class TelegramWebhookController {
     }
 
     private void handle(JsonNode message) {
-        if (message.isMissingNode() || !"private".equals(message.path("chat").path("type").asText())) {
+        if (message.isMissingNode()) {
+            return;
+        }
+        if (linkStaffChat(message)) {
+            return;
+        }
+        if (!"private".equals(message.path("chat").path("type").asText())) {
             return;
         }
         String chatId = message.path("chat").path("id").asText();
@@ -129,6 +142,28 @@ public class TelegramWebhookController {
         UUID clientMessageId = UUID.nameUUIDFromBytes(
                 ("telegram:" + chatId + ":" + message.path("message_id").asText()).getBytes(StandardCharsets.UTF_8));
         followUp.receiveReply(patient.get(), text, clientMessageId);
+    }
+
+    /**
+     * "/staff CODE" (or "/staff@Bot CODE" in a group) links the chat it was sent from as a clinic's staff chat.
+     * The code comes from the clinic's settings page and expires after 30 minutes.
+     */
+    private boolean linkStaffChat(JsonNode message) {
+        String text = message.path("text").asText("").trim();
+        String[] parts = text.split("\\s+", 2);
+        if (!parts[0].equals("/staff") && !parts[0].startsWith("/staff@")) {
+            return false;
+        }
+        String chatId = message.path("chat").path("id").asText();
+        if (chatId.isBlank()) {
+            return true;
+        }
+        String code = parts.length > 1 ? parts[1].trim() : "";
+        long chat = Long.parseLong(chatId);
+        staffAlerts.linkFromTelegram(code, chatId).ifPresentOrElse(
+                clinic -> bot.sendMessage(chat, STAFF_LINKED.formatted(clinic)),
+                () -> bot.sendMessage(chat, STAFF_BAD_CODE));
+        return true;
     }
 
     private void link(JsonNode message, String chatId) {

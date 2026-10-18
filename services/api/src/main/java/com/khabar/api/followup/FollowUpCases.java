@@ -90,6 +90,11 @@ public class FollowUpCases {
         });
     }
 
+    /** The patient's open case, if any. Never opens one. */
+    public java.util.Optional<FollowUpCase> openCaseFor(UUID patientId) {
+        return cases.findByPatientIdAndClosedAtIsNull(patientId);
+    }
+
     public List<FollowUpCase> openCases(UUID clinicId) {
         return cases.findByClinicIdAndClosedAtIsNull(clinicId);
     }

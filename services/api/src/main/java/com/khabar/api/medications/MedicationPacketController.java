@@ -1,5 +1,6 @@
 package com.khabar.api.medications;
 
+import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.identity.AppUser;
 import com.khabar.api.identity.CurrentUser;
 import com.khabar.api.patients.Patient;
@@ -31,13 +32,15 @@ public class MedicationPacketController {
     private final PatientRepository patients;
     private final PatientAccessPolicy policy;
     private final AgentClientService agents;
+    private final AiReceipts aiReceipts;
 
     public MedicationPacketController(CurrentUser currentUser, PatientRepository patients,
-                                      PatientAccessPolicy policy, AgentClientService agents) {
+                                      PatientAccessPolicy policy, AgentClientService agents, AiReceipts aiReceipts) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
         this.agents = agents;
+        this.aiReceipts = aiReceipts;
     }
 
     @PostMapping(path = "/api/patients/{patientId}/medications/packet-photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -64,6 +67,8 @@ public class MedicationPacketController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use a valid JPEG, PNG, or WebP image.");
         }
         try {
+            aiReceipts.media(patient, AiReceipts.Purpose.PACKET_PHOTO, "/agents/packet/read",
+                    "A photo of a medicine packet (" + Math.max(1, bytes.length / 1024) + " KB). The AI reads the printed label; the photo is not kept.");
             return agents.readMedicinePacket(bytes, mimeType);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,

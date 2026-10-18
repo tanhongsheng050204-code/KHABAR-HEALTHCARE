@@ -1,5 +1,6 @@
 package com.khabar.api.followup;
 
+import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.config.AdjustableClock;
 import com.khabar.api.graph.PatientGraphSync;
 import com.khabar.api.messaging.Messenger;
@@ -40,9 +41,10 @@ public class FollowUpService {
     private final PatientMessages messages;
     private final AdjustableClock clock;
     private final PatientGraphSync graphSync;
+    private final AiReceipts aiReceipts;
 
     public FollowUpService(PatientReplyRepository replies, CheckInRepository checkIns, ApprovedAnswerRepository answers,
-                           AgentClientService agents, PatientMessages messages, AdjustableClock clock, PatientGraphSync graphSync) {
+                           AgentClientService agents, PatientMessages messages, AdjustableClock clock, PatientGraphSync graphSync, AiReceipts aiReceipts) {
         this.replies = replies;
         this.checkIns = checkIns;
         this.answers = answers;
@@ -50,6 +52,7 @@ public class FollowUpService {
         this.messages = messages;
         this.clock = clock;
         this.graphSync = graphSync;
+        this.aiReceipts = aiReceipts;
     }
 
     /**
@@ -83,6 +86,7 @@ public class FollowUpService {
         boolean missedDose = false;
         boolean triaged = true;
         try {
+            aiReceipts.text(patient, AiReceipts.Purpose.REPLY_TRIAGE, "/agents/followup/triage", redacted);
             Map<String, Object> result = agents.triageReply(redacted, patient.getGraphId().toString());
             level = TriageLevel.fromAgent(result == null ? null : result.get("level"));
             matched = result == null || result.get("matched") == null ? null : result.get("matched").toString();
@@ -131,6 +135,7 @@ public class FollowUpService {
             return Optional.empty();
         }
         try {
+            aiReceipts.text(patient, AiReceipts.Purpose.ANSWER_MATCH, "/agents/followup/answer", redacted);
             String id = agents.matchAnswer(redacted, offered.stream()
                     .map(a -> new AnswerOption(a.getId().toString(), a.getTitle(), List.copyOf(a.getTriggers())))
                     .toList());

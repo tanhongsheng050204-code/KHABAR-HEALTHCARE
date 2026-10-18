@@ -1,5 +1,6 @@
 package com.khabar.api.intake;
 
+import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
@@ -54,10 +55,11 @@ public class IntakeController {
     private final AdjustableClock clock;
     private final MedicationList medications;
     private final PatientGraphSync graphSync;
+    private final AiReceipts aiReceipts;
 
     public IntakeController(CurrentUser currentUser, PatientRepository patients, PatientAccessPolicy policy, AgentClientService agents,
                             IntakeSessionRepository sessions, IntakeRecords records, AuditLog auditLog, AdjustableClock clock,
-                            MedicationList medications, PatientGraphSync graphSync) {
+                            MedicationList medications, PatientGraphSync graphSync, AiReceipts aiReceipts) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.policy = policy;
@@ -68,6 +70,7 @@ public class IntakeController {
         this.clock = clock;
         this.medications = medications;
         this.graphSync = graphSync;
+        this.aiReceipts = aiReceipts;
     }
 
     public record ChatMessage(String role, String content) {
@@ -96,6 +99,7 @@ public class IntakeController {
                 .map(m -> Map.of("role", String.valueOf(m.role()), "content", Redactor.redact(String.valueOf(m.content()), patient)))
                 .toList();
 
+        aiReceipts.conversation(patient, AiReceipts.Purpose.INTAKE_CHAT, "/agents/intake/chat", history);
         Map<String, Object> reply = agents.processIntake(patient.getGraphId().toString(), patient.getPreferredLanguage(), history, known(patient));
         String nextQuestion = String.valueOf(reply.get("next_question"));
         boolean complete = Boolean.TRUE.equals(reply.get("is_complete"));
@@ -147,6 +151,7 @@ public class IntakeController {
         if (complete) {
             PreVisitReport report = null;
             try {
+                aiReceipts.conversation(patient, AiReceipts.Purpose.PREVISIT_REPORT, "/agents/intake/report", history);
                 report = agents.previsitReport(history);
             } catch (RuntimeException e) {
                 log.warn("Pre-visit report not built for intake {}: {}", session.getId(), e.getMessage());

@@ -32,6 +32,9 @@ khabar:
   checkins:
     # No patient messages are sent until the clinic explicitly enables the scheduler.
     scheduler-enabled: ${CHECKINS_SCHEDULER_ENABLED:false}
+  staff-alerts:
+    # Staff-chat alerts and briefings stay off until the clinic's alert policy is approved.
+    scheduler-enabled: ${KHABAR_STAFF_ALERTS_ENABLED:false}
   telegram:
     bot-token: ${KHABAR_TELEGRAM_BOT_TOKEN:}
     webhook-secret: ${KHABAR_TELEGRAM_WEBHOOK_SECRET:}

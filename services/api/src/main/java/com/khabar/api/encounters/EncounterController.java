@@ -1,5 +1,6 @@
 package com.khabar.api.encounters;
 
+import com.khabar.api.privacy.AiReceipts;
 import com.khabar.api.audit.AuditAction;
 import com.khabar.api.audit.AuditLog;
 import com.khabar.api.config.AdjustableClock;
@@ -70,11 +71,12 @@ public class EncounterController {
     private final IntakeRecords intakes;
     private final PatientGraphSync graphSync;
     private final ClinicStaffAccess staffAccess;
+    private final AiReceipts aiReceipts;
 
     public EncounterController(CurrentUser currentUser, PatientRepository patients, EncounterRepository encounters,
                                VisitSummaryRepository summaries, AgentClientService agents, CheckInPlanner checkIns,
                                AuditLog auditLog, AdjustableClock clock, PatientMessages messages,
-                               MedicationList medications, IntakeRecords intakes, PatientGraphSync graphSync, ClinicStaffAccess staffAccess) {
+                               MedicationList medications, IntakeRecords intakes, PatientGraphSync graphSync, ClinicStaffAccess staffAccess, AiReceipts aiReceipts) {
         this.currentUser = currentUser;
         this.patients = patients;
         this.encounters = encounters;
@@ -88,6 +90,7 @@ public class EncounterController {
         this.intakes = intakes;
         this.graphSync = graphSync;
         this.staffAccess = staffAccess;
+        this.aiReceipts = aiReceipts;
     }
 
     public record NotesRequest(String notes, Boolean fasting) {
@@ -138,6 +141,8 @@ public class EncounterController {
         }
         String name = audio.getOriginalFilename() == null ? "audio.webm" : audio.getOriginalFilename().replaceAll("[^A-Za-z0-9._-]", "_");
         try {
+            aiReceipts.media(encounter.getPatient(), AiReceipts.Purpose.DICTATION, "/agents/transcribe",
+                    "A voice recording of the doctor's notes (" + Math.max(1, audio.getSize() / 1024) + " KB). It is turned into text and not kept.");
             return new Transcript(agents.transcribe(audio.getBytes(), name, encounter.getPatient().getPreferredLanguage()));
         } catch (RuntimeException e) {
             log.warn("Transcription failed for encounter {}: {}", id, e.getMessage());
@@ -152,7 +157,9 @@ public class EncounterController {
         String notes = request.notes() == null ? "" : request.notes();
         DraftedReport draft;
         try {
-            draft = agents.draftReport(Redactor.redact(notes, encounter.getPatient()));
+            String redacted = Redactor.redact(notes, encounter.getPatient());
+            aiReceipts.text(encounter.getPatient(), AiReceipts.Purpose.DRAFT_REPORT, "/agents/report/draft", redacted);
+            draft = agents.draftReport(redacted);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "The report agent is not reachable. Your notes were not saved; try again.");
         }
@@ -212,6 +219,7 @@ public class EncounterController {
     private void storeSummary(Encounter encounter, Patient patient) {
         try {
             List<AgentDtos.DraftedRx> rx = encounter.getPrescription().stream().map(PrescriptionLine::toDto).toList();
+            aiReceipts.text(patient, AiReceipts.Purpose.PATIENT_SUMMARY, "/agents/summary/build", summaryRequestText(rx, patient, encounter));
             SummaryResult result = agents.buildSummary(rx, patient.getPreferredLanguage(), encounter.getFollowUpWeeks(), encounter.isFasting());
             if (result != null && result.text() != null) {
                 String needsDoctor = result.needsDoctor() == null ? null : String.join(", ", result.needsDoctor());
@@ -221,6 +229,26 @@ public class EncounterController {
         } catch (RuntimeException e) {
             log.warn("Summary not built for encounter {}: {}", encounter.getId(), e.getMessage());
         }
+    }
+
+    /** The summary request as a person would read it: the prescription lines and options, no identifiers. */
+    private static String summaryRequestText(List<AgentDtos.DraftedRx> rx, Patient patient, Encounter encounter) {
+        StringBuilder out = new StringBuilder("Language: ").append(patient.getPreferredLanguage()).append('\n');
+        for (AgentDtos.DraftedRx line : rx) {
+            out.append("Medicine: ").append(line.name() == null ? line.raw() : line.name());
+            if (line.strengthMg() != null) out.append(", ").append(line.strengthMg()).append(" mg");
+            if (line.unitsPerDose() != null) out.append(", ").append(line.unitsPerDose()).append(" per dose");
+            if (line.timesPerDay() != null) out.append(", ").append(line.timesPerDay()).append(" times a day");
+            if (line.timesOfDay() != null && !line.timesOfDay().isEmpty()) out.append(", ").append(String.join("/", line.timesOfDay()));
+            if (line.timing() != null) out.append(", ").append(line.timing());
+            if (line.asNeeded()) out.append(", when needed");
+            out.append('\n');
+        }
+        if (encounter.getFollowUpWeeks() != null) {
+            out.append("Follow-up in weeks: ").append(encounter.getFollowUpWeeks()).append('\n');
+        }
+        out.append("Fasting: ").append(encounter.isFasting() ? "yes" : "no");
+        return out.toString();
     }
 
     private AgentDtos.SafetyDraft safetyDraft(Encounter encounter) {

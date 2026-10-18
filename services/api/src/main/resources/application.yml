@@ -70,6 +70,12 @@ khabar:
       # Enable only after clinician approval of the clinic's acknowledgement/escalation policy.
       enabled: ${KHABAR_AUTO_ESCALATION_ENABLED:false}
       poll-ms: ${KHABAR_AUTO_ESCALATION_POLL_MS:60000}
+  staff-alerts:
+    # Counts-only alerts and a morning briefing to each clinic's staff chat. Each clinic must also switch them on.
+    scheduler-enabled: ${KHABAR_STAFF_ALERTS_ENABLED:true}
+    poll-ms: ${KHABAR_STAFF_ALERTS_POLL_MS:120000}
+  audit:
+    seal-ms: ${KHABAR_AUDIT_SEAL_MS:60000}
   # Home readings forwarded by Favoriot: the value of the X-Khabar-Device-Secret header on your forwarding rule.
   # Leave empty to switch device readings off.
   favoriot:

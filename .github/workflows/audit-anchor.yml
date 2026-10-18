@@ -1,0 +1,54 @@
+name: Anchor the audit chain
+
+# Once a day, copy the newest position and hash of the record-access chain into audit-anchors/. A copy kept
+# outside the database means that even rewriting the whole chain would show: an old anchor would no longer
+# match. Check the anchors any time with `node services/scripts/check-audit-anchors.mjs`.
+on:
+  schedule:
+    - cron: "17 16 * * *" # 00:17 in Malaysia
+  workflow_dispatch:
+
+concurrency:
+  group: khabar-audit-anchor
+  cancel-in-progress: false
+
+jobs:
+  anchor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      API: https://khabar-api.vercel.app
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Fetch the current anchor
+        id: fetch
+        run: |
+          # The free API sleeps when idle; the first request wakes it.
+          for attempt in 1 2 3; do
+            code=$(curl -s -o anchor.json -w "%{http_code}" --max-time 60 "$API/api/audit/anchor" || true)
+            [ "$code" = "200" ] && break
+            sleep 20
+          done
+          if [ "$code" != "200" ]; then
+            echo "::warning::The API did not return an anchor (HTTP $code). Nothing was recorded today."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          cat anchor.json
+
+      - name: Commit it
+        if: steps.fetch.outputs.ok == 'true'
+        run: |
+          mkdir -p audit-anchors
+          day=$(TZ=Asia/Kuala_Lumpur date +%F)
+          node -e "const a=require('./anchor.json');require('fs').writeFileSync('audit-anchors/$day.json', JSON.stringify({api: process.env.API, recordedAt: new Date().toISOString(), seq: a.seq, hash: a.hash, sealedAt: a.sealedAt}, null, 2)+'\n')"
+          git config user.name "khabar-audit-anchor"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-anchors
+          git diff --cached --quiet && exit 0
+          git commit -m "Anchor the audit chain for $day"
+          git push
