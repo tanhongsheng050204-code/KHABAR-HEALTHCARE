@@ -109,7 +109,7 @@ public class PatientController {
         if (!policy.canView(user, patient)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        if (user.getRole() != Role.PATIENT && user.getRole() != Role.CAREGIVER) {
+        if (user.getRole() != Role.PATIENT) {
             auditLog.record(user, patient.getId(), AuditAction.VIEWED_RECORD);
         }
         Instant cutoff = clock.instant().minus(QUIET_AFTER);

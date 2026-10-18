@@ -107,6 +107,19 @@ public class Patient {
         this.telegramChatIndex = chatIndex;
     }
 
+    /**
+     * A data-subject erasure: the identifying fields are removed and the sign-in detached. The clinical record
+     * itself is kept, under a placeholder name, for as long as medical records must be kept.
+     */
+    public void eraseIdentity(String placeholderName) {
+        this.fullName = placeholderName;
+        this.icNumber = null;
+        this.phone = null;
+        this.phoneIndex = null;
+        this.account = null;
+        unlinkTelegram();
+    }
+
     public void unlinkTelegram() {
         this.telegramChatId = null;
         this.telegramChatIndex = null;

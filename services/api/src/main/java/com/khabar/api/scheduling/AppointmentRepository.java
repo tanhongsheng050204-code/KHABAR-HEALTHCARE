@@ -14,4 +14,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     Optional<Appointment> findFirstByPatientIdAndStatusAndStartsAtAfterOrderByStartsAt(UUID patientId, Appointment.Status status, Instant after);
 
     boolean existsBySlotKey(String slotKey);
+
+    List<Appointment> findByPatientIdOrderByStartsAt(UUID patientId);
 }

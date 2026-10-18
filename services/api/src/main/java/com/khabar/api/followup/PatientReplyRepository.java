@@ -16,6 +16,8 @@ public interface PatientReplyRepository extends JpaRepository<PatientReply, UUID
 
     List<PatientReply> findTop5ByPatientIdOrderByReceivedAtDesc(UUID patientId);
 
+    List<PatientReply> findByPatientIdOrderByReceivedAtAsc(UUID patientId);
+
     List<PatientReply> findTop20ByPatientIdOrderByReceivedAtDesc(UUID patientId);
 
     Optional<PatientReply> findByPatientIdAndClientMessageId(UUID patientId, UUID clientMessageId);

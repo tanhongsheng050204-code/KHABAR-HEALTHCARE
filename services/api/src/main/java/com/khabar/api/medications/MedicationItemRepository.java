@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface MedicationItemRepository extends JpaRepository<MedicationItem, UUID> {
 
     List<MedicationItem> findByPatientIdAndStoppedAtIsNullOrderByAddedAt(UUID patientId);
+
+    List<MedicationItem> findByPatientIdOrderByAddedAt(UUID patientId);
 }
