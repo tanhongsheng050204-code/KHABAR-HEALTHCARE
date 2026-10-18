@@ -52,3 +52,8 @@ def test_the_more_urgent_of_lists_and_concepts_wins():
 def test_pairs_must_be_near_each_other():
     far = "dada " + "x " * 40 + "berat"
     assert detect(far) is None or detect(far).concept != "chest pain or pressure"
+
+
+def test_a_reply_too_long_to_check_cheaply_is_never_left_as_fine():
+    hit = detect("saya sihat " * 1000)
+    assert hit is not None and hit.level == "watch"

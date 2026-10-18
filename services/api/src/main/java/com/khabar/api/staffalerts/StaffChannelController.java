@@ -37,11 +37,11 @@ public class StaffChannelController {
         this.alerts = alerts;
     }
 
-    public record ChannelView(boolean linked, Instant linkedAt, boolean alertsOn, Integer briefingHour,
+    public record ChannelView(boolean linked, Instant linkedAt, boolean alertsOn, Integer briefingHour, Integer handoverHour,
                               boolean telegramConfigured, boolean pendingCode, List<StaffAlerts.LogView> recent) {
     }
 
-    public record ChannelInput(Boolean alertsOn, Integer briefingHour) {
+    public record ChannelInput(Boolean alertsOn, Integer briefingHour, Integer handoverHour) {
     }
 
     public record Preview(String text) {
@@ -64,7 +64,10 @@ public class StaffChannelController {
         if (input.briefingHour() != null && (input.briefingHour() < 0 || input.briefingHour() > 23)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The briefing hour must be between 0 and 23.");
         }
-        alerts.configure(actor, input.alertsOn(), input.briefingHour());
+        if (input.handoverHour() != null && (input.handoverHour() < 0 || input.handoverHour() > 23)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The handover hour must be between 0 and 23.");
+        }
+        alerts.configure(actor, input.alertsOn(), input.briefingHour(), input.handoverHour());
         return view(actor);
     }
 
@@ -95,6 +98,21 @@ public class StaffChannelController {
         return alerts.sendBriefingNow(requireManager(jwt));
     }
 
+    /** Sends the end-of-shift handover now. */
+    @PostMapping("/handover")
+    @Transactional
+    public StaffAlerts.LogView handoverNow(@AuthenticationPrincipal Jwt jwt) {
+        return alerts.sendHandoverNow(requireManager(jwt));
+    }
+
+    /** What the handover would say right now, without sending it. */
+    @GetMapping("/handover")
+    @Transactional(readOnly = true)
+    public Preview handover(@AuthenticationPrincipal Jwt jwt) {
+        AppUser actor = requireStaff(jwt);
+        return new Preview(alerts.handoverText(actor.getClinic().getId()));
+    }
+
     /** What the morning briefing would say right now, without sending it. */
     @GetMapping("/briefing")
     @Transactional(readOnly = true)
@@ -106,7 +124,7 @@ public class StaffChannelController {
     private ChannelView view(AppUser actor) {
         StaffChannel c = alerts.channelFor(actor.getClinic().getId());
         boolean pending = alerts.pendingCode(c);
-        return new ChannelView(c.getChatId() != null, c.getLinkedAt(), c.isAlertsOn(), c.getBriefingHour(),
+        return new ChannelView(c.getChatId() != null, c.getLinkedAt(), c.isAlertsOn(), c.getBriefingHour(), c.getHandoverHour(),
                 alerts.telegramConfigured(), pending, alerts.recent(actor.getClinic().getId()));
     }
 

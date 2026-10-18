@@ -184,4 +184,30 @@ class StaffAlertsTest {
                         .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(update)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void theHandoverCountsOpenCasesAndOwnersButNeverPatients() throws Exception {
+        urgentReply();
+        String list = mvc.perform(get("/api/clinic/call-list").header("Authorization", bearer(doctor.getId())))
+                .andReturn().getResponse().getContentAsString();
+        String caseId = json.readTree(list).get("items").get(0).get("followUpCase").get("id").asText();
+        mvc.perform(post("/api/clinic/cases/{id}/assign", caseId).header("Authorization", bearer(nurse.getId()))
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isOk());
+
+        String text = json.readTree(mvc.perform(get("/api/clinic/staff-chat/handover").header("Authorization", bearer(nurse.getId())))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).get("text").asText();
+        assertThat(text).startsWith("Handover · Klinik Amaran").contains("Open cases: 1 (1 urgent)").contains("No owner yet: 0")
+                .contains("Owners: Nurse Mei 1").doesNotContain("Aminah");
+
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("alertsOn", true);
+        body.put("handoverHour", 0);
+        mvc.perform(put("/api/clinic/staff-chat").header("Authorization", bearer(doctor.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                .andExpect(jsonPath("$.handoverHour").value(0));
+        alerts.checkAll();
+        alerts.checkAll();
+        assertThat(logs.findByClinicIdOrderByIdDesc(clinic.getId(), org.springframework.data.domain.PageRequest.of(0, 10)))
+                .extracting(StaffAlertLog::getKind).filteredOn("HANDOVER"::equals).hasSize(1);
+    }
 }

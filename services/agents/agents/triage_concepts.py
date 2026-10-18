@@ -165,9 +165,12 @@ def _any(text: str, terms: Terms) -> Optional[str]:
 
 def detect(text: str) -> Optional[ConceptHit]:
     """The most urgent concept in the reply, or None."""
+    if len(text) > MAX_TEXT:
+        # Too long to check cheaply: never treated as fine; a person looks at it.
+        return ConceptHit("watch", "reply too long to check automatically", f"{len(text)} characters")
     best: Optional[ConceptHit] = None
     for c in CONCEPTS:
-        lowered = text[:MAX_TEXT].lower()
+        lowered = text.lower()
         for phrase in c.ignore:
             lowered = lowered.replace(phrase, " " * len(phrase))
         evidence = None

@@ -54,6 +54,11 @@ public class StaffChannel {
 
     private LocalDate lastBriefingDate;
 
+    /** Local hour (0-23) for the end-of-shift handover; null for none. */
+    private Integer handoverHour;
+
+    private LocalDate lastHandoverDate;
+
     protected StaffChannel() {
     }
 
@@ -82,9 +87,10 @@ public class StaffChannel {
         this.linkedBy = null;
     }
 
-    void configure(boolean alertsOn, Integer briefingHour) {
+    void configure(boolean alertsOn, Integer briefingHour, Integer handoverHour) {
         this.alertsOn = alertsOn;
         this.briefingHour = briefingHour;
+        this.handoverHour = handoverHour;
         if (!alertsOn) {
             this.lastSignature = null;
         }
@@ -105,6 +111,10 @@ public class StaffChannel {
         this.lastBriefingDate = day;
     }
 
+    void handedOver(LocalDate day) {
+        this.lastHandoverDate = day;
+    }
+
     public UUID getClinicId() { return clinicId; }
     public String getChatId() { return chatId; }
     public Instant getLinkedAt() { return linkedAt; }
@@ -116,4 +126,6 @@ public class StaffChannel {
     public Instant getLastAlertAt() { return lastAlertAt; }
     public int getLastUrgent() { return lastUrgent; }
     public LocalDate getLastBriefingDate() { return lastBriefingDate; }
+    public Integer getHandoverHour() { return handoverHour; }
+    public LocalDate getLastHandoverDate() { return lastHandoverDate; }
 }

@@ -33,7 +33,7 @@ class PilotSchemaSmokeTest {
 
     @Test
     void pilotMigratesAndValidatesTheApplicationSchemaBeforeStarting() {
-        assertEquals(15, flyway.info().applied().length);
+        assertEquals(16, flyway.info().applied().length);
         assertNotNull(entityManagerFactory);
     }
 }

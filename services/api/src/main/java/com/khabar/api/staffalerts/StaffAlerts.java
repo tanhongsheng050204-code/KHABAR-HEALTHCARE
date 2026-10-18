@@ -65,6 +65,8 @@ public class StaffAlerts {
     private final ClinicOps clinicOps;
     private final ClinicRepository clinics;
     private final AppointmentRepository appointments;
+    private final com.khabar.api.followup.FollowUpCases cases;
+    private final com.khabar.api.identity.AppUserRepository users;
     private final TelegramBotClient bot;
     private final AdjustableClock clock;
     private final TransactionTemplate tx;
@@ -72,6 +74,7 @@ public class StaffAlerts {
 
     public StaffAlerts(StaffChannelRepository channels, StaffAlertLogRepository logs, CallLists callLists, ClinicOps clinicOps,
                        ClinicRepository clinics, AppointmentRepository appointments, TelegramBotClient bot, AdjustableClock clock,
+                       com.khabar.api.followup.FollowUpCases cases, com.khabar.api.identity.AppUserRepository users,
                        TransactionTemplate tx, @Value("${khabar.web.app-url:}") String appUrl) {
         this.channels = channels;
         this.logs = logs;
@@ -79,6 +82,8 @@ public class StaffAlerts {
         this.clinicOps = clinicOps;
         this.clinics = clinics;
         this.appointments = appointments;
+        this.cases = cases;
+        this.users = users;
         this.bot = bot;
         this.clock = clock;
         this.tx = tx;
@@ -132,9 +137,9 @@ public class StaffAlerts {
         channels.save(channel);
     }
 
-    public StaffChannel configure(AppUser actor, boolean alertsOn, Integer briefingHour) {
+    public StaffChannel configure(AppUser actor, boolean alertsOn, Integer briefingHour, Integer handoverHour) {
         StaffChannel channel = channelFor(actor.getClinic().getId());
-        channel.configure(alertsOn, briefingHour);
+        channel.configure(alertsOn, briefingHour, handoverHour);
         return channels.save(channel);
     }
 
@@ -205,6 +210,42 @@ public class StaffAlerts {
         return view(deliver(channel, "TEST", text));
     }
 
+    /**
+     * End-of-shift handover: open cases by state, how many have no owner or are past the acknowledgement time,
+     * and how many each colleague owns. Staff names appear; patients never do.
+     */
+    public String handoverText(UUID clinicId) {
+        String clinicName = clinics.findById(clinicId).map(Clinic::getName).orElse("your clinic");
+        Instant now = clock.instant();
+        var settings = clinicOps.settingsFor(clinicId);
+        List<com.khabar.api.followup.FollowUpCase> open = cases.openCases(clinicId);
+        long unassigned = open.stream().filter(c -> c.getOwnerId() == null).count();
+        long overdue = open.stream().filter(c -> cases.view(c, settings, now).overdue()).count();
+        long urgent = open.stream().filter(c -> c.getLevel() == TriageLevel.RED).count();
+        java.util.Map<String, Long> byOwner = new java.util.TreeMap<>();
+        open.stream().filter(c -> c.getOwnerId() != null).forEach(c ->
+                byOwner.merge(users.findById(c.getOwnerId()).map(AppUser::getDisplayName).orElse("Former staff member"), 1L, Long::sum));
+        StringBuilder text = new StringBuilder("Handover · ").append(clinicName).append('\n');
+        text.append("• Open cases: ").append(open.size());
+        if (urgent > 0) text.append(" (").append(urgent).append(" urgent)");
+        text.append('\n');
+        text.append("• No owner yet: ").append(unassigned).append('\n');
+        text.append("• Past the acknowledgement time: ").append(overdue).append('\n');
+        if (!byOwner.isEmpty()) {
+            text.append("• Owners: ");
+            text.append(String.join(", ", byOwner.entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).toList()));
+            text.append('\n');
+        }
+        text.append("Please hand over or reassign anything you cannot finish.");
+        appendLink(text, "Open the call list");
+        return text.toString();
+    }
+
+    public LogView sendHandoverNow(AppUser actor) {
+        StaffChannel channel = channelFor(actor.getClinic().getId());
+        return view(deliver(channel, "HANDOVER", handoverText(channel.getClinicId())));
+    }
+
     public LogView sendBriefingNow(AppUser actor) {
         StaffChannel channel = channelFor(actor.getClinic().getId());
         return view(deliver(channel, "BRIEFING", briefingText(channel.getClinicId())));
@@ -236,6 +277,12 @@ public class StaffAlerts {
                 && !local.toLocalDate().equals(channel.getLastBriefingDate())) {
             deliver(channel, "BRIEFING", briefingText(clinicId));
             channel.briefed(local.toLocalDate());
+            attempted++;
+        }
+        if (channel.getHandoverHour() != null && local.getHour() >= channel.getHandoverHour()
+                && !local.toLocalDate().equals(channel.getLastHandoverDate())) {
+            deliver(channel, "HANDOVER", handoverText(clinicId));
+            channel.handedOver(local.toLocalDate());
             attempted++;
         }
         Snapshot s = snapshot(clinicId, now);
