@@ -19,6 +19,8 @@ import type { Appointment, Assignee, CallList, Me, Patient } from "@/lib/types";
 import { CaseControls, CoverageBanner, QueueFilters, filterItems, type QueueFilter } from "./case-controls";
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import { ClinicTools } from "@/components/clinical/clinic-tools";
+import { ImpactPanel } from "@/components/features/impact";
+import { MentionsPanel } from "@/components/features/case-notes";
 import styles from "@/app/home/home.module.css";
 import { greetingName, initials } from "@/lib/names";
 import { WorkspaceLoading, WorkspaceError } from "./workspace-state";
@@ -596,6 +598,8 @@ export function DoctorHome({
           </section>
         </dialog>
       )}
+      <MentionsPanel />
+      <ImpactPanel />
       <ClinicTools notify={(notice) => notify(notice)} />
     </main>
   );

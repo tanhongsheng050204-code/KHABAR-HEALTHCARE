@@ -1,0 +1,307 @@
+/* Shared styles for the Oct 2026 features: receipts, staff chat, audit chain, impact, notes and privacy. */
+.panel {
+  display: grid;
+  gap: 14px;
+  padding: 0 22px 20px;
+}
+.lead {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+.muted {
+  color: var(--ink-mute);
+  font-size: 0.78rem;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.rowBetween {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* What the AI saw */
+.receipts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.receipts details {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+.receipts summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 14px;
+  cursor: pointer;
+  font-size: 0.86rem;
+}
+.receipts summary strong {
+  font-weight: 600;
+}
+.receipts summary span {
+  color: var(--ink-mute);
+  font-size: 0.76rem;
+}
+.sent {
+  margin: 0 14px 12px;
+  padding: 12px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: var(--night);
+  background: var(--porcelain);
+  border-radius: 8px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+.token {
+  padding: 0 4px;
+  color: var(--tidal);
+  background: var(--mist);
+  border-radius: 4px;
+  font-weight: 600;
+}
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 14px 12px;
+}
+
+/* Staff chat, codes and toggles */
+.code {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--porcelain);
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+}
+.code code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.field {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.field input,
+.field select,
+.field textarea {
+  min-height: 40px;
+  padding: 8px 10px;
+  color: var(--night);
+  background: white;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 400;
+}
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+.switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--tidal);
+}
+.log {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.log li {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.log pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+/* Audit chain */
+.hash {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}
+
+/* Impact */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.tile {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.tile strong {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.tile strong small {
+  color: var(--ink-mute);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.tile span {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.tile em {
+  color: var(--ink-mute);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+/* Case notes and mentions */
+.notes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.notes li {
+  padding: 10px 12px;
+  background: var(--porcelain);
+  border-radius: 10px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+.notes li small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-mute);
+  font-size: 0.72rem;
+}
+.mention {
+  color: var(--tidal);
+  font-weight: 600;
+}
+.unreadDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  background: var(--tidal);
+  border-radius: 50%;
+}
+
+/* Privacy desk and incident steps */
+.steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.84rem;
+}
+.done {
+  color: #1c6153;
+  font-weight: 600;
+}
+
+/* Notices: held plan, quiet patient */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  color: #6b4511;
+  background: #fdf3dc;
+  border: 1px solid #ecd39b;
+  border-radius: 12px;
+  line-height: 1.55;
+}
+.banner > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.banner strong {
+  display: block;
+  color: #4d300a;
+}
+.bannerCalm {
+  color: var(--night);
+  background: var(--porcelain);
+  border-color: var(--line);
+}
+.cut {
+  margin: 0 14px 12px;
+}
+.panelFlat {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.panelFlat p {
+  margin: 0;
+}
+.releaseForm {
+  display: grid;
+  gap: 10px;
+}
+.periodSelect {
+  min-height: 34px;
+  padding: 0 8px;
+  color: var(--night);
+  background: white;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.82rem;
+}

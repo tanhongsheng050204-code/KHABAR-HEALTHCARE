@@ -2,7 +2,7 @@ export type Role = "DOCTOR" | "NURSE" | "CLINIC_ADMIN" | "PATIENT" | "CAREGIVER"
 export type ClinicStaffRole = "DOCTOR" | "NURSE" | "CLINIC_ADMIN"
 export type TriageLevel = "RED" | "WATCH" | "REVIEW" | "OK"
 
-export type Me = { id: string; role: Role; clinicRoles?: ClinicStaffRole[]; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[]; patientScopes?: Record<string, "SUMMARY" | "SUMMARY_AND_ALERTS">; telegramLinked?: boolean }
+export type Me = { id: string; role: Role; clinicRoles?: ClinicStaffRole[]; displayName: string; clinicId?: string; clinicName?: string; patientId?: string; patientIds?: string[]; patientScopes?: Record<string, "SUMMARY" | "SUMMARY_AND_ALERTS">; telegramLinked?: boolean; preferredLanguage?: string | null }
 export type ClinicStaff = { grantId: string; userId: string; displayName: string; role: ClinicStaffRole; grantedAt: string; grantedBy: string | null }
 export type Patient = { id: string; fullName: string; icMasked: string; preferredLanguage: string; clinicName?: string; followUpDay?: number | null; hasAccount?: boolean }
 export type CaseStatus = "NEW" | "ASSIGNED" | "ACKNOWLEDGED" | "IN_PROGRESS" | "ESCALATED" | "UNABLE_TO_CONTACT" | "RESOLVED"
@@ -18,7 +18,7 @@ export type ClinicSettings = { hours: string | null; escalationContact: string |
 export type ClinicActivity = { by: string; action: string; subject: string; at: string }
 export type Integration = { name: string; status: "OK" | "LIMITED" | "OFF" | "DOWN"; detail: string }
 export type SummaryLanguage = "en" | "ms" | "zh" | "ta"
-export type Summary = { encounterId: string; language: SummaryLanguage; text: string; needsDoctor: string | null; createdAt: string }
+export type Summary = { encounterId: string; language: SummaryLanguage; text: string; needsDoctor: string | null; createdAt: string; held?: boolean; heldReason?: string | null }
 export type Appointment = { id: string; startsAt: string; date: string; time: string; reason: string | null; status: string; patientId?: string; fullName?: string }
 export type Slot = { startsAt: string; date: string; time: string }
 export type Reading = { id: string; kind: string; description: string; level: TriageLevel; source: string; measuredAt: string }
@@ -48,3 +48,19 @@ export type Previsit = {
 }
 
 export type ApprovedAnswer = { id: string; title: string; triggers: string[]; texts: Record<string, string>; approvedBy: string; approvedAt: string }
+
+// ---- Features added in Oct 2026 (staff chat, AI receipts, plan check, audit chain, impact, notes, privacy) ----
+export type AiReceipt = { id: number; purpose: string; purposeLabel: string; endpoint: string; sent: string; truncated: boolean; media: boolean; namesRemoved: number; icsRemoved: number; phonesRemoved: number; at: string }
+export type StaffAlertLog = { kind: "ALERT" | "BRIEFING" | "TEST"; outcome: "SENT" | "NOT_SENT" | "FAILED"; text: string; detail: string | null; at: string }
+export type StaffChannel = { linked: boolean; linkedAt: string | null; alertsOn: boolean; briefingHour: number | null; telegramConfigured: boolean; pendingCode: boolean; recent: StaffAlertLog[] }
+export type StaffLinkCode = { code: string; expiresAt: string; command: string }
+export type AuditVerification = { intact: boolean; checked: number; unsealed: number; brokenAt: number | null; problem: string | null; tailSeq: number; tailHash: string; checkedAt: string }
+export type SummaryStatus = { encounterId: string; text: string; held: boolean; heldReason: string | null; releasedAt: string | null; releaseNote: string | null }
+export type ImpactMetric = { key: string; label: string; value: number; of: number | null; note: string | null }
+export type Impact = { days: number; from: string; to: string; metrics: ImpactMetric[]; medianAckMinutes: number | null }
+export type CaseNote = { id: string; caseId: string; by: string; text: string; mentions: { userId: string; displayName: string }[]; at: string }
+export type Mention = { noteId: string; caseId: string; patientId: string | null; patientName: string | null; by: string; text: string; at: string; unread: boolean }
+export type Mentions = { unread: number; items: Mention[] }
+export type PrivacyRequest = { id: string; patientId: string; patientName: string | null; kind: "ERASURE" | "CORRECTION"; details: string | null; status: "OPEN" | "DONE" | "DECLINED"; createdAt: string; resolvedAt: string | null; resolution: string | null }
+export type PrivacyIncident = { id: string; title: string; whatHappened: string | null; peopleAffected: number | null; discoveredAt: string; containedAt: string | null; assessedAt: string | null; significantHarm: boolean; commissionerNotifiedAt: string | null; peopleNotifiedAt: string | null; closedAt: string | null; log: string | null }
+export type Quiet = { quiet: boolean; dayNumber: number | null; since: string | null }

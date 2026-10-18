@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Camera, LoaderCircle, Plus, ScanLine } from "lucide-react"
 import { apiRequest } from "@/lib/api"
 import styles from "./packet-photo-reader.module.css"
+import { useUi } from "@/lib/i18n";
 
 type Candidate = {
   kind: "MEDICINE" | "HERB" | "UNSURE"
@@ -22,6 +23,7 @@ const MAX_BYTES = 8 * 1024 * 1024
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 
 export function PacketPhotoReader({ patientId, onAdded }: { patientId: string; onAdded: () => Promise<void> }) {
+  const { t } = useUi();
   const [file, setFile] = useState<File | null>(null)
   const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -79,9 +81,9 @@ export function PacketPhotoReader({ patientId, onAdded }: { patientId: string; o
   }
 
   return <section className={styles.card} aria-labelledby="packet-reader-title">
-    <div className={styles.heading}><span><ScanLine size={18}/></span><div><h3 id="packet-reader-title">Read a medicine packet</h3><p>Extract visible label text, then review it before adding anything.</p></div></div>
+    <div className={styles.heading}><span><ScanLine size={18}/></span><div><h3 id="packet-reader-title">{t("Read a medicine packet")}</h3><p>{t("Extract visible label text, then review it before adding anything.")}</p></div></div>
     <form onSubmit={scan} className={styles.form}>
-      <label className={styles.fileLabel}><Camera size={17}/><span>{file ? file.name : "Choose a packet photo"}</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => choose(event.target.files?.[0] ?? null)}/></label>
+      <label className={styles.fileLabel}><Camera size={17}/><span>{file ? file.name : t("Choose a packet photo")}</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => choose(event.target.files?.[0] ?? null)}/></label>
       <label className={styles.consent}><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>I agree to send this image to the clinic’s configured Google Gemini service for temporary label reading. Khabar does not save the image. Use fictional/demo packets unless your clinic has approved real-patient use.</span></label>
       <button className="button-secondary" type="submit" disabled={!file || !consent || busy}>{busy ? <LoaderCircle className={styles.spin} size={16}/> : <ScanLine size={16}/>} Read label</button>
     </form>
@@ -93,7 +95,7 @@ export function PacketPhotoReader({ patientId, onAdded }: { patientId: string; o
           <div><strong>{item.brand || item.ingredient_text || "Unidentified packet"}</strong><span>{[item.generic_candidate, item.strength, item.form].filter(Boolean).join(" · ") || "No generic match"}</span></div>
           <p>Read from label: “{item.evidence || "No clear text evidence"}”</p>
           <small>Reading confidence: {item.confidence}. Confirm the packet and medicine with your clinic; this is not a safety check.</small>
-          <label className={styles.kindChoice}>Review item type<select value={item.kind === "UNSURE" ? "MEDICINE" : item.kind} onChange={(event) => setResult((current) => current ? { ...current, candidates: current.candidates.map((candidate) => candidate === item ? { ...candidate, kind: event.target.value as Candidate["kind"] } : candidate) } : current)}><option value="MEDICINE">Medicine</option><option value="HERB">Herb, supplement, or remedy</option></select></label>
+          <label className={styles.kindChoice}>Review item type<select value={item.kind === "UNSURE" ? "MEDICINE" : item.kind} onChange={(event) => setResult((current) => current ? { ...current, candidates: current.candidates.map((candidate) => candidate === item ? { ...candidate, kind: event.target.value as Candidate["kind"] } : candidate) } : current)}><option value="MEDICINE">{t("Medicine")}</option><option value="HERB">Herb, supplement, or remedy</option></select></label>
           <button className="button-secondary" type="button" disabled={adding !== null} onClick={() => void add(item, key, item.kind === "HERB" ? "HERB" : "MEDICINE")}>{adding === key ? <LoaderCircle className={styles.spin} size={15}/> : <Plus size={15}/>} Add after review</button>
         </article>
       }) : <p className={styles.empty}>{result.message || "No clear medicine label found. Try a sharper photo or type the name instead."}</p>}

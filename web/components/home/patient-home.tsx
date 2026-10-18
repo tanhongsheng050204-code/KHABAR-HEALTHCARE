@@ -30,6 +30,9 @@ import type {
   Summary,
 } from "@/lib/types";
 import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
+import { LanguageSwitcher, useUi } from "@/lib/i18n";
+import { AiReceiptsPanel } from "@/components/features/ai-receipts";
+import { MyDataPanel } from "@/components/features/my-data";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import { TelegramCard } from "./telegram-card";
@@ -47,6 +50,7 @@ export function PatientHome({
   me: Me;
   notify: (notice: Notice | null) => void;
 }) {
+  const { t, locale } = useUi();
   const patientId = me.patientId!;
   const [summary, setSummary] = useState<Summary | null>(null);
   const [appointment, setAppointment] = useState<Appointment | null>(null);
@@ -144,36 +148,37 @@ export function PatientHome({
     <main className={styles.workspace} id="overview" tabIndex={-1}>
       {loadError && (
         <div className={styles.refreshError} role="alert">
-          The refresh failed. Showing your last loaded information.{" "}
-          <button onClick={() => void load()}>Try again</button>
+          {t("The refresh failed. Showing your last loaded information.")}{" "}
+          <button onClick={() => void load()}>{t("Try again")}</button>
         </div>
       )}
       <section className={styles.patientHero}>
         <div>
-          <p>Your care, in one place</p>
-          <h1>Hello, {firstName}.</h1>
+          <p>{t("Your care, in one place")}</p>
+          <h1>{t("Hello, {name}.", { name: firstName })}</h1>
           <span>
             {summary
-              ? "Here is what matters today."
-              : "Let’s get you ready for your next step."}
+              ? t("Here is what matters today.")
+              : t("Let’s get you ready for your next step.")}
           </span>
         </div>
+        <LanguageSwitcher className={styles.languageSwitch} />
         <div className={styles.careStatus}>
           <i />
           <span>
             <strong>
               {summary
-                ? "Plan active"
+                ? t("Plan active")
                 : intakeDoneAt
-                  ? "Answers sent"
-                  : "Getting ready"}
+                  ? t("Answers sent")
+                  : t("Getting ready")}
             </strong>
             <small>
               {summary
-                ? "Your clinic is following your recovery."
+                ? t("Your clinic is following your recovery.")
                 : intakeDoneAt
-                  ? "Your doctor will read them before your visit."
-                  : "Complete the intake before your visit."}
+                  ? t("Your doctor will read them before your visit.")
+                  : t("Complete the intake before your visit.")}
             </small>
           </span>
         </div>
@@ -186,7 +191,7 @@ export function PatientHome({
                 <Check size={15} />
               </span>
               <p>
-                Your latest care plan{" "}
+                {t("Your latest care plan")}{" "}
                 <small>{summary.language.toUpperCase()}</small>
               </p>
             </div>
@@ -196,13 +201,13 @@ export function PatientHome({
               <div className={styles.doctorAttention}>
                 <MessageCircle size={17} />
                 <span>
-                  <strong>Your clinic needs to advise you</strong>
+                  <strong>{t("Your clinic needs to advise you")}</strong>
                   {summary.needsDoctor}
                 </span>
               </div>
             )}
             <button className="button-quiet" onClick={() => setActive("plan")}>
-              Medicines & appointments <ArrowRight size={15} />
+              {t("Medicines & appointments")} <ArrowRight size={15} />
             </button>
           </div>
         ) : (
@@ -211,20 +216,19 @@ export function PatientHome({
               <span>
                 <MessageCircle size={15} />
               </span>
-              <p>Before your appointment</p>
+              <p>{t("Before your appointment")}</p>
             </div>
             <blockquote>
-              Tell us what has changed, in your own words.
+              {t("Tell us what has changed, in your own words.")}
             </blockquote>
             <p className={styles.focusCopy}>
-              A short guided check-in helps your doctor understand the reason
-              for your visit before you arrive.
+              {t("A short guided check-in helps your doctor understand the reason for your visit before you arrive.")}
             </p>
             <button
               className="button-primary"
               onClick={() => setActive("checkin")}
             >
-              {intakeDoneAt ? "Send a new check-in" : "Start the guided intake"}{" "}
+              {intakeDoneAt ? t("Send a new check-in") : t("Start the guided intake")}{" "}
               <ArrowRight size={16} />
             </button>
           </div>
@@ -235,9 +239,9 @@ export function PatientHome({
           </span>
           {appointment ? (
             <>
-              <small>Your next appointment</small>
+              <small>{t("Your next appointment")}</small>
               <h2>
-                {new Intl.DateTimeFormat("en-MY", {
+                {new Intl.DateTimeFormat(locale, {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
@@ -245,29 +249,29 @@ export function PatientHome({
               </h2>
               <p>
                 {appointment.time} ·{" "}
-                {appointment.reason || "Clinic appointment"}
+                {appointment.reason || t("Clinic appointment")}
               </p>
               <button
                 className="button-secondary"
                 onClick={() => setActive("plan")}
               >
-                Manage appointment
+                {t("Manage appointment")}
               </button>
             </>
           ) : (
             <>
-              <small>No appointment booked</small>
-              <h2>Choose a time that works.</h2>
+              <small>{t("No appointment booked")}</small>
+              <h2>{t("Choose a time that works.")}</h2>
               <p>
                 {slots.length
-                  ? "Explore the clinic’s available appointment times."
-                  : "Check the appointment panel for availability."}
+                  ? t("Explore the clinic’s available appointment times.")
+                  : t("Check the appointment panel for availability.")}
               </p>
               <button
                 className="button-secondary"
                 onClick={() => setActive("plan")}
               >
-                See available times
+                {t("See available times")}
               </button>
             </>
           )}
@@ -279,8 +283,8 @@ export function PatientHome({
             <MessageCircle size={19} />
           </span>
           <div>
-            <strong>Check in</strong>
-            <small>Tell the clinic how you feel</small>
+            <strong>{t("Check in")}</strong>
+            <small>{t("Tell the clinic how you feel")}</small>
           </div>
           <ChevronRight size={17} />
         </button>
@@ -289,11 +293,11 @@ export function PatientHome({
             <Activity size={19} />
           </span>
           <div>
-            <strong>Record a reading</strong>
+            <strong>{t("Record a reading")}</strong>
             <small>
               {lastReading
                 ? lastReading.description
-                : "Blood pressure or sugar"}
+                : t("Blood pressure or sugar")}
             </small>
           </div>
           <ChevronRight size={17} />
@@ -303,8 +307,8 @@ export function PatientHome({
             <Pill size={19} />
           </span>
           <div>
-            <strong>My medicines</strong>
-            <small>{medications.length} currently listed</small>
+            <strong>{t("My medicines")}</strong>
+            <small>{t("{n} currently listed", { n: medications.length })}</small>
           </div>
           <ChevronRight size={17} />
         </button>
@@ -313,11 +317,11 @@ export function PatientHome({
             <UsersRound size={19} />
           </span>
           <div>
-            <strong>My people</strong>
+            <strong>{t("My people")}</strong>
             <small>
               {caregivers.length
-                ? `${caregivers.length} caregiver${caregivers.length === 1 ? "" : "s"}`
-                : "Invite someone you trust"}
+                ? caregivers.length === 1 ? t("1 caregiver") : t("{n} caregivers", { n: caregivers.length })
+                : t("Invite someone you trust")}
             </small>
           </div>
           <ChevronRight size={17} />
@@ -327,7 +331,7 @@ export function PatientHome({
       <div
         className={styles.patientTabs}
         role="group"
-        aria-label="Choose a care section"
+        aria-label={t("Choose a care section")}
       >
         <button
           className={active === "plan" ? styles.activeTab : ""}
@@ -335,7 +339,7 @@ export function PatientHome({
           aria-controls="plan-view"
           onClick={() => setActive("plan")}
         >
-          My plan
+          {t("My plan")}
         </button>
         <button
           className={active === "checkin" ? styles.activeTab : ""}
@@ -344,7 +348,7 @@ export function PatientHome({
           onClick={() => setActive("checkin")}
           id="check-in"
         >
-          Check in
+          {t("Check in")}
         </button>
         <button
           className={active === "readings" ? styles.activeTab : ""}
@@ -352,7 +356,7 @@ export function PatientHome({
           aria-controls="readings-view"
           onClick={() => setActive("readings")}
         >
-          Readings
+          {t("Readings")}
         </button>
         <button
           className={active === "people" ? styles.activeTab : ""}
@@ -360,14 +364,14 @@ export function PatientHome({
           aria-controls="people-view"
           onClick={() => setActive("people")}
         >
-          People & privacy
+          {t("People & privacy")}
         </button>
       </div>
       <div
         id="care-panel"
         tabIndex={-1}
         className={styles.carePanel}
-        aria-label="Selected care section"
+        aria-label={t("Selected care section")}
       >
         <div
           id="plan-view"
@@ -419,6 +423,19 @@ export function PatientHome({
             reload={load}
             notify={notify}
           />
+          {/* Mounted when the tab opens, so the receipts include anything sent since the page loaded. */}
+          {active === "people" && <AiReceiptsPanel patientId={patientId} copy={{
+            eyebrow: t("Privacy"),
+            title: t("What the AI saw"),
+            lead: t("Every time your words, a photo or a recording left the clinic's system for the AI service. Your registered name, IC and phone number are replaced before anything is sent."),
+            empty: t("Nothing sent yet"),
+            emptyCopy: t("None of your words have gone to the AI service."),
+            removed: (n, ic, phone) => t("{n} name, {ic} IC, {phone} phone removed", { n, ic, phone }),
+            media: t("Photo or recording, not kept"),
+            cut: t("Shortened here; the full text was sent."),
+            purpose: (label) => t(label),
+          }} locale={locale} />}
+          <MyDataPanel notify={notify} />
         </div>
       </div>
     </main>
@@ -444,6 +461,7 @@ function PlanPanel({
   reload: () => Promise<void>;
   notify: (n: Notice) => void;
 }) {
+  const { t, locale } = useUi();
   const [selected, setSelected] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [reason, setReason] = useState("");
@@ -462,7 +480,7 @@ function PlanPanel({
     ? selectedDate
     : availableDates[0];
   const formatSlotDate = (date: string) =>
-    new Intl.DateTimeFormat("en-MY", {
+    new Intl.DateTimeFormat(locale, {
       weekday: "short",
       day: "numeric",
       month: "short",
@@ -475,7 +493,7 @@ function PlanPanel({
         method: "POST",
         body: JSON.stringify({ startsAt: selected, reason }),
       });
-      notify({ tone: "success", text: "Your appointment is booked." });
+      notify({ tone: "success", text: t("Your appointment is booked.") });
       setSelected("");
       setReason("");
       await reload();
@@ -500,7 +518,7 @@ function PlanPanel({
       });
       notify({
         tone: "success",
-        text: "Your appointment was cancelled and the time is available again.",
+        text: t("Your appointment was cancelled and the time is available again."),
       });
       await reload();
     } catch (error) {
@@ -528,7 +546,7 @@ function PlanPanel({
       await reload();
       notify({
         tone: "success",
-        text: "The medicine was added to your shared list.",
+        text: t("The medicine was added to your shared list."),
       });
     } catch (error) {
       notify({
@@ -549,7 +567,7 @@ function PlanPanel({
         method: "DELETE",
       });
       await reload();
-      notify({ tone: "success", text: "The medicine was marked as stopped." });
+      notify({ tone: "success", text: t("The medicine was marked as stopped.") });
     } catch (error) {
       notify({
         tone: "error",
@@ -566,12 +584,11 @@ function PlanPanel({
     <section className={styles.patientPanel} id="plan">
       <div className={styles.panelMain}>
         <SectionHeading
-          eyebrow="Your shared list"
-          title="Medicines and remedies"
+          eyebrow={t("Your shared list")}
+          title={t("Medicines and remedies")}
         />
         <p className={styles.panelIntro}>
-          Add medicines, supplements, jamu or herbs from every clinic and
-          pharmacy. Your doctor’s safety check uses this list.
+          {t("Add medicines, supplements, jamu or herbs from every clinic and pharmacy. Your doctor’s safety check uses this list.")}
         </p>
         <div className={styles.medList}>
           {medications.length ? (
@@ -583,15 +600,15 @@ function PlanPanel({
                 <div>
                   <strong>{m.name}</strong>
                   <small>
-                    {m.kind === "HERB" ? "Herb or remedy" : "Medicine"} ·{" "}
-                    {m.source || "Source not added"}
+                    {m.kind === "HERB" ? t("Herb or remedy") : t("Medicine")} ·{" "}
+                    {m.source || t("Source not added")}
                   </small>
                 </div>
-                <StatusBadge level="ok">Shared</StatusBadge>
+                <StatusBadge level="ok">{t("Shared")}</StatusBadge>
                 <button
                   onClick={() => void removeMedicine(m.id)}
                   disabled={busy === m.id}
-                  aria-label={`Stop ${m.name}`}
+                  aria-label={t("Stop {name}", { name: m.name })}
                 >
                   <Trash2 size={15} />
                 </button>
@@ -599,53 +616,53 @@ function PlanPanel({
             ))
           ) : (
             <EmptyState
-              title="No medicines listed yet"
-              copy="Add everything you take so the clinic can check the complete picture."
+              title={t("No medicines listed yet")}
+              copy={t("Add everything you take so the clinic can check the complete picture.")}
             />
           )}
         </div>
         <PacketPhotoReader patientId={patientId} onAdded={reload} />
         <form className={styles.inlineForm} onSubmit={addMedicine}>
           <label>
-            Medicine or remedy
+            {t("Medicine or remedy")}
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Metformin 500 mg"
+              placeholder={t("e.g. Metformin 500 mg")}
               required
             />
           </label>
           <label>
-            Where is it from?
+            {t("Where is it from?")}
             <input
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              placeholder="Clinic or pharmacy"
+              placeholder={t("Clinic or pharmacy")}
             />
           </label>
           <button className="button-primary" disabled={busy === "med"}>
             <Plus size={16} />
-            Add
+            {t("Add")}
           </button>
         </form>
       </div>
       <div className={styles.panelSide}>
         <SectionHeading
-          eyebrow="Appointment"
-          title={appointment ? "You are booked" : "Choose a time"}
+          eyebrow={t("Appointment")}
+          title={appointment ? t("You are booked") : t("Choose a time")}
         />
         {appointment ? (
           <div className={styles.booked}>
             <CalendarDays size={24} />
             <strong>{appointment.date}</strong>
             <span>{appointment.time}</span>
-            <p>{appointment.reason || "Clinic appointment"}</p>
+            <p>{appointment.reason || t("Clinic appointment")}</p>
             <button
               className="button-danger"
               disabled={busy === "cancel"}
               onClick={() => void cancel()}
             >
-              Cancel appointment
+              {t("Cancel appointment")}
             </button>
           </div>
         ) : (
@@ -653,14 +670,13 @@ function PlanPanel({
             <div className={styles.slotGroups}>
               {!slots.length && (
                 <p className={styles.panelIntro}>
-                  No appointment times are currently available. Please contact
-                  your clinic.
+                  {t("No appointment times are currently available. Please contact your clinic.")}
                 </p>
               )}
               {activeDate && (
                 <>
                   <label className={styles.slotDateLabel}>
-                    Available day
+                    {t("Available day")}
                     <select
                       value={activeDate}
                       onChange={(event) => {
@@ -680,7 +696,7 @@ function PlanPanel({
                       <button
                         key={slot.startsAt}
                         type="button"
-                        aria-label={`${slot.time} on ${formatSlotDate(activeDate)}`}
+                        aria-label={t("{time} on {day}", { time: slot.time, day: formatSlotDate(activeDate) })}
                         aria-pressed={selected === slot.startsAt}
                         className={
                           selected === slot.startsAt ? styles.selectedSlot : ""
@@ -695,12 +711,12 @@ function PlanPanel({
               )}
             </div>
             <label className={styles.reasonLabel}>
-              Reason for visit
+              {t("Reason for visit")}
               <textarea
                 rows={3}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="What would you like help with?"
+                placeholder={t("What would you like help with?")}
               />
             </label>
             <button
@@ -708,7 +724,7 @@ function PlanPanel({
               disabled={!selected || busy === "book"}
               onClick={() => void book()}
             >
-              Book selected time
+              {t("Book selected time")}
             </button>
           </>
         )}
@@ -724,6 +740,7 @@ function CheckInPanel({
   notify: (n: Notice) => void;
   onIntakeDone: () => Promise<void>;
 }) {
+  const { t } = useUi();
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [reply, setReply] = useState("");
   const [update, setUpdate] = useState("");
@@ -750,7 +767,7 @@ function CheckInPanel({
         setComplete(true);
         notify({
           tone: "success",
-          text: "Your intake is complete and ready for the clinic.",
+          text: t("Your intake is complete and ready for the clinic."),
         });
         await onIntakeDone();
       }
@@ -821,7 +838,7 @@ function CheckInPanel({
         result = await sendUpdate(pendingUpdate.current.id);
       }
       const said =
-        result.message || result.answer || "Your clinic has your update.";
+        result.message || result.answer || t("Your clinic has your update.");
       setResponse(said);
       setUpdate("");
       try {
@@ -850,14 +867,11 @@ function CheckInPanel({
     <section className={`${styles.patientPanel} ${styles.chatPanel}`}>
       <div className={styles.panelMain}>
         <SectionHeading
-          eyebrow="Private guided intake"
-          title="Tell us what has changed"
+          eyebrow={t("Private guided intake")}
+          title={t("Tell us what has changed")}
         />
         <p className={styles.panelIntro}>
-          Please don&apos;t type names or IC numbers, yours or anyone
-          else&apos;s. Khabar removes your registered name, IC and phone number
-          before AI assistance, but it cannot recognise other names. Your
-          clinic receives the saved report and transcript.
+          {t("Please don't type names or IC numbers, yours or anyone else's. Khabar removes your registered name, IC and phone number before AI assistance, but it cannot recognise other names. Your clinic receives the saved report and transcript.")}
         </p>
         {lines.length ? (
           <div className={styles.chatLog}>
@@ -870,7 +884,7 @@ function CheckInPanel({
                     : styles.assistantBubble
                 }
               >
-                <small>{line.role === "user" ? "You" : "Khabar"}</small>
+                <small>{line.role === "user" ? t("You") : "Khabar"}</small>
                 <p>{line.content}</p>
               </div>
             ))}
@@ -880,25 +894,24 @@ function CheckInPanel({
             <span>
               <MessageCircle size={24} />
             </span>
-            <h3>Start with one simple question.</h3>
+            <h3>{t("Start with one simple question.")}</h3>
             <p>
-              You can answer in your own words. There is no need to use medical
-              language.
+              {t("You can answer in your own words. There is no need to use medical language.")}
             </p>
             <button
               className="button-primary"
               disabled={busy}
               onClick={() => void next()}
             >
-              Begin check-in <ArrowRight size={16} />
+              {t("Begin check-in")} <ArrowRight size={16} />
             </button>
           </div>
         )}
         {complete && (
           <div className={styles.followupResponse} role="status">
-            <strong>Your answers are ready for the clinic.</strong>
+            <strong>{t("Your answers are ready for the clinic.")}</strong>
             <p>
-              You can send any further recovery update using the follow-up form.
+              {t("You can send any further recovery update using the follow-up form.")}
             </p>
             <button
               className="button-secondary"
@@ -909,7 +922,7 @@ function CheckInPanel({
                 setComplete(false);
               }}
             >
-              Start a new intake
+              {t("Start a new intake")}
             </button>
           </div>
         )}
@@ -918,43 +931,42 @@ function CheckInPanel({
             <input
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              placeholder="Type your answer…"
-              aria-label="Your answer"
+              placeholder={t("Type your answer…")}
+              aria-label={t("Your answer")}
             />
             <button className="button-primary" disabled={busy || !reply.trim()}>
-              {busy ? "Sending…" : "Send"}
+              {busy ? t("Sending…") : t("Send")}
             </button>
           </form>
         )}
       </div>
       <div className={styles.panelSide}>
         <ShieldCheck size={26} />
-        <h3>Send a recovery update</h3>
+        <h3>{t("Send a recovery update")}</h3>
         <p className={styles.panelIntro}>
-          Already had your visit? Tell the clinic how you feel or ask a
-          follow-up question.
+          {t("Already had your visit? Tell the clinic how you feel or ask a follow-up question.")}
         </p>
         <form className={styles.followupForm} onSubmit={followUp}>
           <textarea
-            aria-label="Recovery update for your clinic"
+            aria-label={t("Recovery update for your clinic")}
             rows={5}
             value={update}
             onChange={(e) => setUpdate(e.target.value)}
-            placeholder="How are you feeling today?"
+            placeholder={t("How are you feeling today?")}
           />
           <button className="button-primary" disabled={busy || !update.trim()}>
-            Send securely
+            {t("Send securely")}
           </button>
         </form>
         {response && (
           <div className={styles.followupResponse}>
-            <strong>Response to your update</strong>
+            <strong>{t("Response to your update")}</strong>
             <p>{response}</p>
           </div>
         )}
         <ul>
-          <li>Please don&apos;t type names or IC numbers. Your registered name, IC and phone number are removed before triage; other names are not.</li>
-          <li>Messages do not alert clinic staff. If this is an emergency, call 999 or go to the nearest emergency department now.</li>
+          <li>{t("Please don't type names or IC numbers. Your registered name, IC and phone number are removed before triage; other names are not.")}</li>
+          <li>{t("Messages do not alert clinic staff. If this is an emergency, call 999 or go to the nearest emergency department now.")}</li>
         </ul>
       </div>
     </section>
@@ -976,6 +988,7 @@ function ReadingsPanel({
   reload: () => Promise<void>;
   notify: (n: Notice) => void;
 }) {
+  const { t, locale } = useUi();
   const [kind, setKind] = useState<"pressure" | "glucose">("pressure");
   const [sys, setSys] = useState("");
   const [dia, setDia] = useState("");
@@ -996,7 +1009,7 @@ function ReadingsPanel({
       setDia("");
       setGlucose("");
       await reload();
-      notify({ tone: "success", text: "Your reading was saved and checked." });
+      notify({ tone: "success", text: t("Your reading was saved and checked.") });
     } catch (error) {
       notify({
         tone: "error",
@@ -1012,7 +1025,7 @@ function ReadingsPanel({
   return (
     <section className={styles.patientPanel}>
       <div className={styles.panelMain}>
-        <SectionHeading eyebrow="Home monitoring" title="Recent readings" />
+        <SectionHeading eyebrow={t("Home monitoring")} title={t("Recent readings")} />
         <div className={styles.readingList}>
           {readings.length ? (
             readings.map((reading) => (
@@ -1027,7 +1040,7 @@ function ReadingsPanel({
                 <div>
                   <strong>{reading.description}</strong>
                   <small>
-                    {new Intl.DateTimeFormat("en-MY", {
+                    {new Intl.DateTimeFormat(locale, {
                       dateStyle: "medium",
                       timeStyle: "short",
                     }).format(new Date(reading.measuredAt))}{" "}
@@ -1036,40 +1049,40 @@ function ReadingsPanel({
                 </div>
                 <StatusBadge level={reading.level}>
                   {reading.level === "OK"
-                    ? "In range"
+                    ? t("In range")
                     : reading.level.toLowerCase()}
                 </StatusBadge>
               </div>
             ))
           ) : (
             <EmptyState
-              title="No readings yet"
-              copy="Record a home blood pressure or blood sugar reading here."
+              title={t("No readings yet")}
+              copy={t("Record a home blood pressure or blood sugar reading here.")}
             />
           )}
         </div>
       </div>
       <div className={styles.panelSide}>
-        <SectionHeading eyebrow="Add a reading" title="How are you today?" />
+        <SectionHeading eyebrow={t("Add a reading")} title={t("How are you today?")} />
         <div className={styles.segmented}>
           <button
             className={kind === "pressure" ? styles.segmentActive : ""}
             onClick={() => setKind("pressure")}
           >
-            Blood pressure
+            {t("Blood pressure")}
           </button>
           <button
             className={kind === "glucose" ? styles.segmentActive : ""}
             onClick={() => setKind("glucose")}
           >
-            Blood sugar
+            {t("Blood sugar")}
           </button>
         </div>
         <form className={styles.readingForm} onSubmit={submit}>
           {kind === "pressure" ? (
             <div className={styles.twoFields}>
               <label>
-                Systolic
+                {t("Systolic")}
                 <input
                   type="number"
                   value={sys}
@@ -1079,7 +1092,7 @@ function ReadingsPanel({
                 />
               </label>
               <label>
-                Diastolic
+                {t("Diastolic")}
                 <input
                   type="number"
                   value={dia}
@@ -1091,7 +1104,7 @@ function ReadingsPanel({
             </div>
           ) : (
             <label>
-              Glucose (mmol/L)
+              {t("Glucose (mmol/L)")}
               <input
                 type="number"
                 step="0.1"
@@ -1103,7 +1116,7 @@ function ReadingsPanel({
             </label>
           )}
           <button className="button-primary" disabled={busy === "reading"}>
-            Save and check
+            {t("Save and check")}
           </button>
         </form>
       </div>
@@ -1126,6 +1139,7 @@ function PeoplePanel({
   reload: () => Promise<void>;
   notify: (n: Notice) => void;
 }) {
+  const { t, locale } = useUi();
   const [scope, setScope] = useState("SUMMARY");
   const [code, setCode] = useState<string | null>(null);
   async function invite() {
@@ -1138,7 +1152,7 @@ function PeoplePanel({
       setCode(result.inviteCode);
       notify({
         tone: "success",
-        text: "A one-time caregiver invitation is ready.",
+        text: t("A one-time caregiver invitation is ready."),
       });
     } catch (error) {
       notify({
@@ -1161,7 +1175,7 @@ function PeoplePanel({
       await reload();
       notify({
         tone: "success",
-        text: "Caregiver access was removed immediately.",
+        text: t("Caregiver access was removed immediately."),
       });
     } catch (error) {
       notify({
@@ -1178,11 +1192,9 @@ function PeoplePanel({
   return (
     <section className={styles.patientPanel} id="privacy">
       <div className={styles.panelMain}>
-        <SectionHeading eyebrow="Your consent" title="People you trust" />
+        <SectionHeading eyebrow={t("Your consent")} title={t("People you trust")} />
         <p className={styles.panelIntro}>
-          You choose whether a caregiver can see only your care summary or also
-          your patient details, medicines, and home readings. You can remove
-          access at any time.
+          {t("You choose whether a caregiver can see only your care summary or also your patient details, medicines, and home readings. You can remove access at any time.")}
         </p>
         <div className={styles.caregiverList}>
           {caregivers.length ? (
@@ -1195,36 +1207,36 @@ function PeoplePanel({
                   <strong>{person.caregiverName}</strong>
                   <small>
                     {person.scope === "SUMMARY_AND_ALERTS"
-                      ? "Summary and alerts"
-                      : "Summary only"}
+                      ? t("Summary and alerts")
+                      : t("Summary only")}
                   </small>
                 </div>
-                <StatusBadge level="ok">Active</StatusBadge>
+                <StatusBadge level="ok">{t("Active")}</StatusBadge>
                 <button
                   className="button-danger"
                   disabled={busy === person.linkId}
                   onClick={() => void revoke(person.linkId)}
                 >
-                  Remove
+                  {t("Remove")}
                 </button>
               </div>
             ))
           ) : (
             <EmptyState
               icon={<UsersRound size={20} />}
-              title="No caregiver access"
-              copy="Invite a trusted family member when you are ready."
+              title={t("No caregiver access")}
+              copy={t("Invite a trusted family member when you are ready.")}
             />
           )}
         </div>
         <div className={styles.inviteBox}>
           <div>
             <label>
-              What may they see?
+              {t("What may they see?")}
               <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                <option value="SUMMARY">Care summary only</option>
+                <option value="SUMMARY">{t("Care summary only")}</option>
                 <option value="SUMMARY_AND_ALERTS">
-                  Summary, details, medicines and home readings
+                  {t("Summary, details, medicines and home readings")}
                 </option>
               </select>
             </label>
@@ -1233,25 +1245,25 @@ function PeoplePanel({
               disabled={busy === "invite"}
               onClick={() => void invite()}
             >
-              Create invitation
+              {t("Create invitation")}
             </button>
           </div>
           {code && (
             <div className={styles.codeBox}>
-              <small>One-time code</small>
+              <small>{t("One-time code")}</small>
               <strong>{code}</strong>
               <button
                 className="button-secondary"
                 onClick={() => void navigator.clipboard.writeText(code)}
               >
-                Copy code
+                {t("Copy code")}
               </button>
             </div>
           )}
         </div>
       </div>
       <div className={styles.panelSide}>
-        <SectionHeading eyebrow="Access history" title="Who opened my record" />
+        <SectionHeading eyebrow={t("Access history")} title={t("Who opened my record")} />
         <div className={styles.accessList}>
           {accessLog.slice(0, 8).map((entry, index) => (
             <div key={`${entry.at}-${index}`}>
@@ -1261,8 +1273,8 @@ function PeoplePanel({
               <p>
                 <strong>{entry.actor}</strong>
                 <small>
-                  {entry.action.replaceAll("_", " ").toLowerCase()} ·{" "}
-                  {new Intl.DateTimeFormat("en-MY", {
+                  {t(entry.action.replaceAll("_", " ").toLowerCase())} ·{" "}
+                  {new Intl.DateTimeFormat(locale, {
                     dateStyle: "medium",
                   }).format(new Date(entry.at))}
                 </small>
@@ -1271,7 +1283,7 @@ function PeoplePanel({
           ))}
           {!accessLog.length && (
             <p className={styles.panelIntro}>
-              No access has been recorded yet.
+              {t("No access has been recorded yet.")}
             </p>
           )}
         </div>

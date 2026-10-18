@@ -8,6 +8,7 @@ import { clearToken, getToken } from "@/lib/session";
 import type { Me } from "@/lib/types";
 import { Toast } from "@/components/ui";
 import { AppShell } from "./app-shell";
+import { UiLanguageProvider } from "@/lib/i18n";
 import { DoctorHome } from "./doctor-home";
 import { PatientHome } from "./patient-home";
 import { CaregiverHome } from "./caregiver-home";
@@ -82,7 +83,10 @@ export function HomeClient() {
         </button>
       </main>
     );
+  // Patients and caregivers see the app in their own language; clinic staff screens stay in English.
+  const ownLanguage = me.role === "PATIENT" || me.role === "CAREGIVER";
   return (
+    <UiLanguageProvider preferred={ownLanguage ? me.preferredLanguage : "en"}>
     <AppShell me={me} onSignOut={signOut}>
       {notice && (
         <Toast tone={notice.tone} onClose={() => setNotice(null)}>
@@ -97,5 +101,6 @@ export function HomeClient() {
       {me.role === "PATIENT" && <PatientHome me={me} notify={setNotice} />}{" "}
       {me.role === "CAREGIVER" && <CaregiverHome me={me} notify={setNotice} />}
     </AppShell>
+    </UiLanguageProvider>
   );
 }

@@ -6,6 +6,11 @@ import { apiRequest } from "@/lib/api";
 import type { Assignee, CallList, ClinicStaff, ClinicStaffRole, Me, Patient } from "@/lib/types";
 import { CaseControls, CoverageBanner, QueueFilters, filterItems, type QueueFilter } from "./case-controls";
 import { ActivityPanel, ClinicSettingsPanel, IntegrationsPanel } from "./clinic-admin";
+import { StaffChatPanel } from "@/components/features/staff-chat";
+import { AuditChainPanel } from "@/components/features/audit-chain";
+import { PrivacyDeskPanel } from "@/components/features/privacy-desk";
+import { ImpactPanel } from "@/components/features/impact";
+import { MentionsPanel } from "@/components/features/case-notes";
 import { SectionHeading, StatusBadge } from "@/components/ui";
 import { useWorkspaceNavigation } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
@@ -133,6 +138,8 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           </article>)}</div>
           <p className={styles.staffCaution}><ShieldCheck size={15} /> This queue supports follow-up; it does not diagnose or replace clinic escalation procedures.</p>
         </section>
+        <MentionsPanel />
+        <ImpactPanel />
       </>}
       {rosterView && <section className={styles.peopleCard}><SectionHeading eyebrow="Clinic follow-up" title="Patient roster" />
         <div className={styles.staffRows}>{patients.map((patient) => <article className={styles.staffRow} key={patient.id}><div><strong>{patient.fullName}</strong><span>{patient.preferredLanguage.toUpperCase()} · {patient.icMasked || "No ID on file"}{patient.followUpDay ? ` · Day ${patient.followUpDay}` : ""}</span></div><span>{patient.hasAccount ? "Account linked" : "Not activated"}</span></article>)}</div>
@@ -149,7 +156,10 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           {staff.length === 0 && <p>{loading ? "Loading staff…" : "No active grants."}</p>}
         </section>
         <ClinicSettingsPanel notify={notify} />
+        <StaffChatPanel notify={notify} canManage={manager} />
         <IntegrationsPanel />
+        <PrivacyDeskPanel notify={notify} />
+        <AuditChainPanel />
         <ActivityPanel />
       </>}
       {!nurse && !manager && <section className={styles.peopleCard}><SectionHeading eyebrow="Clinic workspace" title="Access not assigned" /><p>Ask your clinic administrator to assign a clinic role.</p></section>}

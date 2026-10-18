@@ -2613,3 +2613,28 @@
   line-height: 1.5;
   letter-spacing: -0.01em;
 }
+
+/* The language switcher on the patient and caregiver homes. */
+.languageSwitch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--mist);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.languageSwitch button {
+  min-height: 32px;
+  padding: 0 10px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.languageSwitch button[aria-pressed="true"] {
+  color: var(--night);
+  background: white;
+  box-shadow: var(--shadow-soft);
+}

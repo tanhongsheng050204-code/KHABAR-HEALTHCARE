@@ -38,7 +38,7 @@ public class MeController {
      */
     public record MeResponse(UUID id, Role role, String displayName, UUID clinicId, String clinicName, UUID patientId,
                              List<UUID> patientIds, Map<UUID, CaregiverScope> patientScopes,
-                             List<ClinicStaffRole> clinicRoles, boolean telegramLinked) {
+                             List<ClinicStaffRole> clinicRoles, boolean telegramLinked, String preferredLanguage) {
     }
 
     @GetMapping
@@ -61,6 +61,6 @@ public class MeController {
         return new MeResponse(user.getId(), user.getRole(), user.getDisplayName(),
                 clinic == null ? null : clinic.getId(), clinic == null ? null : clinic.getName(), patientId,
                 patientIds, patientScopes,
-                staffAccess.rolesFor(user), telegramLinked);
+                staffAccess.rolesFor(user), telegramLinked, own == null ? null : own.getPreferredLanguage());
     }
 }

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react"
 import { AlertTriangle, Clock, History, UserRound } from "lucide-react"
+import { CaseNotes } from "@/components/features/case-notes"
 import { apiRequest } from "@/lib/api"
 import type { Assignee, CallItem, CaseEvent, ClosureReason, Coverage, FollowUpCase, Me } from "@/lib/types"
 import styles from "./case-controls.module.css"
@@ -214,7 +215,7 @@ export function CaseControls({ item, snapshotAt, me, assignees, onChanged, notif
           Close case
         </button>
         <button className="button-quiet" aria-expanded={!!history} onClick={() => void toggleHistory()}>
-          <History size={14} aria-hidden="true" /> History
+          <History size={14} aria-hidden="true" /> History &amp; notes
         </button>
       </div>
       {history && (
@@ -228,6 +229,7 @@ export function CaseControls({ item, snapshotAt, me, assignees, onChanged, notif
           ))}
         </ol>
       )}
+      {history && <CaseNotes caseId={followUpCase.id} assignees={assignees} />}
 
       <dialog ref={dialogRef} className={styles.dialog} aria-labelledby={`case-dialog-${followUpCase.id}`} onClose={() => setDialog(null)} onCancel={shut}>
         {dialog === "close" && (

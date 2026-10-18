@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Square, Volume2 } from "lucide-react";
 import type { SummaryLanguage } from "@/lib/types";
+import { useUi } from "@/lib/i18n";
 
 // Preferred regional voices first; any voice of the same language is the fallback.
 const PREFERRED: Record<SummaryLanguage, string[]> = {
@@ -37,6 +38,7 @@ function voiceFor(
  * language: another language's voice would mispronounce medicine instructions, so none is used.
  */
 export function ListenButton({ text, language }: { text: string; language: SummaryLanguage }) {
+  const { t } = useUi();
   // undefined while the device is still listing its voices. Rendered only after the summary has
   // loaded in the browser, so reading `window` here is safe.
   const [voice, setVoice] = useState<SpeechSynthesisVoice | null | undefined>(() =>
@@ -92,7 +94,7 @@ export function ListenButton({ text, language }: { text: string; language: Summa
   return (
     <button className="button-quiet" type="button" onClick={toggle} aria-pressed={speaking}>
       {speaking ? <Square size={15} /> : <Volume2 size={15} />}
-      {speaking ? "Stop reading" : "Listen to this plan"}
+      {speaking ? "Stop reading" : t("Listen to this plan")}
     </button>
   );
 }

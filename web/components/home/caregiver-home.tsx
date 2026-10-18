@@ -14,6 +14,9 @@ import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import styles from "@/app/home/home.module.css";
 import { greetingName } from "@/lib/names";
 import { ListenButton } from "./listen-button";
+import { LanguageSwitcher, useUi } from "@/lib/i18n";
+import type { Quiet } from "@/lib/types";
+import featureStyles from "@/components/features/features.module.css";
 
 type Notice = { tone: "error" | "success" | "info"; text: string };
 
@@ -24,10 +27,12 @@ export function CaregiverHome({
   me: Me;
   notify: (notice: Notice | null) => void;
 }) {
+  const { t, locale } = useUi();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [medicines, setMedicines] = useState<Medication[]>([]);
   const [readings, setReadings] = useState<Reading[]>([]);
+  const [quiet, setQuiet] = useState<Quiet | null>(null);
   const linkedPatientId = me.patientId || me.patientIds?.[0];
   const consentScope = linkedPatientId
     ? me.patientScopes?.[linkedPatientId]
@@ -57,6 +62,12 @@ export function CaregiverHome({
           Promise.resolve([] as Reading[]),
         ]);
 
+    // The no-reply sequence: with alert consent, a caregiver sees when the patient has gone quiet for two days.
+    if (canSeeSharedContext) {
+      apiRequest<Quiet>(`/api/patients/${id}/quiet`)
+        .then((next) => { if (!cancelled) setQuiet(next); })
+        .catch(() => { if (!cancelled) setQuiet(null); });
+    }
     requests
       .then(([person, nextSummary, nextMedicines, nextReadings]) => {
         if (cancelled) return;
@@ -90,13 +101,14 @@ export function CaregiverHome({
     <main className={styles.workspace} id="overview" tabIndex={-1}>
       <section className={styles.workspaceIntro}>
         <div>
-          <p>Consented caregiver access</p>
-          <h1>Hello, {greetingName(me.displayName)}.</h1>
-          <span>You only see what the patient has chosen to share.</span>
+          <p>{t("Consented caregiver access")}</p>
+          <h1>{t("Hello, {name}.", { name: greetingName(me.displayName) })}</h1>
+          <span>{t("You only see what the patient has chosen to share.")}</span>
         </div>
+        <LanguageSwitcher className={styles.languageSwitch} />
         {linkedPatientId && scopeConfirmed && (
           <div className={styles.consentSeal}>
-            <ShieldCheck size={18} /> Consent active
+            <ShieldCheck size={18} /> {t("Consent active")}
           </div>
         )}
       </section>
@@ -107,12 +119,10 @@ export function CaregiverHome({
             <LockKeyhole size={25} />
           </span>
           <div>
-            <p>Caregiver connection</p>
-            <h2>Your account is ready for an invitation.</h2>
+            <p>{t("Caregiver connection")}</p>
+            <h2>{t("Your account is ready for an invitation.")}</h2>
             <p>
-              Ask the patient for their one-time invitation code, then sign out
-              and enter it from the sign-in screen. Access begins only after the
-              patient grants consent.
+              {t("Ask the patient for their one-time invitation code, then sign out and enter it from the sign-in screen. Access begins only after the patient grants consent.")}
             </p>
           </div>
         </section>
@@ -122,9 +132,9 @@ export function CaregiverHome({
             <LockKeyhole size={25} />
           </span>
           <div>
-            <p>Caregiver connection</p>
-            <h2>We could not confirm your sharing permissions.</h2>
-            <p>Refresh this page before viewing any shared information.</p>
+            <p>{t("Caregiver connection")}</p>
+            <h2>{t("We could not confirm your sharing permissions.")}</h2>
+            <p>{t("Refresh this page before viewing any shared information.")}</p>
           </div>
         </section>
       ) : (
@@ -135,11 +145,11 @@ export function CaregiverHome({
                 <UserRound size={24} />
               </span>
               <div>
-                <p>{canSeeSharedContext ? "Supporting" : "Shared with you"}</p>
+                <p>{canSeeSharedContext ? t("Supporting") : t("Shared with you")}</p>
                 <h2>
                   {canSeeSharedContext
-                    ? patient?.fullName || "Shared patient"
-                    : "Care summary"}
+                    ? patient?.fullName || t("Shared patient")
+                    : t("Care summary")}
                 </h2>
                 {canSeeSharedContext && <span>{patient?.clinicName}</span>}
               </div>
@@ -148,18 +158,27 @@ export function CaregiverHome({
               <ShieldCheck size={18} />
               <span>
                 <strong>
-                  {canSeeSharedContext ? "Shared care context" : "Summary-only access"}
+                  {canSeeSharedContext ? t("Shared care context") : t("Summary-only access")}
                 </strong>
                 {canSeeSharedContext
-                  ? "The patient has shared their care summary, medicines and home readings."
-                  : "The patient has shared the care summary only."}
+                  ? t("The patient has shared their care summary, medicines and home readings.")
+                  : t("The patient has shared the care summary only.")}
               </span>
             </div>
           </section>
 
+          {quiet?.quiet && (
+            <div className={featureStyles.banner} role="status">
+              <HeartPulse size={20} aria-hidden="true" />
+              <div className={featureStyles.panelFlat}>
+                <strong>{t("{name} has not answered the day {day} check-in for two days.", { name: patient?.fullName || t("Shared patient"), day: quiet.dayNumber ?? "" })}</strong>
+                <span>{t("It may be nothing. A quick call or visit can help, and the clinic has them on its call list too.")}</span>
+              </div>
+            </div>
+          )}
           <div className={styles.caregiverGrid}>
             <section className={styles.peopleCard}>
-              <SectionHeading eyebrow="Latest plan" title="What matters now" />
+              <SectionHeading eyebrow={t("Latest plan")} title={t("What matters now")} />
               {summary ? (
                 <>
                   <blockquote className={styles.caregiverSummary} lang={summary.language}>
@@ -170,7 +189,7 @@ export function CaregiverHome({
                     <div className={styles.doctorAttention}>
                       <HeartPulse size={17} />
                       <span>
-                        <strong>Needs clinic advice</strong>
+                        <strong>{t("Needs clinic advice")}</strong>
                         {summary.needsDoctor}
                       </span>
                     </div>
@@ -178,26 +197,26 @@ export function CaregiverHome({
                 </>
               ) : (
                 <EmptyState
-                  title="No care summary yet"
-                  copy="The latest finalised plan will appear here when it is ready."
+                  title={t("No care summary yet")}
+                  copy={t("The latest finalised plan will appear here when it is ready.")}
                 />
               )}
             </section>
 
             {canSeeSharedContext && (
               <aside className={styles.peopleCard}>
-                <SectionHeading eyebrow="Shared context" title="Medicines" />
+                <SectionHeading eyebrow={t("Shared context")} title={t("Medicines")} />
                 <div className={styles.compactList}>
                   {medicines.map((medicine) => (
                     <div key={medicine.id}>
                       <Pill size={16} />
                       <span>
                         <strong>{medicine.name}</strong>
-                        <small>{medicine.source || "Source not stated"}</small>
+                        <small>{medicine.source || t("Source not stated")}</small>
                       </span>
                     </div>
                   ))}
-                  {!medicines.length && <p>No medicines have been shared.</p>}
+                  {!medicines.length && <p>{t("No medicines have been shared.")}</p>}
                 </div>
               </aside>
             )}
@@ -205,7 +224,7 @@ export function CaregiverHome({
 
           {canSeeSharedContext && (
             <section className={styles.peopleCard}>
-              <SectionHeading eyebrow="Home monitoring" title="Recent readings" />
+              <SectionHeading eyebrow={t("Home monitoring")} title={t("Recent readings")} />
               <div className={styles.readingList}>
                 {readings.slice(0, 6).map((reading) => (
                   <div key={reading.id}>
@@ -215,7 +234,7 @@ export function CaregiverHome({
                     <div>
                       <strong>{reading.description}</strong>
                       <small>
-                        {new Intl.DateTimeFormat("en-MY", {
+                        {new Intl.DateTimeFormat(locale, {
                           dateStyle: "medium",
                           timeStyle: "short",
                         }).format(new Date(reading.measuredAt))}
@@ -228,8 +247,8 @@ export function CaregiverHome({
                 ))}
                 {!readings.length && (
                   <EmptyState
-                    title="No readings shared"
-                    copy="Home readings appear here only when the patient has allowed alerts."
+                    title={t("No readings shared")}
+                    copy={t("Home readings appear here only when the patient has allowed alerts.")}
                   />
                 )}
               </div>

@@ -27,6 +27,7 @@ import {
   type WorkspaceSection,
 } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
+import { useUi } from "@/lib/i18n";
 const roleIcon = {
   DOCTOR: Stethoscope,
   NURSE: HeartPulse,
@@ -43,13 +44,14 @@ export function AppShell({
   onSignOut: () => void;
   children: ReactNode;
 }) {
+  const { t } = useUi();
   const RoleIcon = roleIcon[me.role];
   const pathname = usePathname();
   const { section, navigate } = useWorkspaceNavigation();
   const clinicDoctor = me.clinicRoles?.includes("DOCTOR");
   const adminOnlyHome = me.clinicRoles?.includes("CLINIC_ADMIN") && !me.clinicRoles?.includes("NURSE") && !me.clinicRoles?.includes("DOCTOR");
   const links: { id: WorkspaceSection; label: string; icon: typeof Home }[] = [
-    { id: "overview", label: adminOnlyHome ? "Staff & access" : me.clinicRoles?.includes("NURSE") && me.role !== "DOCTOR" ? "Call list" : "Overview", icon: adminOnlyHome ? UsersRound : me.clinicRoles?.includes("NURSE") ? HeartPulse : Home },
+    { id: "overview", label: adminOnlyHome ? "Staff & access" : me.clinicRoles?.includes("NURSE") && me.role !== "DOCTOR" ? "Call list" : t("Overview"), icon: adminOnlyHome ? UsersRound : me.clinicRoles?.includes("NURSE") ? HeartPulse : Home },
     ...(clinicDoctor
       ? [
           { id: "people" as const, label: "Patients", icon: UsersRound },
@@ -66,10 +68,10 @@ export function AppShell({
       : []),
     ...(me.role === "PATIENT"
       ? [
-          { id: "plan" as const, label: "My plan", icon: HeartPulse },
-          { id: "checkin" as const, label: "Check in", icon: MessageCircle },
-          { id: "readings" as const, label: "Readings", icon: Activity },
-          { id: "people" as const, label: "My people", icon: UsersRound },
+          { id: "plan" as const, label: t("My plan"), icon: HeartPulse },
+          { id: "checkin" as const, label: t("Check in"), icon: MessageCircle },
+          { id: "readings" as const, label: t("Readings"), icon: Activity },
+          { id: "people" as const, label: t("My people"), icon: UsersRound },
         ]
       : []),
   ];
@@ -112,7 +114,7 @@ export function AppShell({
         <a className={styles.skipLink} href="#overview">
           Skip to workspace
         </a>
-        <aside className={styles.rail} aria-label="Your care space">
+        <aside className={styles.rail} aria-label={t("Your care space")}>
           <Link
             href="/"
             className={styles.railBrand}
@@ -123,7 +125,7 @@ export function AppShell({
             </span>
             Khabar
           </Link>
-          <div className={styles.workspaceLabel}>Your care space</div>
+          <div className={styles.workspaceLabel}>{t("Your care space")}</div>
           <nav aria-label="Workspace navigation">{navItems(false)}</nav>
           <div className={styles.railFoot}>
             <div className={styles.profileMark}>
@@ -133,7 +135,7 @@ export function AppShell({
               <strong>{me.displayName}</strong>
               <span>{me.role.toLowerCase()}</span>
             </div>
-            <button onClick={onSignOut} aria-label="Sign out">
+            <button onClick={onSignOut} aria-label={t("Sign out")}>
               <LogOut size={17} />
             </button>
           </div>
@@ -151,11 +153,11 @@ export function AppShell({
               <p>{me.clinicName || "Khabar care"}</p>
             </div>
             <div>
-              <span className={styles.demoPill}>Fictional data</span>
+              <span className={styles.demoPill}>{t("Fictional data")}</span>
               <MotionButton />
               <button
                 className={styles.mobileSignOut}
-                aria-label="Sign out"
+                aria-label={t("Sign out")}
                 onClick={onSignOut}
               >
                 <LogOut size={17} />
