@@ -39,7 +39,9 @@ public class VisitSummaryController {
         this.auditLog = auditLog;
     }
 
-    public record SummaryView(UUID encounterId, String language, String text, String needsDoctor, Instant createdAt) {
+    /** held and heldReason are only ever set for clinic staff; patients and caregivers never see a held plan. */
+    public record SummaryView(UUID encounterId, String language, String text, String needsDoctor, Instant createdAt,
+                              boolean held, String heldReason) {
     }
 
     @GetMapping("/api/patients/{patientId}/summary")
@@ -50,11 +52,13 @@ public class VisitSummaryController {
         if (!policy.canViewSummary(user, patient)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        VisitSummary summary = summaries.findFirstByPatientIdOrderByCreatedAtDesc(patientId)
+        boolean staff = user.getRole() != Role.PATIENT && user.getRole() != Role.CAREGIVER;
+        VisitSummary summary = (staff ? summaries.findFirstByPatientIdOrderByCreatedAtDesc(patientId) : summaries.latestReleased(patientId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No summary yet for this patient."));
         if (user.getRole() != Role.PATIENT) {
             auditLog.record(user, patientId, AuditAction.VIEWED_SUMMARY);
         }
-        return new SummaryView(summary.getEncounterId(), summary.getLanguage(), summary.getText(), summary.getNeedsDoctor(), summary.getCreatedAt());
+        return new SummaryView(summary.getEncounterId(), summary.getLanguage(), summary.getText(), summary.getNeedsDoctor(), summary.getCreatedAt(),
+                staff && summary.isHeld(), staff ? summary.getHeldReason() : null);
     }
 }

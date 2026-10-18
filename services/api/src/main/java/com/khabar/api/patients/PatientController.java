@@ -74,12 +74,16 @@ public class PatientController {
 
     /** "What the AI saw": what left the clinical API for the AI service about this patient, newest first. */
     @GetMapping("/{id}/ai-receipts")
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AiReceipts.ReceiptView> aiReceipts(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
         Patient patient = find(id);
         if (!policy.isPatientOrTheirClinic(user, patient)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        if (user.getRole() != Role.PATIENT) {
+            // Receipts hold the de-identified text of the patient's messages: reading them is reading the record.
+            auditLog.record(user, patient.getId(), AuditAction.VIEWED_RECORD);
         }
         return aiReceipts.latest(patient.getId(), 50);
     }

@@ -120,6 +120,7 @@ class AuditChainTest {
     @Test
     void anchorsArePublicAndNameNoOne() throws Exception {
         auditLog.record(doctor, UUID.randomUUID(), AuditAction.VIEWED_RECORD);
+        chain.sealAll();
         AuditChain.Anchor anchor = chain.anchor();
 
         mvc.perform(get("/api/audit/anchor"))

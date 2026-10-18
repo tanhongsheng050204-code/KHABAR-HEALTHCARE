@@ -262,4 +262,41 @@ class EncounterFlowTest {
         mvc.perform(post("/api/patients/{id}/encounters", aminah.getId()).header("Authorization", bearer(aminahAccount.getId())))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void aPlanWithANumberTheDoctorDidNotWriteIsHeldUntilADoctorReleasesIt() throws Exception {
+        when(agents.buildSummary(anyList(), anyString(), any(), anyBoolean())).thenReturn(new SummaryResult("ms",
+                List.of(new com.khabar.api.service.AgentDtos.MedicineLine("Metformin 850 mg", "1 biji, pagi dan malam.")),
+                "Kalau rasa lebih teruk, datang ke klinik segera.", null, List.of(),
+                "• Metformin 850 mg: 1 biji, pagi dan malam."));
+        String id = startVisit(doctor);
+        writeNotes(id, NOTES);
+        check(id);
+        finalise(id).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("FINAL"));
+
+        assertThat(jdbc.queryForObject("select count(*) from outbound_message where patient_id = ? and kind = 'SUMMARY'", Long.class, aminah.getId()))
+                .as("a held plan is not sent").isZero();
+        mvc.perform(get("/api/patients/{id}/summary", aminah.getId()).header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/encounters/{id}/summary", id).header("Authorization", bearer(doctor.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.held").value(true))
+                .andExpect(jsonPath("$.heldReason").value(org.hamcrest.Matchers.containsString("850")));
+
+        mvc.perform(post("/api/encounters/{id}/summary/release", id).header("Authorization", bearer(doctor.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"note\":\"ok\"}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/encounters/{id}/summary/release", id).header("Authorization", bearer(doctor.getId()))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"note\":\"Dose changed to 850 mg at this visit.\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.held").value(false));
+
+        assertThat(jdbc.queryForObject("select count(*) from outbound_message where patient_id = ? and kind = 'SUMMARY'", Long.class, aminah.getId()))
+                .isEqualTo(1L);
+        mvc.perform(get("/api/patients/{id}/summary", aminah.getId()).header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.text").value("• Metformin 850 mg: 1 biji, pagi dan malam."))
+                .andExpect(jsonPath("$.held").value(false))
+                .andExpect(jsonPath("$.heldReason").doesNotExist());
+    }
 }

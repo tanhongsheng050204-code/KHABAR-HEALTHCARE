@@ -1,6 +1,7 @@
 package com.khabar.api.audit;
 
 import com.khabar.api.config.AdjustableClock;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -8,15 +9,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.List;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * Makes the record-access log tamper-evident. Each entry is sealed, in the order it was written, with
- * SHA-256(previous hash, its position and its own fields). Changing, deleting or reordering any sealed entry
+ * HMAC-SHA-256(previous hash, its position and its own fields), keyed by a server secret. Changing, deleting or reordering any sealed entry
  * breaks every hash after it, which {@link #verify()} reports. The newest hash is published (see
  * AuditChainController) and copied outside the database every day, so even rewriting the whole chain shows.
  *
@@ -34,12 +39,21 @@ public class AuditChain {
     private final AuditChainHeadRepository heads;
     private final AdjustableClock clock;
     private final TransactionTemplate tx;
+    private final byte[] key;
 
-    public AuditChain(AuditEntryRepository entries, AuditChainHeadRepository heads, AdjustableClock clock, TransactionTemplate tx) {
+    public AuditChain(AuditEntryRepository entries, AuditChainHeadRepository heads, AdjustableClock clock, TransactionTemplate tx,
+                      @Value("${khabar.security.field-encryption-key:}") String fieldEncryptionKey) {
         this.entries = entries;
         this.heads = heads;
         this.clock = clock;
         this.tx = tx;
+        try {
+            // A keyed hash (HMAC): published hashes cannot be used to test guesses about who viewed whose record.
+            this.key = MessageDigest.getInstance("SHA-256")
+                    .digest(("khabar-audit-chain:" + fieldEncryptionKey).getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public record Verification(boolean intact, long checked, long unsealed, Long brokenAt, String problem,
@@ -78,7 +92,7 @@ public class AuditChain {
         String prev = head.getLastHash();
         for (AuditEntry entry : pending) {
             seq++;
-            String hash = hash(seq, prev, entry);
+            String hash = hash(key, seq, prev, entry);
             entry.seal(seq, prev, hash);
             prev = hash;
         }
@@ -111,7 +125,7 @@ public class AuditChain {
                     if (!prev.equals(entry.getPrevHash())) {
                         return broken(expected, "Entry " + expected + " does not point to the entry before it.", expected - 1, unsealed, tailSeq, tailHash);
                     }
-                    String recomputed = hash(expected, prev, entry);
+                    String recomputed = hash(key, expected, prev, entry);
                     if (!recomputed.equals(entry.getHash())) {
                         return broken(expected, "Entry " + expected + " was changed after it was sealed.", expected - 1, unsealed, tailSeq, tailHash);
                     }
@@ -133,9 +147,12 @@ public class AuditChain {
         return new Verification(false, checked, unsealed, at, problem, tailSeq, tailHash, clock.instant());
     }
 
-    /** The newest sealed position and hash: the value worth copying somewhere the database cannot reach. */
+    /**
+     * The newest sealed position and hash: the value worth copying somewhere the database cannot reach. Read-only,
+     * so the public endpoint cannot be used to make the server write; the sealer keeps the head current.
+     */
+    @Transactional(readOnly = true)
     public Anchor anchor() {
-        sealAll();
         return heads.findById(AuditChainHead.ID)
                 .map(h -> new Anchor(h.getLastSeq(), h.getLastHash(), h.getSealedAt()))
                 .orElse(new Anchor(0, GENESIS, null));
@@ -147,7 +164,7 @@ public class AuditChain {
         return entries.findByChainSeq(seq).map(AuditEntry::getHash).orElse(null);
     }
 
-    static String hash(long seq, String prevHash, AuditEntry e) {
+    static String hash(byte[] key, long seq, String prevHash, AuditEntry e) {
         String canonical = String.join(String.valueOf(SEP),
                 Long.toString(seq),
                 prevHash,
@@ -158,9 +175,10 @@ public class AuditChain {
                 // Milliseconds: what every supported database keeps exactly.
                 Long.toString(e.getAt().toEpochMilli()));
         try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException e1) {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(key, "HmacSHA256"));
+            return HexFormat.of().formatHex(mac.doFinal(canonical.getBytes(StandardCharsets.UTF_8)));
+        } catch (GeneralSecurityException e1) {
             throw new IllegalStateException(e1);
         }
     }

@@ -28,7 +28,7 @@ class FlywayMigrationTest {
 
         Flyway flyway = flyway(dataSource);
 
-        assertEquals(10, flyway.migrate().migrationsExecuted);
+        assertEquals(11, flyway.migrate().migrationsExecuted);
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
         try (Connection connection = dataSource.getConnection();

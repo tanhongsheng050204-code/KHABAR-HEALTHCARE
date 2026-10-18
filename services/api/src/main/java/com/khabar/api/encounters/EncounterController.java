@@ -41,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -215,6 +216,46 @@ public class EncounterController {
         return view(encounter);
     }
 
+    public record ReleaseRequest(String note) {
+    }
+
+    public record SummaryStatus(UUID encounterId, String text, boolean held, String heldReason, Instant releasedAt, String releaseNote) {
+    }
+
+    /** The take-home plan built at finalising, with whether the plan check held it back. */
+    @GetMapping("/api/encounters/{id}/summary")
+    @Transactional(readOnly = true)
+    public SummaryStatus summary(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        Encounter encounter = load(id, requireDoctor(jwt));
+        VisitSummary s = summaries.findFirstByEncounterIdOrderByCreatedAtDesc(encounter.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No take-home plan for this visit yet."));
+        return new SummaryStatus(encounter.getId(), s.getText(), s.isHeld(), s.getHeldReason(), s.getReleasedAt(), s.getReleaseNote());
+    }
+
+    /**
+     * A doctor has read a held plan and decided it is right: it is sent and shown to the patient. The reason is
+     * kept with the summary.
+     */
+    @PostMapping("/api/encounters/{id}/summary/release")
+    @Transactional
+    public SummaryStatus release(@PathVariable UUID id, @RequestBody ReleaseRequest request, @AuthenticationPrincipal Jwt jwt) {
+        AppUser doctor = requireDoctor(jwt);
+        Encounter encounter = load(id, doctor);
+        VisitSummary s = summaries.findFirstByEncounterIdOrderByCreatedAtDesc(encounter.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No take-home plan for this visit yet."));
+        if (!s.isHeld()) {
+            return new SummaryStatus(encounter.getId(), s.getText(), false, s.getHeldReason(), s.getReleasedAt(), s.getReleaseNote());
+        }
+        String note = request == null || request.note() == null ? "" : request.note().trim();
+        if (note.length() < MIN_REASON_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Say why the plan is right to send, in at least " + MIN_REASON_LENGTH + " characters.");
+        }
+        s.release(doctor.getId(), note.length() > 500 ? note.substring(0, 500) : note, clock.instant());
+        summaries.save(s);
+        messages.send(encounter.getPatient(), s.getText(), Messenger.Kind.SUMMARY);
+        return new SummaryStatus(encounter.getId(), s.getText(), false, s.getHeldReason(), s.getReleasedAt(), s.getReleaseNote());
+    }
+
     /** The summary is a convenience for the patient: if it cannot be built now, the visit still finalises. */
     private void storeSummary(Encounter encounter, Patient patient) {
         try {
@@ -223,7 +264,16 @@ public class EncounterController {
             SummaryResult result = agents.buildSummary(rx, patient.getPreferredLanguage(), encounter.getFollowUpWeeks(), encounter.isFasting());
             if (result != null && result.text() != null) {
                 String needsDoctor = result.needsDoctor() == null ? null : String.join(", ", result.needsDoctor());
-                summaries.save(new VisitSummary(patient, encounter.getId(), result.language(), result.text(), needsDoctor, clock.instant()));
+                VisitSummary summary = new VisitSummary(patient, encounter.getId(), result.language(), result.text(), needsDoctor, clock.instant());
+                List<String> problems = SummaryCheck.check(result.text(), encounter.getPrescription(), encounter.getFollowUpWeeks());
+                if (!problems.isEmpty()) {
+                    // Not sent, and not shown to the patient, until a doctor has looked.
+                    summary.hold(String.join(" ", problems));
+                    summaries.save(summary);
+                    log.warn("Summary for encounter {} held by the plan check ({} problem(s)).", encounter.getId(), problems.size());
+                    return;
+                }
+                summaries.save(summary);
                 messages.send(patient, result.text(), Messenger.Kind.SUMMARY);
             }
         } catch (RuntimeException e) {

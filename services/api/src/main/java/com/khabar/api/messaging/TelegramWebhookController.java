@@ -195,7 +195,7 @@ public class TelegramWebhookController {
         patient.linkTelegram(chatId, index);
         Patient saved = patients.save(patient);
         bot.sendMessage(chat, PatientMessages.telegramLinkedText(saved.getPreferredLanguage()), REMOVE_KEYBOARD);
-        summaries.findFirstByPatientIdOrderByCreatedAtDesc(saved.getId())
+        summaries.latestReleased(saved.getId())
                 .ifPresent(summary -> messages.send(saved, summary.getText(), Messenger.Kind.SUMMARY));
     }
 }

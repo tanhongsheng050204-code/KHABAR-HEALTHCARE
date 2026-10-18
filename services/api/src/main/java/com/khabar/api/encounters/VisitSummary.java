@@ -40,6 +40,17 @@ public class VisitSummary {
     @Column(nullable = false)
     private Instant createdAt;
 
+    /** Why the independent plan check held this summary back; null when it passed. */
+    @Column(length = 2000)
+    private String heldReason;
+
+    private Instant releasedAt;
+
+    private UUID releasedBy;
+
+    @Column(length = 500)
+    private String releaseNote;
+
     protected VisitSummary() {
     }
 
@@ -51,6 +62,37 @@ public class VisitSummary {
         this.text = text;
         this.needsDoctor = needsDoctor;
         this.createdAt = createdAt;
+    }
+
+    void hold(String reason) {
+        this.heldReason = reason.length() > 2000 ? reason.substring(0, 2000) : reason;
+    }
+
+    void release(UUID by, String note, Instant at) {
+        this.releasedBy = by;
+        this.releaseNote = note;
+        this.releasedAt = at;
+    }
+
+    /** Held back and not yet released by a doctor: not sent, and not shown to the patient or caregivers. */
+    public boolean isHeld() {
+        return heldReason != null && releasedAt == null;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getHeldReason() {
+        return heldReason;
+    }
+
+    public Instant getReleasedAt() {
+        return releasedAt;
+    }
+
+    public String getReleaseNote() {
+        return releaseNote;
     }
 
     public UUID getEncounterId() {
