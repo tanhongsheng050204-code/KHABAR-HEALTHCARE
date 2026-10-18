@@ -21,13 +21,18 @@ public class TelegramBotClient {
     /** Telegram rejects a message longer than this. */
     static final int MAX_TEXT = 4096;
 
+    /** Photos and voice notes larger than this are not downloaded. */
+    static final int MAX_DOWNLOAD = 8 * 1024 * 1024;
+
     private final RestClient http;
     private final String sendPath;
+    private final String botPath;
 
     public TelegramBotClient(String baseUrl, String botToken) {
         if (botToken == null || botToken.isBlank()) {
             this.http = null;
             this.sendPath = null;
+            this.botPath = null;
             return;
         }
         HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build();
@@ -39,6 +44,33 @@ public class TelegramBotClient {
                 .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .build();
         this.sendPath = "/bot" + botToken.trim() + "/sendMessage";
+        this.botPath = "/bot" + botToken.trim();
+    }
+
+    /**
+     * Downloads a file a user sent (a voice note or a photo) through getFile. Returns null when Telegram is not
+     * configured, the file is too large, or anything fails; the caller tells the patient to type instead.
+     */
+    @SuppressWarnings("unchecked")
+    public byte[] downloadFile(String fileId) {
+        if (http == null || fileId == null || fileId.isBlank()) {
+            return null;
+        }
+        try {
+            Map<String, Object> reply = http.get().uri(botPath + "/getFile?file_id={id}", fileId).retrieve().body(Map.class);
+            Object result = reply == null ? null : reply.get("result");
+            if (!(result instanceof Map<?, ?> file) || file.get("file_path") == null) {
+                return null;
+            }
+            Object size = file.get("file_size");
+            if (size instanceof Number n && n.longValue() > MAX_DOWNLOAD) {
+                return null;
+            }
+            byte[] bytes = http.get().uri("/file" + botPath + "/" + file.get("file_path")).retrieve().body(byte[].class);
+            return bytes == null || bytes.length > MAX_DOWNLOAD ? null : bytes;
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     public boolean configured() {

@@ -48,6 +48,7 @@ class TelegramWebhookTest {
     @Autowired OutboundMessageRepository outbox;
     @Autowired VisitSummaryRepository summaries;
     @Autowired TelegramChatIndex chatIndex;
+    @Autowired com.khabar.api.medications.MedicationItemRepository medications;
     @MockBean AgentClientService agents;
     @MockBean TelegramBotClient bot;
 
@@ -186,13 +187,56 @@ class TelegramWebhookTest {
     }
 
     @Test
-    void aPhotoFromALinkedPatientGetsTheTextOnlyPrompt() throws Exception {
+    void aPhotoThatCannotBeReadAsksForABetterPhotoOrTheName() throws Exception {
         link(aminah);
         deliver(message(chat, chat, "private", 13, "\"photo\":[{\"file_id\":\"x\",\"width\":1,\"height\":1}]"), SECRET)
                 .andExpect(status().isOk());
         assertThat(replies.findAll()).noneMatch(r -> r.getPatient().getId().equals(aminah.getId()));
-        assertThat(sentTo(aminah, Messenger.Kind.NOTICE)).extracting(OutboundMessage::getText)
-                .containsExactly(PatientMessages.textOnlyText("ms"));
+        verify(bot).sendMessage(chat, PatientMessages.photoUnreadText("ms"));
+    }
+
+    @Test
+    void aPacketPhotoIsReadIntoTheMedicineListForTheClinicToVerify() throws Exception {
+        link(aminah);
+        when(bot.downloadFile("big")).thenReturn(new byte[]{1, 2, 3});
+        when(agents.readMedicinePacket(any(), anyString())).thenReturn(Map.of("candidates",
+                List.of(Map.of("kind", "MEDICINE", "brand", "Glucophage", "strength", "500 mg"))));
+        deliver(message(chat, chat, "private", 14,
+                "\"photo\":[{\"file_id\":\"small\",\"width\":1,\"height\":1},{\"file_id\":\"big\",\"width\":9,\"height\":9}]"), SECRET)
+                .andExpect(status().isOk());
+        assertThat(medications.findByPatientIdOrderByAddedAt(aminah.getId())).singleElement().satisfies(item -> {
+            assertThat(item.getName()).isEqualTo("Glucophage 500 mg");
+            assertThat(item.getSource()).isEqualTo(TelegramMedia.PHOTO_SOURCE);
+        });
+        verify(bot).sendMessage(chat, PatientMessages.photoReadText("ms", "Glucophage 500 mg"));
+    }
+
+    @Test
+    void aVoiceNoteIsShownBackAndOnlyBecomesAReplyWhenThePatientTapsSend() throws Exception {
+        link(aminah);
+        when(bot.downloadFile("v1")).thenReturn(new byte[]{1, 2, 3});
+        when(agents.transcribe(any(), anyString(), anyString())).thenReturn("Pening sikit lepas makan ubat");
+        deliver(message(chat, chat, "private", 15, "\"voice\":{\"file_id\":\"v1\",\"duration\":3}"), SECRET)
+                .andExpect(status().isOk());
+        assertThat(replies.findAll()).noneMatch(r -> r.getPatient().getId().equals(aminah.getId()));
+        verify(bot).sendMessage(eq(chat), eq(PatientMessages.voiceHeardText("ms", "Pening sikit lepas makan ubat")),
+                argThat(markup -> markup != null && markup.toString().contains(TelegramMedia.SEND_BUTTON)));
+
+        deliver(text(16, TelegramMedia.SEND_BUTTON), SECRET).andExpect(status().isOk());
+        assertThat(replies.findAll()).filteredOn(r -> r.getPatient().getId().equals(aminah.getId()))
+                .singleElement().satisfies(r -> assertThat(r.getText()).isEqualTo("Pening sikit lepas makan ubat"));
+    }
+
+    @Test
+    void typingInsteadDiscardsTheVoiceTranscript() throws Exception {
+        link(aminah);
+        when(bot.downloadFile("v2")).thenReturn(new byte[]{1});
+        when(agents.transcribe(any(), anyString(), anyString())).thenReturn("Salah dengar");
+        deliver(message(chat, chat, "private", 17, "\"voice\":{\"file_id\":\"v2\",\"duration\":2}"), SECRET).andExpect(status().isOk());
+        deliver(text(18, "Pening"), SECRET).andExpect(status().isOk());
+        deliver(text(19, TelegramMedia.SEND_BUTTON), SECRET).andExpect(status().isOk());
+        assertThat(replies.findAll()).filteredOn(r -> r.getPatient().getId().equals(aminah.getId()))
+                .extracting(r -> r.getText()).containsExactly("Pening");
     }
 
     @Test

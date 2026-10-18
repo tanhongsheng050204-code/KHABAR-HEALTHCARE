@@ -65,6 +65,32 @@ public class PatientMessages {
             "zh", "您的 Telegram 已连接到 Khabar。诊所会在这里发送您的护理计划和随访问候。",
             "ta", "உங்கள் Telegram இப்போது Khabar உடன் இணைக்கப்பட்டுள்ளது. உங்கள் மருத்துவமனை பராமரிப்புத் திட்டத்தையும் பின்தொடர் செய்திகளையும் இங்கே அனுப்பும்.");
 
+    /** After a voice note: what we heard, to confirm before it reaches the clinic. %s is the transcript. */
+    private static final Map<String, String> VOICE_HEARD = Map.of(
+            "ms", "Kami dengar: “%s”\n\nBetul? Tekan “✅ Hantar / Send” untuk menghantarnya ke klinik, atau taip semula. Jika kecemasan, hubungi 999.",
+            "en", "We heard: “%s”\n\nIs that right? Tap “✅ Hantar / Send” to send it to the clinic, or type it instead. In an emergency, call 999.",
+            "zh", "我们听到的是：“%s”\n\n对吗？点“✅ Hantar / Send”发送给诊所，或者直接打字。紧急情况请拨打999。",
+            "ta", "நாங்கள் கேட்டது: “%s”\n\nசரியா? கிளினிக்கிற்கு அனுப்ப “✅ Hantar / Send” ஐ அழுத்தவும், அல்லது தட்டச்சு செய்யவும். அவசரநிலையில் 999 ஐ அழைக்கவும்.");
+
+    private static final Map<String, String> VOICE_UNHEARD = Map.of(
+            "ms", "Maaf, kami tidak dapat mendengar nota suara itu. Sila taip mesej anda. Jika kecemasan, hubungi 999.",
+            "en", "Sorry, we couldn't make out that voice note. Please type your message. In an emergency, call 999.",
+            "zh", "抱歉，我们听不清这条语音。请用文字回复。紧急情况请拨打999。",
+            "ta", "மன்னிக்கவும், அந்தக் குரல் செய்தியைப் புரிந்துகொள்ள முடியவில்லை. தயவுசெய்து தட்டச்சு செய்யவும். அவசரநிலையில் 999 ஐ அழைக்கவும்.");
+
+    /** After a packet photo. %s lists what was read. */
+    private static final Map<String, String> PHOTO_READ = Map.of(
+            "ms", "Terima kasih. Daripada gambar itu kami baca: %s. Ia ditambah ke senarai ubat anda sebagai “perlu disemak”; klinik anda akan menyemaknya.",
+            "en", "Thank you. From the photo we read: %s. It has been added to your medicine list as “please verify”; your clinic will check it.",
+            "zh", "谢谢。我们从照片中读到：%s。已加入您的药物清单并标记为“待核实”，诊所会核对。",
+            "ta", "நன்றி. புகைப்படத்திலிருந்து நாங்கள் படித்தது: %s. இது உங்கள் மருந்துப் பட்டியலில் “சரிபார்க்க வேண்டும்” என்று சேர்க்கப்பட்டது; உங்கள் கிளினிக் சரிபார்க்கும்.");
+
+    private static final Map<String, String> PHOTO_UNREAD = Map.of(
+            "ms", "Maaf, kami tidak dapat membaca label ubat dalam gambar itu. Cuba gambar yang lebih dekat dan terang, atau taip nama ubat.",
+            "en", "Sorry, we couldn't read a medicine label in that photo. Try a closer, brighter photo, or type the medicine's name.",
+            "zh", "抱歉，无法从照片中读出药品标签。请拍得更近、更亮一些，或直接输入药名。",
+            "ta", "மன்னிக்கவும், அந்தப் புகைப்படத்தில் மருந்து லேபிளைப் படிக்க முடியவில்லை. நெருக்கமான, வெளிச்சமான புகைப்படம் எடுக்கவும், அல்லது மருந்தின் பெயரைத் தட்டச்சு செய்யவும்.");
+
     private static final Map<String, String> TEXT_ONLY = Map.of(
             "ms", "Sila balas dalam bentuk teks.",
             "en", "Please reply in text.",
@@ -88,6 +114,22 @@ public class PatientMessages {
 
     public static String reminderText(String language) {
         return REMINDER.getOrDefault(language, REMINDER.get("en"));
+    }
+
+    public static String voiceHeardText(String language, String transcript) {
+        return VOICE_HEARD.getOrDefault(language, VOICE_HEARD.get("en")).formatted(transcript);
+    }
+
+    public static String voiceUnheardText(String language) {
+        return VOICE_UNHEARD.getOrDefault(language, VOICE_UNHEARD.get("en"));
+    }
+
+    public static String photoReadText(String language, String items) {
+        return PHOTO_READ.getOrDefault(language, PHOTO_READ.get("en")).formatted(items);
+    }
+
+    public static String photoUnreadText(String language) {
+        return PHOTO_UNREAD.getOrDefault(language, PHOTO_UNREAD.get("en"));
     }
 
     public static String urgentText(String language) {

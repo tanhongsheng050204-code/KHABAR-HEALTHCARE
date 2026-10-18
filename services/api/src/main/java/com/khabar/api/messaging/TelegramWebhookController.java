@@ -65,12 +65,14 @@ public class TelegramWebhookController {
     private final VisitSummaryRepository summaries;
     private final TelegramBotClient bot;
     private final StaffAlerts staffAlerts;
+    private final TelegramMedia media;
 
     public TelegramWebhookController(@Value("${khabar.telegram.webhook-secret:}") String secret, ObjectMapper json,
                                      PatientRepository patients, PhoneIndex phoneIndex, TelegramChatIndex chatIndex,
                                      FollowUpService followUp, PatientMessages messages, VisitSummaryRepository summaries,
-                                     TelegramBotClient bot, StaffAlerts staffAlerts) {
+                                     TelegramBotClient bot, StaffAlerts staffAlerts, TelegramMedia media) {
         this.staffAlerts = staffAlerts;
+        this.media = media;
         this.secret = secret;
         this.json = json;
         this.patients = patients;
@@ -130,7 +132,28 @@ public class TelegramWebhookController {
             return;
         }
         String language = patient.get().getPreferredLanguage();
+        long chat = Long.parseLong(chatId);
+        JsonNode voice = message.has("voice") ? message.path("voice") : message.path("audio");
+        if (!voice.isMissingNode() && voice.has("file_id")) {
+            media.voice(patient.get(), chat, voice.path("file_id").asText(), message.path("message_id").asText());
+            return;
+        }
+        JsonNode photos = message.path("photo");
+        if (photos.isArray() && !photos.isEmpty()) {
+            // Telegram sends several sizes; the last is the largest.
+            media.photo(patient.get(), chat, photos.get(photos.size() - 1).path("file_id").asText());
+            return;
+        }
         String text = message.path("text").asText("");
+        if (TelegramMedia.SEND_BUTTON.equals(text.strip())) {
+            if (!media.confirmVoice(patient.get(), chat)) {
+                messages.send(patient.get(), PatientMessages.textOnlyText(language), Messenger.Kind.NOTICE);
+            }
+            return;
+        }
+        if (!text.isBlank()) {
+            media.discardVoice(patient.get());
+        }
         if (text.isBlank()) {
             messages.send(patient.get(), PatientMessages.textOnlyText(language), Messenger.Kind.NOTICE);
             return;

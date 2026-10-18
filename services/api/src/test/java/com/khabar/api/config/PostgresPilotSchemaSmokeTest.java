@@ -33,7 +33,7 @@ class PostgresPilotSchemaSmokeTest {
 
     @Test
     void pilotMigrationsRunAndHibernateValidatesAgainstPostgres() {
-        assertEquals(14, flyway.info().applied().length);
+        assertEquals(15, flyway.info().applied().length);
         assertNotNull(entityManagerFactory);
     }
 }
