@@ -289,4 +289,20 @@ export const UI_TEXT: Record<string, [string, string, string]> = {
   "Has not answered for 2 days": ["Tidak menjawab selama 2 hari", "两天没有回复", "2 நாட்களாகப் பதிலளிக்கவில்லை"],
   "Reported missed medicine": ["Memberitahu terlepas ubat", "报告漏吃药", "மருந்து தவறியதாகத் தெரிவித்தார்"],
   "Sent a message that may be urgent": ["Menghantar mesej yang mungkin kecemasan", "发送了可能紧急的信息", "அவசரமாக இருக்கக்கூடிய செய்தியை அனுப்பினார்"],
+
+  // Trends (Oct 2026)
+  "Your last 30 days": ["30 hari terakhir anda", "您最近 30 天", "உங்கள் கடந்த 30 நாட்கள்"],
+  "Your readings": ["Bacaan anda", "您的读数", "உங்கள் அளவீடுகள்"],
+  "The dashed line is the target your doctor set. If a reading worries you, check in or call your clinic.": ["Garis putus-putus ialah sasaran yang ditetapkan doktor anda. Jika bacaan merisaukan anda, lapor diri atau hubungi klinik anda.", "虚线是医生为您设定的目标。如果读数让您担心，请报平安或致电诊所。", "புள்ளிக்கோடு உங்கள் மருத்துவர் நிர்ணயித்த இலக்கு. ஒரு அளவீடு கவலை தந்தால், நலம் சொல்லுங்கள் அல்லது கிளினிக்கை அழையுங்கள்."],
+  "target": ["sasaran", "目标", "இலக்கு"],
+  "latest": ["terkini", "最新", "சமீபத்தியது"],
+  "{n} of {total} above target": ["{n} daripada {total} melebihi sasaran", "{total} 次中有 {n} 次高于目标", "{total} இல் {n} இலக்கை விட அதிகம்"],
+  "Show as table": ["Tunjuk sebagai jadual", "以表格显示", "அட்டவணையாகக் காட்டு"],
+  "Date": ["Tarikh", "日期", "தேதி"],
+  "improving": ["semakin baik", "在改善", "முன்னேறுகிறது"],
+  "worsening": ["semakin teruk", "在变差", "மோசமாகிறது"],
+  "steady": ["stabil", "平稳", "நிலையாக உள்ளது"],
+  "not enough readings": ["bacaan tidak mencukupi", "读数不足", "போதுமான அளவீடுகள் இல்லை"],
+  "Blood pressure (top)": ["Tekanan darah (atas)", "血压（高压）", "இரத்த அழுத்தம் (மேல்)"],
+  "Blood pressure (bottom)": ["Tekanan darah (bawah)", "血压（低压）", "இரத்த அழுத்தம் (கீழ்)"],
 }

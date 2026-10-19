@@ -21,6 +21,7 @@ import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import { ClinicTools } from "@/components/clinical/clinic-tools";
 import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
+import { RiskChip, SlippingPanel } from "@/components/features/clinical-insights";
 import styles from "@/app/home/home.module.css";
 import { greetingName, initials } from "@/lib/names";
 import { WorkspaceLoading, WorkspaceError } from "./workspace-state";
@@ -307,7 +308,8 @@ export function DoctorHome({
                   <StatusBadge level={item.level}>
                     {LEVEL_WORDS[item.level] ?? item.level.toLowerCase()} ·{" "}
                     {item.reason.replaceAll("_", " ").toLowerCase()}
-                  </StatusBadge>
+                  </StatusBadge>{" "}
+                  <RiskChip score={item.riskScore} reasons={item.riskReasons} />
                   <p>
                     {item.urgentReply ||
                       item.latestReply ||
@@ -606,6 +608,7 @@ export function DoctorHome({
           </section>
         </dialog>
       )}
+      <SlippingPanel />
       <MentionsPanel />
       <ImpactPanel />
       <ClinicTools notify={(notice) => notify(notice)} />

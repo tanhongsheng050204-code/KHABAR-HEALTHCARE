@@ -35,6 +35,7 @@ import { AiReceiptsPanel } from "@/components/features/ai-receipts";
 import { MyDataPanel } from "@/components/features/my-data";
 import { RemindersPanel } from "@/components/features/reminders";
 import { TeachBackPanel } from "@/components/features/teach-back";
+import { MyTrendsPanel } from "@/components/features/my-trends";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import { TelegramCard } from "./telegram-card";
@@ -413,6 +414,7 @@ export function PatientHome({
             reload={load}
             notify={notify}
           />
+          {active === "readings" && <MyTrendsPanel patientId={patientId} />}
         </div>
         <div
           id="people-view"

@@ -11,6 +11,7 @@ import { AuditChainPanel } from "@/components/features/audit-chain";
 import { PrivacyDeskPanel } from "@/components/features/privacy-desk";
 import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
+import { RiskChip, RiskWeightsPanel, SlippingPanel } from "@/components/features/clinical-insights";
 import { SectionHeading, StatusBadge } from "@/components/ui";
 import { useWorkspaceNavigation } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
@@ -131,7 +132,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           <CoverageBanner coverage={callList?.coverage} />
           {callList && callList.items.length > 0 && <QueueFilters value={filter} onChange={setFilter} items={callList.items} me={me} />}
           <div className={styles.staffRows}>{callList && filterItems(callList.items, filter, me).map((item) => <article className={styles.staffRow} key={item.patientId}>
-            <div><strong>{item.fullName}</strong><span>{item.reason.replaceAll("_", " ")} · {item.preferredLanguage.toUpperCase()}{item.followUpDay ? ` · Day ${item.followUpDay}` : ""}</span>
+            <div><strong>{item.fullName}</strong><span>{item.reason.replaceAll("_", " ")} · {item.preferredLanguage.toUpperCase()}{item.followUpDay ? ` · Day ${item.followUpDay}` : ""}</span> <RiskChip score={item.riskScore} reasons={item.riskReasons} />
               {item.urgentReply && <p>{item.urgentReply}</p>}
               {item.urgentReply && item.urgentEnglish && <p className={styles.gloss}><small>English (machine translation)</small> {item.urgentEnglish}</p>}
               {item.reason === "MISSED_APPOINTMENT" && <p>Did not come to a booked visit.</p>}
@@ -140,6 +141,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           </article>)}</div>
           <p className={styles.staffCaution}><ShieldCheck size={15} /> This queue supports follow-up; it does not diagnose or replace clinic escalation procedures.</p>
         </section>
+        <SlippingPanel />
         <MentionsPanel />
         <ImpactPanel />
       </>}
@@ -159,6 +161,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
         </section>
         <ClinicSettingsPanel notify={notify} />
         <StaffChatPanel notify={notify} canManage={manager} />
+        <RiskWeightsPanel notify={notify} canManage={manager} />
         <IntegrationsPanel />
         <PrivacyDeskPanel notify={notify} />
         <AuditChainPanel />
