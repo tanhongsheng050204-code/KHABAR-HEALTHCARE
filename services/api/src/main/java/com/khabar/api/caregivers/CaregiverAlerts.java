@@ -72,6 +72,8 @@ public class CaregiverAlerts {
     private final TelegramBotClient bot;
     private final AdjustableClock clock;
     private final TransactionTemplate tx;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.access.FamilyGroups family;
 
     public CaregiverAlerts(CaregiverTelegramRepository chats, CaregiverNoticeRepository notices, CaregiverLinkRepository links,
                            CheckInRepository checkIns, TelegramChatIndex chatIndex, TelegramBotClient bot, AdjustableClock clock,
@@ -173,6 +175,12 @@ public class CaregiverAlerts {
                 }
                 Messenger.Result result = bot.sendMessage(Long.parseLong(chat.get().getChatId()), text(kind, patient.getFullName()));
                 notices.save(new CaregiverNotice(caregiverId, patient.getId(), kind, ref, clock.instant(), result.delivered()));
+                sent++;
+            }
+            // The patient's own family group, if they linked one, hears the same news once (recorded under the patient's id).
+            if (!notices.existsByCaregiverIdAndKindAndRef(patient.getId(), kind, ref)
+                    && family.copy(patient.getId(), text(kind, patient.getFullName()), null)) {
+                notices.save(new CaregiverNotice(patient.getId(), patient.getId(), kind, ref, clock.instant(), true));
                 sent++;
             }
         } catch (RuntimeException e) {

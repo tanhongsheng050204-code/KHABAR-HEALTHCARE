@@ -21,6 +21,14 @@ public class CheckInSender {
     private final PatientMessages messages;
     private final AdjustableClock clock;
     private final com.khabar.api.pathways.Pathways pathways;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.access.PatientPreferencesRepository preferences;
+
+    private static final java.util.Map<String, String> VOICE_HINT = java.util.Map.of(
+            "ms", "🎤 Lebih mudah bercakap? Tekan dan tahan butang mikrofon untuk membalas dengan suara.",
+            "en", "🎤 Easier to talk? Press and hold the microphone button to reply by voice.",
+            "zh", "🎤 说话更方便？按住麦克风按钮用语音回复。",
+            "ta", "🎤 பேசுவது எளிதா? குரலில் பதிலளிக்க மைக்ரோஃபோன் பொத்தானை அழுத்திப் பிடிக்கவும்.");
 
     public CheckInSender(CheckInRepository checkIns, PatientMessages messages, AdjustableClock clock,
                          com.khabar.api.pathways.Pathways pathways) {
@@ -64,6 +72,9 @@ public class CheckInSender {
             String language = checkIn.getPatient().getPreferredLanguage();
             // A patient on a condition pathway is also asked for what that pathway tracks.
             String text = PatientMessages.checkInText(language, checkIn.isFasting()) + pathways.checkInExtra(checkIn.getPatient().getId(), language);
+            if (preferences.findById(checkIn.getPatient().getId()).map(com.khabar.api.access.PatientPreferences::isVoiceFirst).orElse(false)) {
+                text = text + "\n" + VOICE_HINT.getOrDefault(language, VOICE_HINT.get("en"));
+            }
             Messenger.Result result = messages.send(checkIn.getPatient(), text, Messenger.Kind.CHECK_IN);
             if (result.delivered()) {
                 checkIn.markSent(clock.instant());

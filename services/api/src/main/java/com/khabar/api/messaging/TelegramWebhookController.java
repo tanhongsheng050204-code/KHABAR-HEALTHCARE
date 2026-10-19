@@ -70,6 +70,8 @@ public class TelegramWebhookController {
     private final TelegramMedia media;
     private final Reminders reminders;
     private final CaregiverAlerts caregivers;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.access.FamilyGroups family;
 
     public TelegramWebhookController(@Value("${khabar.telegram.webhook-secret:}") String secret, ObjectMapper json,
                                      PatientRepository patients, PhoneIndex phoneIndex, TelegramChatIndex chatIndex,
@@ -124,6 +126,9 @@ public class TelegramWebhookController {
             return;
         }
         if (linkStaffChat(message)) {
+            return;
+        }
+        if (linkFamilyGroup(message)) {
             return;
         }
         if (!"private".equals(message.path("chat").path("type").asText())) {
@@ -204,13 +209,41 @@ public class TelegramWebhookController {
     private void handleButton(JsonNode callback) {
         JsonNode chat = callback.path("message").path("chat");
         String chatId = chat.path("id").asText();
-        if (!"private".equals(chat.path("type").asText()) || chatId.isBlank()
+        String type = chat.path("type").asText();
+        if ((type.equals("group") || type.equals("supergroup")) && !chatId.isBlank()) {
+            reminders.handleFamilyCallback(callback.path("id").asText(null), chatId, callback.path("message").path("message_id").asLong(),
+                    callback.path("data").asText(""));
+            return;
+        }
+        if (!"private".equals(type) || chatId.isBlank()
                 || !chatId.equals(callback.path("from").path("id").asText())) {
             bot.answerCallback(callback.path("id").asText(null), null);
             return;
         }
         reminders.handleCallback(callback.path("id").asText(null), chatId, callback.path("message").path("message_id").asLong(),
                 callback.path("data").asText(""));
+    }
+
+    /** "/family CODE" (or "/family@Bot CODE") in a group links it as the patient's family group. */
+    private boolean linkFamilyGroup(JsonNode message) {
+        String[] parts = message.path("text").asText("").trim().split("\\s+", 2);
+        if (!parts[0].equals("/family") && !parts[0].startsWith("/family@")) {
+            return false;
+        }
+        String chatId = message.path("chat").path("id").asText();
+        String type = message.path("chat").path("type").asText();
+        if (chatId.isBlank() || !(type.equals("group") || type.equals("supergroup"))) {
+            return true;
+        }
+        long chat = Long.parseLong(chatId);
+        family.linkFromTelegram(parts.length > 1 ? parts[1].trim() : "", chatId).flatMap(patients::findById).ifPresentOrElse(
+                p -> bot.sendMessage(chat, com.khabar.api.access.FamilyGroups.LINKED.formatted(firstName(p), firstName(p))),
+                () -> bot.sendMessage(chat, com.khabar.api.access.FamilyGroups.BAD_CODE));
+        return true;
+    }
+
+    private static String firstName(Patient p) {
+        return p.getFullName() == null ? "" : p.getFullName().split("\\s+")[0];
     }
 
     /** "/link CODE" from a caregiver links their private chat for alerts. */

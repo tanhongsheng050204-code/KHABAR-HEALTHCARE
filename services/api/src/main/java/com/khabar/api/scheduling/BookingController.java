@@ -44,6 +44,8 @@ public class BookingController {
     private final PatientRepository patients;
     private final AppointmentRepository appointments;
     private final AdjustableClock clock;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.patients.CaregiverLinkRepository caregiverLinks;
     private final ClinicStaffAccess staffAccess;
 
     public BookingController(CurrentUser currentUser, PatientRepository patients, AppointmentRepository appointments, AdjustableClock clock,
@@ -79,7 +81,35 @@ public class BookingController {
     @Transactional
     public AppointmentView book(@RequestBody BookRequest request, @AuthenticationPrincipal Jwt jwt) {
         AppUser user = currentUser.from(jwt);
-        Patient patient = ownRecord(user);
+        return bookFor(ownRecord(user), user.getId(), request);
+    }
+
+    /** The clinic's open slots, for a caregiver the patient shares alerts with. */
+    @GetMapping("/api/patients/{patientId}/slots")
+    @Transactional(readOnly = true)
+    public List<Slot> slotsFor(@PathVariable UUID patientId, @AuthenticationPrincipal Jwt jwt) {
+        return openSlots(caregiversPatient(currentUser.from(jwt), patientId).getClinic()).stream().map(this::slot).toList();
+    }
+
+    /** A caregiver with alert consent books a visit for the patient; the booking records who made it. */
+    @PostMapping("/api/patients/{patientId}/appointments")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
+    public AppointmentView bookOnBehalf(@PathVariable UUID patientId, @RequestBody BookRequest request, @AuthenticationPrincipal Jwt jwt) {
+        AppUser caregiver = currentUser.from(jwt);
+        return bookFor(caregiversPatient(caregiver, patientId), caregiver.getId(), request);
+    }
+
+    private Patient caregiversPatient(AppUser user, UUID patientId) {
+        Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (user.getRole() != Role.CAREGIVER || !caregiverLinks.existsByPatientIdAndCaregiverIdAndRevokedAtIsNullAndScope(
+                patientId, user.getId(), com.khabar.api.patients.CaregiverScope.SUMMARY_AND_ALERTS)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only a caregiver the patient shares alerts with can book for them.");
+        }
+        return patient;
+    }
+
+    private AppointmentView bookFor(Patient patient, UUID bookedBy, BookRequest request) {
         Instant startsAt;
         try {
             startsAt = Instant.parse(String.valueOf(request.startsAt()));
@@ -104,7 +134,7 @@ public class BookingController {
             reason = reason.substring(0, MAX_REASON);
         }
         try {
-            Appointment booked = appointments.saveAndFlush(new Appointment(patient.getClinic(), patient, startsAt, reason, user.getId(), now));
+            Appointment booked = appointments.saveAndFlush(new Appointment(patient.getClinic(), patient, startsAt, reason, bookedBy, now));
             return view(booked);
         } catch (DataIntegrityViolationException e) {
             throw taken(); // someone booked the same slot a moment earlier

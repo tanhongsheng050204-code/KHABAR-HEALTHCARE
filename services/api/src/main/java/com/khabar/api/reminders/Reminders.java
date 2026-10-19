@@ -70,7 +70,7 @@ public class Reminders {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
-    public record DoseView(UUID id, LocalDate day, String slot, String medicines, String response, Instant sentAt) {
+    public record DoseView(UUID id, LocalDate day, String slot, String medicines, String response, Instant sentAt, String answeredVia) {
     }
 
     public record Adherence(int days, int sent, int taken, int missed, int unanswered, List<DoseView> doses) {
@@ -99,6 +99,8 @@ public class Reminders {
     private final CaregiverAlerts caregivers;
     private final AdjustableClock clock;
     private final TransactionTemplate tx;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.access.FamilyGroups family;
 
     public Reminders(ReminderSettingsRepository settings, DoseLogRepository doses, ReminderLogRepository reminderLogs,
                      AppointmentOutcomeRepository outcomes, PatientRepository patients, EncounterRepository encounters,
@@ -151,7 +153,7 @@ public class Reminders {
     public Adherence adherence(UUID patientId, int days) {
         LocalDate from = today().minusDays(days - 1L);
         List<DoseView> rows = doses.findByPatientIdAndDayGreaterThanEqualOrderByDayAscSentAtAsc(patientId, from).stream()
-                .map(d -> new DoseView(d.getId(), d.getDay(), d.getSlot(), d.getMedicines(), d.getResponse(), d.getSentAt()))
+                .map(d -> new DoseView(d.getId(), d.getDay(), d.getSlot(), d.getMedicines(), d.getResponse(), d.getSentAt(), d.getAnsweredVia()))
                 .toList();
         int taken = (int) rows.stream().filter(d -> "TAKEN".equals(d.response())).count();
         int missed = (int) rows.stream().filter(d -> "MISSED".equals(d.response())).count();
@@ -205,9 +207,11 @@ public class Reminders {
             DoseLog entry = doses.saveAndFlush(new DoseLog(patient.getId(), plan.get().getId(), today, slot.getKey(),
                     String.join("\n", lines), now));
             String text = ReminderTexts.dose(language, slot.getKey(), lines);
-            entry.delivered(send(patient, text, buttons(
+            Map<String, Object> markup = buttons(
                     button(ReminderTexts.TAKEN_BUTTON, "d:" + entry.getId() + ":T"),
-                    button(ReminderTexts.MISSED_BUTTON, "d:" + entry.getId() + ":M"))));
+                    button(ReminderTexts.MISSED_BUTTON, "d:" + entry.getId() + ":M"));
+            entry.delivered(send(patient, text, markup));
+            family.copy(patient.getId(), text, markup);
             sent++;
         }
         return sent;
@@ -277,7 +281,9 @@ public class Reminders {
             return false;
         }
         ReminderLog entry = reminderLogs.saveAndFlush(new ReminderLog(patient.getId(), REFILL, plan.get().getId(), now));
-        entry.delivered(send(patient, ReminderTexts.refill(patient.getPreferredLanguage(), DATE.format(runOut.atZone(zone()))), null));
+        String refill = ReminderTexts.refill(patient.getPreferredLanguage(), DATE.format(runOut.atZone(zone())));
+        entry.delivered(send(patient, refill, null));
+        family.copy(patient.getId(), refill, null);
         return true;
     }
 
@@ -313,6 +319,8 @@ public class Reminders {
         entry.delivered(send(patient, text, buttons(
                 button(ReminderTexts.COMING_BUTTON, "a:" + entry.getId() + ":Y"),
                 button(ReminderTexts.CANT_COME_BUTTON, "a:" + entry.getId() + ":N"))));
+        // The family sees the reminder; only the patient can say whether they are coming.
+        family.copy(patient.getId(), text, null);
         return true;
     }
 
@@ -375,6 +383,29 @@ public class Reminders {
         }
     }
 
+    /**
+     * A Taken / Missed button pressed in the patient's family group: any member may answer for them, and it is
+     * recorded as answered by the family. Visit buttons are never offered there.
+     */
+    public void handleFamilyCallback(String callbackId, String chatId, long messageId, String data) {
+        Answer answer = tx.execute(status -> {
+            Optional<Patient> patient = family.patientForChat(chatId).flatMap(patients::findById);
+            String[] parts = data == null ? new String[0] : data.split(":");
+            if (patient.isEmpty() || parts.length != 3 || !parts[0].equals("d")) {
+                return new Answer(false, null);
+            }
+            try {
+                return answerDose(patient.get(), UUID.fromString(parts[1]), parts[2].equals("T") ? "TAKEN" : "MISSED", "FAMILY");
+            } catch (IllegalArgumentException e) {
+                return new Answer(false, null);
+            }
+        });
+        bot.answerCallback(callbackId, answer == null || answer.message() == null ? null : shortNotice(answer.message()));
+        if (answer != null && answer.recorded()) {
+            bot.removeButtons(Long.parseLong(chatId), messageId);
+        }
+    }
+
     private static String shortNotice(String message) {
         int end = message.indexOf('.');
         return end > 0 ? message.substring(0, end + 1) : message;
@@ -382,11 +413,16 @@ public class Reminders {
 
     /** Taken or Missed, from Telegram or the app. The first answer counts. */
     public Answer answerDose(Patient patient, UUID doseId, String response) {
+        return answerDose(patient, doseId, response, "PATIENT");
+    }
+
+    /** via: PATIENT, CAREGIVER or FAMILY. */
+    public Answer answerDose(Patient patient, UUID doseId, String response, String via) {
         DoseLog dose = doses.findById(doseId)
                 .filter(d -> d.getPatientId().equals(patient.getId()))
                 .filter(d -> !d.getDay().isBefore(today().minusDays(ANSWER_DAYS)))
                 .orElse(null);
-        if (dose == null || !dose.answer(response, clock.instant())) {
+        if (dose == null || !dose.answer(response, clock.instant(), via)) {
             return new Answer(false, null);
         }
         doses.save(dose);

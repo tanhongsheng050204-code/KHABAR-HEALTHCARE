@@ -54,6 +54,10 @@ public class DoseLog {
 
     private Instant respondedAt;
 
+    /** Who answered: PATIENT, CAREGIVER or FAMILY (the patient's family group chat). */
+    @Column(length = 20)
+    private String answeredVia;
+
     protected DoseLog() {
     }
 
@@ -73,11 +77,16 @@ public class DoseLog {
 
     /** Records the first answer only; a second tap changes nothing. */
     public boolean answer(String response, Instant at) {
+        return answer(response, at, "PATIENT");
+    }
+
+    public boolean answer(String response, Instant at, String via) {
         if (this.response != null) {
             return false;
         }
         this.response = response;
         this.respondedAt = at;
+        this.answeredVia = via;
         return true;
     }
 
@@ -91,4 +100,5 @@ public class DoseLog {
     public boolean isDelivered() { return delivered; }
     public String getResponse() { return response; }
     public Instant getRespondedAt() { return respondedAt; }
+    public String getAnsweredVia() { return answeredVia; }
 }
