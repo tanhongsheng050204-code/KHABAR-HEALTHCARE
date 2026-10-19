@@ -46,10 +46,13 @@ public class FollowUpCases {
     private final AppUserRepository users;
     private final RotaEntryRepository rota;
     private final AdjustableClock clock;
+    private final com.khabar.api.reminders.AppointmentOutcomeRepository noShows;
 
     public FollowUpCases(FollowUpCaseRepository cases, FollowUpCaseEventRepository events, PatientReplyRepository replies,
                          ReadingRepository readings, CheckInRepository checkIns, AuditLog auditLog, ClinicOps clinicOps,
-                         ClinicStaffAccess staffAccess, AppUserRepository users, RotaEntryRepository rota, AdjustableClock clock) {
+                         ClinicStaffAccess staffAccess, AppUserRepository users, RotaEntryRepository rota, AdjustableClock clock,
+                         com.khabar.api.reminders.AppointmentOutcomeRepository noShows) {
+        this.noShows = noShows;
         this.cases = cases;
         this.events = events;
         this.replies = replies;
@@ -279,7 +282,10 @@ public class FollowUpCases {
         List<CheckIn> unanswered = checkIns.findByPatientIdAndStatus(patientId, CheckIn.Status.SENT).stream()
                 .filter(checkIn -> checkIn.getSentAt() != null && !checkIn.getSentAt().isAfter(observedThrough)).toList();
         unanswered.forEach(CheckIn::markAnswered);
-        if (!open.isEmpty() || !unanswered.isEmpty() || !openReadings.isEmpty()) {
+        List<com.khabar.api.reminders.AppointmentOutcome> missed = noShows.findByPatientIdAndHandledAtIsNull(patientId).stream()
+                .filter(outcome -> !outcome.getDetectedAt().isAfter(observedThrough)).toList();
+        missed.forEach(outcome -> outcome.handled(actor.getId(), now));
+        if (!open.isEmpty() || !unanswered.isEmpty() || !openReadings.isEmpty() || !missed.isEmpty()) {
             auditLog.record(actor, patientId, AuditAction.CALLED_ABOUT_REPLY);
         }
         return new Resolved(open.size(), openReadings.size(), unanswered.size());

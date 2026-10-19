@@ -2,12 +2,14 @@ package com.khabar.api.messaging;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.khabar.api.caregivers.CaregiverAlerts;
 import com.khabar.api.encounters.VisitSummaryRepository;
 import com.khabar.api.followup.FollowUpService;
 import com.khabar.api.patients.Patient;
 import com.khabar.api.patients.PatientRepository;
 import com.khabar.api.patients.PhoneIndex;
 import com.khabar.api.patients.TelegramChatIndex;
+import com.khabar.api.reminders.Reminders;
 import com.khabar.api.staffalerts.StaffAlerts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,16 @@ public class TelegramWebhookController {
     private final TelegramBotClient bot;
     private final StaffAlerts staffAlerts;
     private final TelegramMedia media;
+    private final Reminders reminders;
+    private final CaregiverAlerts caregivers;
 
     public TelegramWebhookController(@Value("${khabar.telegram.webhook-secret:}") String secret, ObjectMapper json,
                                      PatientRepository patients, PhoneIndex phoneIndex, TelegramChatIndex chatIndex,
                                      FollowUpService followUp, PatientMessages messages, VisitSummaryRepository summaries,
-                                     TelegramBotClient bot, StaffAlerts staffAlerts, TelegramMedia media) {
+                                     TelegramBotClient bot, StaffAlerts staffAlerts, TelegramMedia media,
+                                     Reminders reminders, CaregiverAlerts caregivers) {
+        this.reminders = reminders;
+        this.caregivers = caregivers;
         this.staffAlerts = staffAlerts;
         this.media = media;
         this.secret = secret;
@@ -100,7 +107,11 @@ public class TelegramWebhookController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not JSON.");
         }
         try {
-            handle(update.path("message"));
+            if (update.has("callback_query")) {
+                handleButton(update.path("callback_query"));
+            } else {
+                handle(update.path("message"));
+            }
         } catch (RuntimeException e) {
             log.warn("Telegram update not handled: {}", e.getClass().getSimpleName());
         }
@@ -122,13 +133,20 @@ public class TelegramWebhookController {
         if (chatId.isBlank()) {
             return;
         }
+        if (linkCaregiverChat(message, chatId)) {
+            return;
+        }
         if (message.has("contact")) {
             link(message, chatId);
             return;
         }
         Optional<Patient> patient = patients.findFirstByTelegramChatIndex(chatIndex.of(chatId));
         if (patient.isEmpty()) {
-            bot.sendMessage(Long.parseLong(chatId), START, SHARE_KEYBOARD);
+            if (caregivers.isCaregiverChat(chatId)) {
+                bot.sendMessage(Long.parseLong(chatId), CaregiverAlerts.ALERTS_ONLY);
+            } else {
+                bot.sendMessage(Long.parseLong(chatId), START, SHARE_KEYBOARD);
+            }
             return;
         }
         String language = patient.get().getPreferredLanguage();
@@ -171,6 +189,33 @@ public class TelegramWebhookController {
         UUID clientMessageId = UUID.nameUUIDFromBytes(
                 ("telegram:" + chatId + ":" + message.path("message_id").asText()).getBytes(StandardCharsets.UTF_8));
         followUp.receiveReply(patient.get(), text, clientMessageId);
+    }
+
+    /**
+     * A tapped reminder button. Only buttons in a private chat count, pressed by that chat's own user; the reminder
+     * service then checks the reminder belongs to the patient linked to the chat.
+     */
+    private void handleButton(JsonNode callback) {
+        JsonNode chat = callback.path("message").path("chat");
+        String chatId = chat.path("id").asText();
+        if (!"private".equals(chat.path("type").asText()) || chatId.isBlank()
+                || !chatId.equals(callback.path("from").path("id").asText())) {
+            bot.answerCallback(callback.path("id").asText(null), null);
+            return;
+        }
+        reminders.handleCallback(callback.path("id").asText(null), chatId, callback.path("message").path("message_id").asLong(),
+                callback.path("data").asText(""));
+    }
+
+    /** "/link CODE" from a caregiver links their private chat for alerts. */
+    private boolean linkCaregiverChat(JsonNode message, String chatId) {
+        String[] parts = message.path("text").asText("").trim().split("\\s+", 2);
+        if (!parts[0].equals("/link")) {
+            return false;
+        }
+        boolean linked = caregivers.linkFromTelegram(parts.length > 1 ? parts[1].trim() : "", chatId);
+        bot.sendMessage(Long.parseLong(chatId), linked ? CaregiverAlerts.LINKED_TEXT : CaregiverAlerts.BAD_CODE_TEXT);
+        return true;
     }
 
     /**

@@ -74,6 +74,10 @@ khabar:
     # Counts-only alerts and a morning briefing to each clinic's staff chat. Each clinic must also switch them on.
     scheduler-enabled: ${KHABAR_STAFF_ALERTS_ENABLED:true}
     poll-ms: ${KHABAR_STAFF_ALERTS_POLL_MS:120000}
+  reminders:
+    # Dose, refill and appointment reminders (each patient switches their own on), no-show detection and caregiver alerts.
+    scheduler-enabled: ${KHABAR_REMINDERS_ENABLED:true}
+    poll-ms: ${KHABAR_REMINDERS_POLL_MS:300000}
   audit:
     seal-ms: ${KHABAR_AUDIT_SEAL_MS:60000}
   # Home readings forwarded by Favoriot: the value of the X-Khabar-Device-Secret header on your forwarding rule.

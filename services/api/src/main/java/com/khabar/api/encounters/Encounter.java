@@ -218,6 +218,10 @@ public class Encounter {
         return openCriticalFindings;
     }
 
+    public Instant getStartedAt() {
+        return startedAt;
+    }
+
     public Instant getFinalisedAt() {
         return finalisedAt;
     }

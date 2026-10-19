@@ -60,6 +60,11 @@ public class PrescriptionLine {
         return strengthMg;
     }
 
+    /** The times of day this medicine is taken: morning, afternoon, evening, night or now. */
+    public List<String> slots() {
+        return timesOfDay == null || timesOfDay.isBlank() ? List.of() : Arrays.asList(timesOfDay.split(","));
+    }
+
     public Double getUnitsPerDose() {
         return unitsPerDose;
     }

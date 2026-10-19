@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class CallLists {
 
     private static final java.time.Duration NO_REPLY_AFTER = java.time.Duration.ofHours(48);
-    private static final List<String> REASON_ORDER = List.of("REPLY", "READING", "MISSED_DOSE", "NO_REPLY", "OPEN_CASE");
+    private static final List<String> REASON_ORDER = List.of("REPLY", "READING", "MISSED_DOSE", "MISSED_APPOINTMENT", "NO_REPLY", "OPEN_CASE");
 
     private final PatientRepository patients;
     private final PatientReplyRepository replies;
@@ -32,9 +32,12 @@ public class CallLists {
     private final FollowUpCases cases;
     private final ClinicOps clinicOps;
     private final AdjustableClock clock;
+    private final com.khabar.api.reminders.AppointmentOutcomeRepository noShows;
 
     public CallLists(PatientRepository patients, PatientReplyRepository replies, CheckInRepository checkIns,
-                     ReadingRepository readings, FollowUpCases cases, ClinicOps clinicOps, AdjustableClock clock) {
+                     ReadingRepository readings, FollowUpCases cases, ClinicOps clinicOps, AdjustableClock clock,
+                     com.khabar.api.reminders.AppointmentOutcomeRepository noShows) {
+        this.noShows = noShows;
         this.patients = patients;
         this.replies = replies;
         this.checkIns = checkIns;
@@ -47,6 +50,7 @@ public class CallLists {
     /**
      * reason is REPLY (a reply needs a call), READING (a home reading is out of range), MISSED_DOSE (the patient's
      * only news is a missed dose) or
+     * MISSED_APPOINTMENT (the patient did not come to a booked visit) or
      * NO_REPLY (a check-in has gone unanswered for 48 hours). Within a level, they rank in that order.
      */
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
@@ -104,6 +108,16 @@ public class CallLists {
                 .map(c -> new CallListItem(c.getPatient().getId(), c.getPatient().getFullName(), c.getPatient().getPreferredLanguage(),
                         TriageLevel.REVIEW, null, null, c.getSentAt(), c.getPatient().followUpDay(today), 0, "NO_REPLY", null))
                 .toList();
+        java.util.Set<UUID> silentIds = silent.stream().map(CallListItem::patientId).collect(Collectors.toSet());
+        Map<UUID, com.khabar.api.reminders.AppointmentOutcome> missedVisits = noShows.findByClinicIdAndHandledAtIsNull(clinicId).stream()
+                .filter(outcome -> !outcome.getDetectedAt().isAfter(snapshotAt))
+                .filter(outcome -> !listed.contains(outcome.getPatientId()) && !silentIds.contains(outcome.getPatientId()))
+                .collect(Collectors.toMap(com.khabar.api.reminders.AppointmentOutcome::getPatientId, o -> o,
+                        (a, b) -> a.getAppointmentAt().isAfter(b.getAppointmentAt()) ? a : b));
+        List<CallListItem> noShowItems = new java.util.ArrayList<>();
+        missedVisits.values().forEach(outcome -> patients.findById(outcome.getPatientId()).ifPresent(p ->
+                noShowItems.add(new CallListItem(p.getId(), p.getFullName(), p.getPreferredLanguage(), TriageLevel.REVIEW, null, null,
+                        outcome.getAppointmentAt(), p.followUpDay(today), 0, "MISSED_APPOINTMENT", null))));
 
         ClinicSettings settings = clinicOps.settingsFor(clinicId);
         Map<UUID, Patient> patientsById = new java.util.HashMap<>();
@@ -112,8 +126,9 @@ public class CallLists {
                 .forEach(r -> patientsById.putIfAbsent(r.getPatient().getId(), r.getPatient()));
         checkIns.findByPatientClinicIdAndStatusAndSentAtBefore(clinicId, CheckIn.Status.SENT, cutoff)
                 .forEach(c -> patientsById.putIfAbsent(c.getPatient().getId(), c.getPatient()));
+        missedVisits.keySet().forEach(id -> patients.findById(id).ifPresent(p -> patientsById.putIfAbsent(id, p)));
         List<CallListItem> withCases = new java.util.ArrayList<>();
-        for (CallListItem item : java.util.stream.Stream.concat(fromReplies.stream(), silent.stream()).toList()) {
+        for (CallListItem item : java.util.stream.Stream.of(fromReplies, silent, noShowItems).flatMap(List::stream).toList()) {
             FollowUpCase open = openMissingCases
                     ? cases.ensureOpen(patientsById.get(item.patientId()), item.level(), item.reason(), snapshotAt)
                     : cases.openCaseFor(item.patientId()).orElse(null);

@@ -35,6 +35,9 @@ khabar:
   staff-alerts:
     # Staff-chat alerts and briefings stay off until the clinic's alert policy is approved.
     scheduler-enabled: ${KHABAR_STAFF_ALERTS_ENABLED:false}
+  reminders:
+    # Reminders and caregiver alerts stay off until the clinic has approved their wording.
+    scheduler-enabled: ${KHABAR_REMINDERS_ENABLED:false}
   telegram:
     bot-token: ${KHABAR_TELEGRAM_BOT_TOKEN:}
     webhook-secret: ${KHABAR_TELEGRAM_WEBHOOK_SECRET:}

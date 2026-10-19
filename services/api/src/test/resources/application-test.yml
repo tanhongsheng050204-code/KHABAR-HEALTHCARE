@@ -31,3 +31,5 @@ khabar:
     sealer-enabled: false
   staff-alerts:
     scheduler-enabled: false
+  reminders:
+    scheduler-enabled: false

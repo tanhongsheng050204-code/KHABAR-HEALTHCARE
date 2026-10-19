@@ -42,9 +42,12 @@ public class FollowUpService {
     private final AdjustableClock clock;
     private final PatientGraphSync graphSync;
     private final AiReceipts aiReceipts;
+    private final com.khabar.api.caregivers.CaregiverAlerts caregivers;
 
     public FollowUpService(PatientReplyRepository replies, CheckInRepository checkIns, ApprovedAnswerRepository answers,
-                           AgentClientService agents, PatientMessages messages, AdjustableClock clock, PatientGraphSync graphSync, AiReceipts aiReceipts) {
+                           AgentClientService agents, PatientMessages messages, AdjustableClock clock, PatientGraphSync graphSync, AiReceipts aiReceipts,
+                           com.khabar.api.caregivers.CaregiverAlerts caregivers) {
+        this.caregivers = caregivers;
         this.replies = replies;
         this.checkIns = checkIns;
         this.answers = answers;
@@ -111,6 +114,7 @@ public class FollowUpService {
         if (level == TriageLevel.RED) {
             String urgent = PatientMessages.urgentText(language);
             messages.send(patient, urgent, Messenger.Kind.SAFETY);
+            caregivers.notify(patient, com.khabar.api.caregivers.CaregiverAlerts.URGENT_REPLY, reply.getId());
             return new Outcome(level, null, urgent);
         }
         if (level == TriageLevel.OK || level == TriageLevel.REVIEW) {

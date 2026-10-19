@@ -80,6 +80,39 @@ public class TelegramBotClient {
         }
     }
 
+    /** Stops the spinner on a pressed button and optionally shows a short notice. Never throws. */
+    public void answerCallback(String callbackId, String text) {
+        if (http == null || callbackId == null) {
+            return;
+        }
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("callback_query_id", callbackId);
+        if (text != null) {
+            body.put("text", text.length() > 190 ? text.substring(0, 190) : text);
+        }
+        call("/answerCallbackQuery", body);
+    }
+
+    /** Removes the buttons from a message once they have been used. Never throws. */
+    public void removeButtons(long chatId, long messageId) {
+        if (http == null) {
+            return;
+        }
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("chat_id", chatId);
+        body.put("message_id", messageId);
+        body.put("reply_markup", Map.of("inline_keyboard", List.of()));
+        call("/editMessageReplyMarkup", body);
+    }
+
+    private void call(String method, Map<String, Object> body) {
+        try {
+            http.post().uri(botPath + method).body(body).retrieve().toBodilessEntity();
+        } catch (RuntimeException e) {
+            // Cosmetic calls: the action they follow has already been recorded.
+        }
+    }
+
     public boolean configured() {
         return http != null;
     }
