@@ -74,3 +74,17 @@ create table caregiver_notice (
 
 -- An English machine translation of each reply, for staff; shown beside the original, never used for triage.
 alter table patient_reply add column gloss_enc varchar(8192);
+
+-- "Check you understood your plan": how many questions about the doctor's plan the patient got right.
+create table teach_back (
+    id uuid not null primary key,
+    patient_id uuid not null,
+    clinic_id uuid not null,
+    encounter_id uuid not null,
+    total integer not null,
+    correct integer not null,
+    missed varchar(1000),
+    taken_at timestamp(6) with time zone not null
+);
+create index ix_teach_back_patient on teach_back (patient_id);
+create index ix_teach_back_clinic on teach_back (clinic_id);

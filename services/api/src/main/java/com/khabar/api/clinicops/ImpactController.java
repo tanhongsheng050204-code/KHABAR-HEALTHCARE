@@ -120,6 +120,31 @@ public class ImpactController {
                 clinicId, from, to, null);
         metrics.add(new Metric("plansHeld", "Take-home plans held by the plan check for a doctor to look at", held, (long) visits.size(), null));
 
+        List<Object[]> doseAnswers = em.createQuery(
+                        "select d.response, count(d) from DoseLog d, Patient p where p.id = d.patientId and p.clinic.id = :clinic "
+                                + "and d.sentAt >= :from and d.sentAt < :to group by d.response", Object[].class)
+                .setParameter("clinic", clinicId).setParameter("from", from).setParameter("to", to).getResultList();
+        long dosesSent = 0, dosesTaken = 0;
+        for (Object[] row : doseAnswers) {
+            dosesSent += (Long) row[1];
+            if ("TAKEN".equals(row[0])) {
+                dosesTaken += (Long) row[1];
+            }
+        }
+        metrics.add(new Metric("dosesTaken", "Dose reminders answered \"Taken\"", dosesTaken, dosesSent,
+                dosesSent == 0 ? "No dose reminders were sent in this period." : "Unanswered reminders count as not taken."));
+
+        long noShows = count("select count(o) from AppointmentOutcome o where o.clinicId = :clinic and o.appointmentAt >= :from and o.appointmentAt < :to",
+                clinicId, from, to, null);
+        metrics.add(new Metric("noShows", "Booked visits missed, put on the call list", noShows, null, null));
+
+        List<com.khabar.api.teachback.TeachBack> teachBacks = em.createQuery(
+                        "select t from TeachBack t where t.clinicId = :clinic and t.takenAt >= :from and t.takenAt < :to", com.khabar.api.teachback.TeachBack.class)
+                .setParameter("clinic", clinicId).setParameter("from", from).setParameter("to", to).getResultList();
+        long allRight = teachBacks.stream().filter(t -> t.getCorrect() == t.getTotal()).count();
+        metrics.add(new Metric("teachBackAllRight", "Plan checks answered fully right", allRight, (long) teachBacks.size(),
+                teachBacks.isEmpty() ? "No patient checked their plan in this period." : "A study aid, not a measure of care."));
+
         Long median = null;
         if (!ackMinutes.isEmpty()) {
             List<Long> sorted = ackMinutes.stream().sorted().toList();

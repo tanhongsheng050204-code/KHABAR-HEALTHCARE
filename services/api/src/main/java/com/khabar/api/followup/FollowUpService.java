@@ -141,10 +141,11 @@ public class FollowUpService {
             return;
         }
         try {
-            aiReceipts.text(patient, AiReceipts.Purpose.REPLY_GLOSS, "/agents/followup/gloss", redacted);
             Map<String, Object> result = agents.glossReply(redacted);
             Object english = result == null ? null : result.get("english");
             if (english instanceof String s && !s.isBlank()) {
+                // A gloss only comes back when a model read the reply, so that is when the receipt is due.
+                aiReceipts.text(patient, AiReceipts.Purpose.REPLY_GLOSS, "/agents/followup/gloss", redacted);
                 reply.gloss(s.strip());
             }
         } catch (RuntimeException e) {
