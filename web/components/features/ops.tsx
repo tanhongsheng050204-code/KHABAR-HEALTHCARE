@@ -64,16 +64,18 @@ const SAMPLE = "name,ic,phone,language,condition\nRahim bin Ali,590312-10-5566,0
 /** Onboarding: bring the patient list in from a spreadsheet saved as CSV, checked row by row before saving. */
 export function ImportPatientsPanel({ notify }: { notify: (n: Notice) => void }) {
   const [csv, setCsv] = useState("")
+  const [xlsx, setXlsx] = useState<{ name: string; base64: string } | null>(null)
   const [preview, setPreview] = useState<ImportResult | null>(null)
   const [busy, setBusy] = useState(false)
   async function run(dryRun: boolean) {
     setBusy(true)
     try {
-      const result = await apiRequest<ImportResult>(`/api/clinic/patients/import?dryRun=${dryRun}`, { method: "POST", body: JSON.stringify({ csv }) })
+      const result = await apiRequest<ImportResult>(`/api/clinic/patients/import?dryRun=${dryRun}`, { method: "POST", body: JSON.stringify(xlsx ? { xlsxBase64: xlsx.base64 } : { csv }) })
       setPreview(result)
       if (result.saved) {
         notify({ tone: "success", text: `${result.ok} patient${result.ok === 1 ? "" : "s"} added.${result.problems ? ` ${result.problems} row${result.problems === 1 ? " was" : "s were"} left out.` : ""}` })
         setCsv("")
+        setXlsx(null)
       }
     } catch (e) {
       notify({ tone: "error", text: e instanceof Error ? e.message : "The file could not be read." })
@@ -84,22 +86,32 @@ export function ImportPatientsPanel({ notify }: { notify: (n: Notice) => void })
   async function readFile(file: File | undefined) {
     if (!file) return
     setPreview(null)
+    if (file.name.toLowerCase().endsWith(".xlsx")) {
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      let binary = ""
+      for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+      setXlsx({ name: file.name, base64: btoa(binary) })
+      setCsv("")
+      return
+    }
+    setXlsx(null)
     setCsv(await file.text())
   }
   return (
     <section className={homeStyles.peopleCard} aria-label="Import patients">
       <SectionHeading eyebrow="Set up" title="Bring in your patient list" />
       <div className={styles.panel}>
-        <p className={styles.lead}>Save your spreadsheet as CSV with the columns <code>name, ic, phone, language, condition</code>. Khabar checks every row first; nothing is saved until you confirm, and rows with problems are left out.</p>
+        <p className={styles.lead}>Upload an Excel (.xlsx) or CSV file whose first row names the columns <code>name, ic, phone, language, condition</code>. Khabar checks every row first; nothing is saved until you confirm, and rows with problems are left out.</p>
         <div className={styles.row}>
-          <label className={styles.field}>CSV file<input type="file" accept=".csv,text/csv" onChange={(e) => void readFile(e.target.files?.[0])} /></label>
-          <button className="button-quiet" onClick={() => { setCsv(SAMPLE); setPreview(null) }}>Use an example</button>
+          <label className={styles.field}>Excel or CSV file<input type="file" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => void readFile(e.target.files?.[0])} /></label>
+          <button className="button-quiet" onClick={() => { setCsv(SAMPLE); setXlsx(null); setPreview(null) }}>Use an example</button>
+          {xlsx && <span className={styles.muted}>{xlsx.name} ready</span>}
         </div>
         <label className={styles.field}>Or paste rows
-          <textarea rows={4} value={csv} onChange={(e) => { setCsv(e.target.value); setPreview(null) }} placeholder={SAMPLE} />
+          <textarea rows={4} value={csv} onChange={(e) => { setCsv(e.target.value); setXlsx(null); setPreview(null) }} placeholder={SAMPLE} />
         </label>
         <div className={styles.row}>
-          <button className="button-secondary" disabled={busy || !csv.trim()} onClick={() => void run(true)}><FileText size={14} aria-hidden="true" /> Check rows</button>
+          <button className="button-secondary" disabled={busy || (!csv.trim() && !xlsx)} onClick={() => void run(true)}><FileText size={14} aria-hidden="true" /> Check rows</button>
           {preview && !preview.saved && preview.ok > 0 && <button className="button-primary" disabled={busy} onClick={() => void run(false)}><Upload size={14} aria-hidden="true" /> Add {preview.ok} patient{preview.ok === 1 ? "" : "s"}</button>}
         </div>
         {preview && <table className={styles.weights}>

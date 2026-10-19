@@ -1,0 +1,42 @@
+name: Wake the API for timed jobs
+
+# The API on Vercel sleeps when nobody is using it, and a sleeping server cannot send an 08:00 dose reminder.
+# Every 5 minutes this calls the API's tick endpoint, which runs the timed jobs the deployment has switched on
+# (check-ins, reminders, staff alerts, case routing, audit seal). GitHub may run a scheduled job a few minutes late.
+# Needs the repository secret KHABAR_TICK_SECRET, the same value as the API's KHABAR_TICK_SECRET.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: khabar-tick
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      API: https://khabar-api.vercel.app
+      SECRET: ${{ secrets.KHABAR_TICK_SECRET }}
+    steps:
+      - name: Tick
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "::notice::KHABAR_TICK_SECRET is not set; nothing to do."
+            exit 0
+          fi
+          # The first request may wake the API, which takes a while.
+          for attempt in 1 2 3; do
+            code=$(curl -s -o tick.json -w "%{http_code}" --max-time 90 -X POST -H "X-Khabar-Tick-Secret: $SECRET" "$API/api/webhooks/tick" || true)
+            [ "$code" = "200" ] && break
+            sleep 15
+          done
+          echo "HTTP $code"
+          cat tick.json || true
+          if [ "$code" = "404" ]; then
+            echo "::warning::The API has no tick secret yet (or is an older version)."
+          fi

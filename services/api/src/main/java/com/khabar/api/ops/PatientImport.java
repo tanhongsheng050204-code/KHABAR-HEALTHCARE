@@ -36,8 +36,10 @@ public class PatientImport {
 
     static final int MAX_ROWS = 500;
     static final int MAX_CSV = 512 * 1024;
+    static final int MAX_XLSX = 2 * 1024 * 1024;
 
-    public record Input(String csv) {
+    /** Either CSV text, or an Excel .xlsx file as base64. */
+    public record Input(String csv, String xlsxBase64) {
     }
 
     /** status: OK, ERROR or DUPLICATE. */
@@ -72,11 +74,29 @@ public class PatientImport {
         if (actor.getClinic() == null || !staffAccess.canManageStaff(actor)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Doctors and clinic administrators import patients.");
         }
-        String csv = input.csv() == null ? "" : input.csv();
-        if (csv.length() > MAX_CSV) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file is too large; import up to 500 patients at a time.");
+        List<List<String>> table;
+        if (input.xlsxBase64() != null && !input.xlsxBase64().isBlank()) {
+            byte[] xlsx;
+            try {
+                xlsx = java.util.Base64.getDecoder().decode(input.xlsxBase64().trim());
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The Excel file could not be read.");
+            }
+            if (xlsx.length > MAX_XLSX) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file is too large; import up to 500 patients at a time.");
+            }
+            try {
+                table = XlsxReader.read(xlsx);
+            } catch (java.io.IOException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            }
+        } else {
+            String csv = input.csv() == null ? "" : input.csv();
+            if (csv.length() > MAX_CSV) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file is too large; import up to 500 patients at a time.");
+            }
+            table = parse(csv);
         }
-        List<List<String>> table = parse(csv);
         if (table.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file is empty.");
         }

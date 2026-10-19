@@ -74,6 +74,10 @@ khabar:
     # Counts-only alerts and a morning briefing to each clinic's staff chat. Each clinic must also switch them on.
     scheduler-enabled: ${KHABAR_STAFF_ALERTS_ENABLED:true}
     poll-ms: ${KHABAR_STAFF_ALERTS_POLL_MS:120000}
+  tick:
+    # A shared secret for POST /api/webhooks/tick, which an outside schedule calls so a sleeping host still runs
+    # the timed jobs. Empty turns the endpoint off.
+    secret: ${KHABAR_TICK_SECRET:}
   reminders:
     # Dose, refill and appointment reminders (each patient switches their own on), no-show detection and caregiver alerts.
     scheduler-enabled: ${KHABAR_REMINDERS_ENABLED:true}
