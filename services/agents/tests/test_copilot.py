@@ -73,3 +73,35 @@ def test_meal_endpoint_needs_consent():
     client = TestClient(app)
     r = client.post("/agents/meal/read?mime_type=image/jpeg", content=b"x", headers={"X-Internal-Service-Key": "dev-internal-secret"})
     assert r.status_code == 400
+
+
+def test_speech_encodes_the_provider_audio_as_mp3_and_caches_it():
+    import base64
+
+    from agents import speech
+
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        pcm = b"\x00\x00" * 2400
+        body = {"candidates": [{"content": {"parts": [{"inlineData": {"mimeType": "audio/L16", "data": base64.b64encode(pcm).decode()}}]}}]}
+        return httpx.Response(200, json=body)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    speech._cache.clear()
+    mp3 = speech.say("Apa khabar hari ini?", api_key="k", client=client)
+    assert len(mp3) > 0
+    assert speech.say("Apa khabar hari ini?", api_key="k", client=client) == mp3
+    assert len(calls) == 1
+
+
+def test_speech_needs_a_key():
+    from agents import speech
+
+    speech._cache.clear()
+    try:
+        speech.say("x", api_key="")
+        assert False
+    except speech.SpeechUnavailable:
+        pass

@@ -358,4 +358,8 @@ export const UI_TEXT: Record<string, [string, string, string]> = {
   "The visit is booked.": ["Temu janji telah ditempah.", "已预约复诊。", "வருகை பதிவு செய்யப்பட்டது."],
   "Book a visit for {name}": ["Tempah temu janji untuk {name}", "为 {name} 预约复诊", "{name} க்கு வருகையைப் பதிவு செய்"],
   "Book": ["Tempah", "预约", "பதிவு செய்"],
+
+  // Pill pictures (Oct 2026)
+  "My medicines today": ["Ubat saya hari ini", "我今天的药", "இன்றைய என் மருந்துகள்"],
+  "{n} tablets": ["{n} biji", "{n} 粒", "{n} மாத்திரைகள்"],
 }

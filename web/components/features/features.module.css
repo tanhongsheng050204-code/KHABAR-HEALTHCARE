@@ -614,3 +614,64 @@ button.simpleTile:disabled {
   padding: 0 28px;
   font-size: 1.2rem;
 }
+.pillPlan {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.pillPlan h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+.pillSlot {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.pillWhen {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  color: var(--night);
+}
+.pillWhen span {
+  color: var(--ink-mute);
+  font-size: 0.85em;
+}
+.pillSlot ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pillSlot li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.pills {
+  display: inline-flex;
+  gap: 4px;
+}
+.pill {
+  flex: none;
+}
+.food {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-soft);
+}
+@media (max-width: 480px) {
+  .pillSlot {
+    grid-template-columns: 1fr;
+  }
+}

@@ -9,6 +9,7 @@ import type { Appointment, DoseEntry, FamilyGroupStatus, Preferences, ReminderSe
 import { SectionHeading, StatusBadge } from "@/components/ui"
 import { ListenButton } from "@/components/home/listen-button"
 import { featureMissing } from "./missing"
+import { PillPlan } from "./pill-plan"
 import homeStyles from "@/app/home/home.module.css"
 import styles from "./features.module.css"
 
@@ -200,6 +201,7 @@ export function SimpleHome({ name, summary, appointment, notify, onExit }: {
         </div>
       </div>
       {speaking && <VoiceReplyPanel notify={notify} big />}
+      <PillPlan />
       {summary && <p className={styles.simplePlan} lang={summary.language}>{summary.text}</p>}
       <button className="button-quiet" onClick={onExit}><X size={16} aria-hidden="true" /> {t("Show the full app")}</button>
     </main>

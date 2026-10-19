@@ -188,6 +188,15 @@ public class AgentClientService {
                 .body(Map.class);
     }
 
+    /** The clinic's fixed wording read aloud, as MP3. Throws when the agents have no speech provider. */
+    public byte[] speak(String text) {
+        return restClient.post()
+                .uri("/agents/speech/say")
+                .body(Map.of("text", text))
+                .retrieve()
+                .body(byte[].class);
+    }
+
     /** A staff question over coded rows; {"answer": null} without a model. */
     @SuppressWarnings("unchecked")
     public Map<String, Object> askKhabar(String question, List<Map<String, Object>> rows) {

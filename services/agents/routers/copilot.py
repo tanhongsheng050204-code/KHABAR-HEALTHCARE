@@ -1,10 +1,11 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel
 
 from agents.copilot import AskResult, ScriptResult, ask, call_script, default_ask_model, default_script_model
 from agents.meal_reader import MAX_IMAGE_BYTES, MealReaderUnavailable, MealReadResult, read_meal
+from agents.speech import SpeechUnavailable, say
 from core.security import verify_internal_service_key
 
 router = APIRouter(prefix="/agents", tags=["Staff copilot and meals"], dependencies=[Depends(verify_internal_service_key)])
@@ -48,4 +49,17 @@ async def read_meal_photo(request: Request, mime_type: str = Query(...),
     try:
         return read_meal(bytes(chunks), mime_type)
     except MealReaderUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+class SpeechRequest(BaseModel):
+    text: str
+
+
+@router.post("/speech/say", response_class=Response)
+def speak(request: SpeechRequest):
+    """The clinic's fixed wording read aloud, as MP3 for a Telegram voice message. 503 without a speech provider."""
+    try:
+        return Response(content=say(request.text), media_type="audio/mpeg")
+    except SpeechUnavailable as e:
         raise HTTPException(status_code=503, detail=str(e))

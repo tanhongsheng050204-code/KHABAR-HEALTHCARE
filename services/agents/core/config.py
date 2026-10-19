@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # External AI APIs
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3.6-flash"
+    # Spoken check-ins for "voice first" patients: a Gemini speech model and one of its prebuilt voices.
+    GEMINI_TTS_MODEL: str = "gemini-2.5-flash-preview-tts"
+    GEMINI_TTS_VOICE: str = "Kore"
     # Where the packet reader sends images. Only changed to point at a local stand-in for testing.
     GEMINI_API_BASE: str = "https://generativelanguage.googleapis.com"
     GROQ_API_KEY: Optional[str] = None

@@ -105,6 +105,29 @@ class AccessTest {
         mvc.perform(get("/api/me/preferences").header("Authorization", bearer(caregiver.getId()))).andExpect(status().isForbidden());
     }
 
+    @Autowired com.khabar.api.followup.CheckInRepository checkIns;
+    @Autowired com.khabar.api.messaging.CheckInSender sender;
+    @Autowired com.khabar.api.patients.TelegramChatIndex chatIndex;
+
+    @Test
+    void aVoiceFirstPatientAlsoHearsTheCheckIn() throws Exception {
+        String chat = Long.toString(555000 + System.nanoTime() % 1000);
+        aminah.linkTelegram(chat, chatIndex.of(chat));
+        aminah = patients.save(aminah);
+        mvc.perform(put("/api/me/preferences").header("Authorization", bearer(account.getId()))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"voiceFirst\":true,\"simpleMode\":false}")).andExpect(status().isOk());
+        checkIns.save(new com.khabar.api.followup.CheckIn(aminah, UUID.randomUUID(), LocalDate.now(clock).minusDays(1), 1, false));
+        byte[] mp3 = {1, 2, 3};
+        when(agents.speak(anyString())).thenReturn(mp3);
+
+        sender.sendDue();
+
+        org.mockito.ArgumentCaptor<String> spoken = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(agents, org.mockito.Mockito.atLeastOnce()).speak(spoken.capture());
+        assertThat(spoken.getAllValues()).anyMatch(text -> text.startsWith("Apa khabar") && !text.contains("🎤"));
+        verify(bot).sendVoice(Long.parseLong(chat), mp3);
+    }
+
     @Test
     void aVoiceReplyComesBackAsTextToCheckBeforeSending() throws Exception {
         when(agents.transcribe(any(), anyString(), eq("ms"))).thenReturn(" Saya pening sikit ");

@@ -105,6 +105,27 @@ public class TelegramBotClient {
         call("/editMessageReplyMarkup", body);
     }
 
+    /** Sends an MP3 as a voice message. Never throws; false when it could not be sent. */
+    public boolean sendVoice(long chatId, byte[] mp3) {
+        if (http == null || mp3 == null || mp3.length == 0) {
+            return false;
+        }
+        try {
+            org.springframework.util.LinkedMultiValueMap<String, Object> form = new org.springframework.util.LinkedMultiValueMap<>();
+            form.add("chat_id", Long.toString(chatId));
+            form.add("voice", new org.springframework.core.io.ByteArrayResource(mp3) {
+                @Override
+                public String getFilename() {
+                    return "check-in.mp3";
+                }
+            });
+            http.post().uri(botPath + "/sendVoice").contentType(MediaType.MULTIPART_FORM_DATA).body(form).retrieve().toBodilessEntity();
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     private void call(String method, Map<String, Object> body) {
         try {
             http.post().uri(botPath + method).body(body).retrieve().toBodilessEntity();

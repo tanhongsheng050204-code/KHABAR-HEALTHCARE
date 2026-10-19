@@ -9,4 +9,4 @@ langchain-core>=0.3.0
 langchain-google-genai>=2.0.0
 neo4j>=5.23.0
 pytest>=8.3.0
-
+lameenc>=1.7.0

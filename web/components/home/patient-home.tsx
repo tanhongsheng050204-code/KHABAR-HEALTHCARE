@@ -37,6 +37,7 @@ import { RemindersPanel } from "@/components/features/reminders";
 import { TeachBackPanel } from "@/components/features/teach-back";
 import { MyTrendsPanel } from "@/components/features/my-trends";
 import { MealCheckPanel } from "@/components/features/meal-check";
+import { PillPlan } from "@/components/features/pill-plan";
 import { AccessSettingsPanel, SimpleHome, VoiceReplyPanel } from "@/components/features/access";
 import type { Preferences } from "@/lib/types";
 import { ListenButton } from "./listen-button";
@@ -409,6 +410,7 @@ export function PatientHome({
             reload={load}
             notify={notify}
           />
+          <PillPlan />
           <RemindersPanel notify={notify} />
           <TeachBackPanel notify={notify} />
           <MealCheckPanel />

@@ -23,6 +23,10 @@ public class CheckInSender {
     private final com.khabar.api.pathways.Pathways pathways;
     @org.springframework.beans.factory.annotation.Autowired
     private com.khabar.api.access.PatientPreferencesRepository preferences;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.service.AgentClientService agents;
+    @org.springframework.beans.factory.annotation.Autowired
+    private TelegramBotClient bot;
 
     private static final java.util.Map<String, String> VOICE_HINT = java.util.Map.of(
             "ms", "🎤 Lebih mudah bercakap? Tekan dan tahan butang mikrofon untuk membalas dengan suara.",
@@ -63,6 +67,21 @@ public class CheckInSender {
         return delivered;
     }
 
+    /**
+     * For a "voice first" patient on Telegram, the same check-in read aloud as a voice message. Only the clinic's
+     * fixed wording is spoken; if speech is unavailable the text alone has already gone.
+     */
+    private void speak(com.khabar.api.patients.Patient patient, String text) {
+        if (patient.getTelegramChatId() == null || !bot.configured()) {
+            return;
+        }
+        try {
+            bot.sendVoice(Long.parseLong(patient.getTelegramChatId()), agents.speak(text));
+        } catch (RuntimeException e) {
+            log.info("Spoken check-in not sent: {}", e.getClass().getSimpleName());
+        }
+    }
+
     /** Returns how many check-ins were delivered. */
     @Transactional
     public int sendDue() {
@@ -72,10 +91,15 @@ public class CheckInSender {
             String language = checkIn.getPatient().getPreferredLanguage();
             // A patient on a condition pathway is also asked for what that pathway tracks.
             String text = PatientMessages.checkInText(language, checkIn.isFasting()) + pathways.checkInExtra(checkIn.getPatient().getId(), language);
-            if (preferences.findById(checkIn.getPatient().getId()).map(com.khabar.api.access.PatientPreferences::isVoiceFirst).orElse(false)) {
+            boolean voiceFirst = preferences.findById(checkIn.getPatient().getId()).map(com.khabar.api.access.PatientPreferences::isVoiceFirst).orElse(false);
+            String spoken = text;
+            if (voiceFirst) {
                 text = text + "\n" + VOICE_HINT.getOrDefault(language, VOICE_HINT.get("en"));
             }
             Messenger.Result result = messages.send(checkIn.getPatient(), text, Messenger.Kind.CHECK_IN);
+            if (result.delivered() && voiceFirst) {
+                speak(checkIn.getPatient(), spoken);
+            }
             if (result.delivered()) {
                 checkIn.markSent(clock.instant());
                 delivered++;
