@@ -80,10 +80,10 @@ public class PatientMessages {
 
     /** Before a packet photo is read: the same consent the web app asks for. */
     private static final Map<String, String> PHOTO_CONSENT = Map.of(
-            "ms", "Mahu kami baca label ubat dalam gambar ini? Gambar akan dihantar kepada AI untuk dibaca dan tidak disimpan. Tekan “📷 Baca label / Read label” untuk setuju.",
-            "en", "Shall we read the medicine label in this photo? It is sent to an AI to read and is not kept. Tap “📷 Baca label / Read label” to agree.",
-            "zh", "要读取这张照片里的药品标签吗？照片会交给AI读取，不会保存。同意请点“📷 Baca label / Read label”。",
-            "ta", "இந்தப் புகைப்படத்தில் உள்ள மருந்து லேபிளைப் படிக்கலாமா? இது படிக்க AI-க்கு அனுப்பப்படும், சேமிக்கப்படாது. ஒப்புக்கொள்ள “📷 Baca label / Read label” ஐ அழுத்தவும்.");
+            "ms", "Mahu kami baca label ubat dalam gambar ini? Gambar akan dihantar kepada AI untuk dibaca dan tidak disimpan. Tekan “📷 Baca label / Read label” untuk setuju. Jika ini gambar makanan, tekan “🍽️ Semak makanan / Check my meal” untuk nasihat pemakanan klinik anda.",
+            "en", "Shall we read the medicine label in this photo? It is sent to an AI to read and is not kept. Tap “📷 Baca label / Read label” to agree. If it is a photo of a meal, tap “🍽️ Semak makanan / Check my meal” for your clinic's diet advice.",
+            "zh", "要读取这张照片里的药品标签吗？照片会交给AI读取，不会保存。同意请点“📷 Baca label / Read label”。如果是餐食照片，请点“🍽️ Semak makanan / Check my meal”查看诊所的饮食建议。",
+            "ta", "இந்தப் புகைப்படத்தில் உள்ள மருந்து லேபிளைப் படிக்கலாமா? இது படிக்க AI-க்கு அனுப்பப்படும், சேமிக்கப்படாது. ஒப்புக்கொள்ள “📷 Baca label / Read label” ஐ அழுத்தவும். இது உணவுப் படம் என்றால், உங்கள் கிளினிக்கின் உணவு ஆலோசனைக்கு “🍽️ Semak makanan / Check my meal” ஐ அழுத்தவும்.");
 
     /** After a packet photo. %s lists what was read. */
     private static final Map<String, String> PHOTO_READ = Map.of(
@@ -141,6 +141,11 @@ public class PatientMessages {
 
     public static String photoUnreadText(String language) {
         return PHOTO_UNREAD.getOrDefault(language, PHOTO_UNREAD.get("en"));
+    }
+
+    /** The clinic's fixed emergency sentence, also read out at the end of every follow-up call script. */
+    public static String emergencyAdviceText(String language) {
+        return EMERGENCY_ADVICE.getOrDefault(language, EMERGENCY_ADVICE.get("en"));
     }
 
     public static String urgentText(String language) {

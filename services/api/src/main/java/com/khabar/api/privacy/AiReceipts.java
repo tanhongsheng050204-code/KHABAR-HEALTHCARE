@@ -33,7 +33,10 @@ public class AiReceipts {
         PACKET_PHOTO("Reading a medicine packet photo"),
         DICTATION("Doctor's dictation turned into text"),
         VOICE_REPLY("Patient's voice note turned into text"),
-        REPLY_GLOSS("English translation of a reply for clinic staff");
+        REPLY_GLOSS("English translation of a reply for clinic staff"),
+        MEAL_PHOTO("Naming the food in a meal photo"),
+        ASK_KHABAR("A staff question answered from coded follow-up data"),
+        CALL_SCRIPT("Suggested questions for a follow-up call");
 
         private final String label;
 

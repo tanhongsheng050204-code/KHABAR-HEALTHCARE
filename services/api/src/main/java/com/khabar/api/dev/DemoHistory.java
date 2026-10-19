@@ -77,10 +77,13 @@ public class DemoHistory {
     private final AppointmentRepository appointments;
     private final AppointmentOutcomeRepository outcomes;
     private final AdjustableClock clock;
+    private final com.khabar.api.meals.DietTipRepository dietTips;
 
     public DemoHistory(AppUserRepository users, PatientRepository patients, PatientPathwayRepository pathways, ReadingRepository readings,
                        DoseLogRepository doses, LabResultRepository labs, TeachBackRepository teachBacks, AppointmentRepository appointments,
-                       AppointmentOutcomeRepository outcomes, AdjustableClock clock) {
+                       AppointmentOutcomeRepository outcomes, AdjustableClock clock,
+                       com.khabar.api.meals.DietTipRepository dietTips) {
+        this.dietTips = dietTips;
         this.users = users;
         this.patients = patients;
         this.pathways = pathways;
@@ -101,6 +104,7 @@ public class DemoHistory {
             return;
         }
         Clinic clinic = doctor.getClinic();
+        dietTips(clinic, doctor);
         Map<String, Patient> byPhone = new java.util.HashMap<>();
         patients.findByClinicId(clinic.getId()).forEach(p -> byPhone.putIfAbsent(p.getPhone(), p));
 
@@ -198,6 +202,42 @@ public class DemoHistory {
                     doctor.getId(), missedAt.minus(Duration.ofDays(9))));
             outcomes.save(new AppointmentOutcome(booked.getId(), patient.getId(), patient.getClinic().getId(), missedAt,
                     missedAt.plus(Duration.ofHours(2))));
+        }
+    }
+
+    /** Dr Priya's diet tips: demo wording, the kind a clinic writes for itself. */
+    private void dietTips(Clinic clinic, AppUser doctor) {
+        if (!dietTips.findByClinicIdAndRetiredAtIsNullOrderByCategory(clinic.getId()).isEmpty()) {
+            return;
+        }
+        Instant at = clock.instant().minus(Duration.ofDays(20));
+        List<String[]> tips = List.of(
+                new String[]{"RICE_NOODLES", "Nasi atau mi: isi suku pinggan sahaja. Separuh pinggan sayur, suku pinggan lauk.",
+                        "Rice or noodles: a quarter of the plate only. Half the plate vegetables, a quarter protein.",
+                        "米饭或面：只占盘子的四分之一。一半蔬菜，四分之一蛋白质。",
+                        "சாதம் அல்லது நூடுல்ஸ்: தட்டில் கால் பகுதி மட்டும். பாதி காய்கறி, கால் பகுதி புரதம்."},
+                new String[]{"SWEET_DRINK", "Minuman manis menaikkan gula dengan cepat. Pilih air kosong atau teh/kopi 'kosong'.",
+                        "Sweet drinks raise sugar quickly. Choose plain water or tea/coffee 'kosong' (no sugar).",
+                        "甜饮料会让血糖很快升高。请选择白开水或无糖茶/咖啡（kosong）。",
+                        "இனிப்பு பானங்கள் சர்க்கரையை விரைவாக உயர்த்தும். வெற்று நீர் அல்லது சர்க்கரை இல்லாத தேநீர்/காபி தேர்ந்தெடுக்கவும்."},
+                new String[]{"FRIED", "Makanan bergoreng: hadkan kepada sekali seminggu. Pilih rebus, kukus atau panggang.",
+                        "Fried food: once a week at most. Choose boiled, steamed or grilled.",
+                        "油炸食物：每周最多一次。选择水煮、清蒸或烧烤。",
+                        "பொரித்த உணவு: வாரத்திற்கு ஒருமுறை மட்டும். வேகவைத்த அல்லது ஆவியில் வேகவைத்ததைத் தேர்ந்தெடுக்கவும்."},
+                new String[]{"SWEETS_DESSERT", "Kuih dan pencuci mulut: sekeping kecil sahaja, bukan setiap hari.",
+                        "Kuih and desserts: one small piece, not every day.",
+                        "糕点和甜点：一小块就好，不要每天吃。",
+                        "இனிப்புகள்: ஒரு சிறிய துண்டு மட்டும், தினமும் அல்ல."},
+                new String[]{"VEGETABLES", "Bagus! Sayur patut mengisi separuh pinggan anda.",
+                        "Good: vegetables should fill half your plate.",
+                        "很好！蔬菜应该占盘子的一半。",
+                        "நல்லது! காய்கறிகள் உங்கள் தட்டில் பாதியை நிரப்ப வேண்டும்."},
+                new String[]{"SALTY_SAUCES", "Kurangkan sambal, kicap dan kuah masin untuk tekanan darah anda.",
+                        "Go easy on sambal, soy sauce and salty gravies for your blood pressure.",
+                        "为了血压，请少吃参巴酱、酱油和咸的肉汁。",
+                        "இரத்த அழுத்தத்திற்காக சம்பல், சோயா சாஸ், உப்பு குழம்பைக் குறைக்கவும்."});
+        for (String[] t : tips) {
+            dietTips.save(new com.khabar.api.meals.DietTip(clinic.getId(), t[0], t[1], t[2], t[3], t[4], doctor.getId(), at));
         }
     }
 

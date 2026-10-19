@@ -98,6 +98,10 @@ public class MedicationItem {
         return addedByRole;
     }
 
+    public Instant getStoppedAt() {
+        return stoppedAt;
+    }
+
     public Instant getAddedAt() {
         return addedAt;
     }

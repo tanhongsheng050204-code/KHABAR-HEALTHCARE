@@ -169,6 +169,12 @@ public class TelegramWebhookController {
             }
             return;
         }
+        if (TelegramMedia.MEAL_BUTTON.equals(text.strip())) {
+            if (!media.confirmMeal(patient.get(), chat)) {
+                messages.send(patient.get(), PatientMessages.photoUnreadText(language), Messenger.Kind.NOTICE);
+            }
+            return;
+        }
         if (TelegramMedia.SEND_BUTTON.equals(text.strip())) {
             if (!media.confirmVoice(patient.get(), chat)) {
                 messages.send(patient.get(), PatientMessages.textOnlyText(language), Messenger.Kind.NOTICE);

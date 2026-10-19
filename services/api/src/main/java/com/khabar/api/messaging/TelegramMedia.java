@@ -39,8 +39,9 @@ public class TelegramMedia {
             "one_time_keyboard", true, "resize_keyboard", true);
     static final Map<String, Object> REMOVE_KEYBOARD = Map.of("remove_keyboard", true);
     public static final String READ_BUTTON = "📷 Baca label / Read label";
+    public static final String MEAL_BUTTON = "🍽️ Semak makanan / Check my meal";
     static final Map<String, Object> READ_KEYBOARD = Map.of(
-            "keyboard", List.of(List.of(Map.of("text", READ_BUTTON))),
+            "keyboard", List.of(List.of(Map.of("text", READ_BUTTON)), List.of(Map.of("text", MEAL_BUTTON))),
             "one_time_keyboard", true, "resize_keyboard", true);
     /** A transcript left unconfirmed this long is no longer offered. */
     static final Duration DRAFT_LIFETIME = Duration.ofHours(6);
@@ -55,6 +56,8 @@ public class TelegramMedia {
     private final MedicationItemRepository medications;
     private final PatientGraphSync graphSync;
     private final AdjustableClock clock;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.khabar.api.meals.MealAdvice mealAdvice;
 
     public TelegramMedia(TelegramBotClient bot, AgentClientService agents, AiReceipts aiReceipts, VoiceDraftRepository drafts,
                          PhotoDraftRepository photoDrafts, FollowUpService followUp, MedicationItemRepository medications, PatientGraphSync graphSync, AdjustableClock clock) {
@@ -172,6 +175,25 @@ public class TelegramMedia {
         }
         graphSync.changed(patient.getId());
         bot.sendMessage(chatId, PatientMessages.photoReadText(language, String.join(", ", added)), REMOVE_KEYBOARD);
+        return true;
+    }
+
+    /**
+     * The patient tapped Check my meal for the photo they sent: the food groups are named and the clinic's own diet
+     * tips for them are sent back. Same consent step and the same "not kept" rule as a packet photo.
+     */
+    @Transactional
+    public boolean confirmMeal(Patient patient, long chatId) {
+        PhotoDraft draft = photoDrafts.findById(patient.getId()).orElse(null);
+        if (draft == null) {
+            return false;
+        }
+        photoDrafts.delete(draft);
+        if (clock.instant().isAfter(draft.getCreatedAt().plus(DRAFT_LIFETIME))) {
+            return false;
+        }
+        byte[] image = bot.downloadFile(draft.getFileId());
+        bot.sendMessage(chatId, mealAdvice.read(patient, image, "on Telegram").message(), REMOVE_KEYBOARD);
         return true;
     }
 

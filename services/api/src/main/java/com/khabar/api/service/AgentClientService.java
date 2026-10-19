@@ -176,6 +176,38 @@ public class AgentClientService {
                 .body(Map.class);
     }
 
+    /** The food groups in a meal photo the patient chose to send; the image is not stored. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> readMeal(byte[] image, String mimeType) {
+        return restClient.post()
+                .uri(uri -> uri.path("/agents/meal/read").queryParam("mime_type", mimeType).build())
+                .contentType(MediaType.parseMediaType(mimeType))
+                .header("X-Image-Consent-Confirmed", "true")
+                .body(image)
+                .retrieve()
+                .body(Map.class);
+    }
+
+    /** A staff question over coded rows; {"answer": null} without a model. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> askKhabar(String question, List<Map<String, Object>> rows) {
+        return restClient.post()
+                .uri("/agents/copilot/ask")
+                .body(Map.of("question", question, "rows", rows))
+                .retrieve()
+                .body(Map.class);
+    }
+
+    /** Suggested lines for a follow-up call; {"lines": []} without a model. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> callScript(String language, Map<String, Object> context) {
+        return restClient.post()
+                .uri("/agents/copilot/call-script")
+                .body(Map.of("language", language, "context", context))
+                .retrieve()
+                .body(Map.class);
+    }
+
     /** The generics of medicine names and the herbs in remedy names, from the agents' drug data. */
     public AgentDtos.Normalised normalise(List<String> medicines, List<String> herbs) {
         return restClient.post()
