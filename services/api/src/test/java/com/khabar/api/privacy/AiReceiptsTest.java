@@ -85,7 +85,8 @@ class AiReceiptsTest {
                 .andExpect(status().isOk());
 
         var stored = receipts.findByPatientIdOrderByIdAsc(aminah.getId());
-        assertThat(stored).hasSize(1);
+        // Triage, then the English gloss for staff: both receipts are written before the words leave.
+        assertThat(stored).extracting(AiReceipt::getPurpose).containsExactly("REPLY_TRIAGE", "REPLY_GLOSS");
         AiReceipt receipt = stored.get(0);
         assertThat(receipt.getPurpose()).isEqualTo("REPLY_TRIAGE");
         assertThat(receipt.getSent()).doesNotContain("Aminah").doesNotContain("590312").doesNotContain("6789")
@@ -96,11 +97,11 @@ class AiReceiptsTest {
 
         mvc.perform(get("/api/patients/" + aminah.getId() + "/ai-receipts").header("Authorization", bearer(aminahAccount.getId())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].purposeLabel").value("Reading a check-in reply"))
-                .andExpect(jsonPath("$[0].namesRemoved").value(1));
+                .andExpect(jsonPath("$[1].purposeLabel").value("Reading a check-in reply"))
+                .andExpect(jsonPath("$[1].namesRemoved").value(1));
         mvc.perform(get("/api/patients/" + aminah.getId() + "/ai-receipts").header("Authorization", bearer(doctor.getId())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].endpoint").value("/agents/followup/triage"));
+                .andExpect(jsonPath("$[1].endpoint").value("/agents/followup/triage"));
     }
 
     @Test
