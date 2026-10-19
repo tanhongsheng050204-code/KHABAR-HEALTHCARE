@@ -33,10 +33,12 @@ public class CallLists {
     private final ClinicOps clinicOps;
     private final AdjustableClock clock;
     private final com.khabar.api.reminders.AppointmentOutcomeRepository noShows;
+    private final com.khabar.api.insights.RiskScores risk;
 
     public CallLists(PatientRepository patients, PatientReplyRepository replies, CheckInRepository checkIns,
                      ReadingRepository readings, FollowUpCases cases, ClinicOps clinicOps, AdjustableClock clock,
-                     com.khabar.api.reminders.AppointmentOutcomeRepository noShows) {
+                     com.khabar.api.reminders.AppointmentOutcomeRepository noShows, com.khabar.api.insights.RiskScores risk) {
+        this.risk = risk;
         this.noShows = noShows;
         this.patients = patients;
         this.replies = replies;
@@ -56,11 +58,25 @@ public class CallLists {
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
                                String urgentReply, String latestReply, Instant latestAt, Integer followUpDay,
                                int unhandledReplies, String reason, FollowUpCases.CaseView followUpCase,
-                               String urgentEnglish, String latestEnglish) {
+                               String urgentEnglish, String latestEnglish, Integer riskScore, List<String> riskReasons) {
+
+        CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level, String urgentReply, String latestReply,
+                     Instant latestAt, Integer followUpDay, int unhandledReplies, String reason, FollowUpCases.CaseView followUpCase,
+                     String urgentEnglish, String latestEnglish) {
+            this(patientId, fullName, preferredLanguage, level, urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason,
+                    followUpCase, urgentEnglish, latestEnglish, null, List.of());
+        }
 
         CallListItem withCase(FollowUpCases.CaseView view) {
             return new CallListItem(patientId, fullName, preferredLanguage, view.level().compareTo(level) < 0 ? view.level() : level,
-                    urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason, view, urgentEnglish, latestEnglish);
+                    urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason, view, urgentEnglish, latestEnglish,
+                    riskScore, riskReasons);
+        }
+
+        CallListItem withRisk(com.khabar.api.insights.RiskScores.Score score) {
+            return new CallListItem(patientId, fullName, preferredLanguage, level, urgentReply, latestReply, latestAt, followUpDay,
+                    unhandledReplies, reason, followUpCase, urgentEnglish, latestEnglish, score.score(),
+                    score.reasons().stream().map(com.khabar.api.insights.RiskScores.Reason::label).toList());
         }
     }
 
@@ -142,9 +158,13 @@ public class CallLists {
                         open.getPatient().getPreferredLanguage(), open.getLevel(), null, null, open.getOpenedAt(),
                         open.getPatient().followUpDay(today), 0, "OPEN_CASE", cases.view(open, settings, snapshotAt), null, null)));
 
+        // The risk score orders patients with the same urgency and reason; it never lifts anyone above a more urgent level.
+        Map<String, Integer> points = risk.pointsFor(clinicId);
         List<CallListItem> items = withCases.stream()
+                .map(item -> item.withRisk(risk.score(item.patientId(), points)))
                 .sorted(Comparator.comparing(CallListItem::level)
                         .thenComparing(i -> REASON_ORDER.indexOf(i.reason()))
+                        .thenComparing(CallListItem::riskScore, Comparator.reverseOrder())
                         .thenComparing(CallListItem::latestAt, Comparator.reverseOrder()))
                 .toList();
 

@@ -87,10 +87,10 @@ class LocalProfileTest {
     }
 
     @Test
-    void theDemoClinicHasThirtyFakePatients() throws Exception {
+    void theDemoClinicHasFortyFakePatients() throws Exception {
         mvc.perform(get("/api/clinic/patients").header("Authorization", tokenFor("doctor")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(30));
+                .andExpect(jsonPath("$.length()").value(40));
     }
 
     @Test
@@ -98,8 +98,8 @@ class LocalProfileTest {
         mvc.perform(get("/api/clinic/call-list").header("Authorization", tokenFor("doctor")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].level").value("RED"))
-                .andExpect(jsonPath("$.items.length()").value(3))
-                .andExpect(jsonPath("$.patientsInFollowUp").value(4));
+                .andExpect(jsonPath("$.items.length()").value(4))
+                .andExpect(jsonPath("$.patientsInFollowUp").value(14));
     }
 
     @Test
@@ -115,13 +115,13 @@ class LocalProfileTest {
                         .content(json.writeValueAsString(java.util.Map.of("observedThrough", snapshotAt))))
                 .andExpect(status().isOk());
         mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
-                .andExpect(jsonPath("$.items.length()").value(2));
+                .andExpect(jsonPath("$.items.length()").value(3));
 
         mvc.perform(post("/dev/demo/reset")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.replies").value(4));
 
         mvc.perform(get("/api/clinic/call-list").header("Authorization", doctor))
-                .andExpect(jsonPath("$.items.length()").value(3))
+                .andExpect(jsonPath("$.items.length()").value(4))
                 .andExpect(jsonPath("$.items[0].level").value("RED"));
     }
 

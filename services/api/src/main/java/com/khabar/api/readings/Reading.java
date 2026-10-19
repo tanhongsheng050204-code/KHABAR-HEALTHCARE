@@ -104,6 +104,19 @@ public class Reading {
         return kind;
     }
 
+    public Integer getSystolic() {
+        return systolic;
+    }
+
+    public Integer getDiastolic() {
+        return diastolic;
+    }
+
+    /** mmol/L */
+    public Double getGlucose() {
+        return glucose;
+    }
+
     public Instant getMeasuredAt() {
         return measuredAt;
     }

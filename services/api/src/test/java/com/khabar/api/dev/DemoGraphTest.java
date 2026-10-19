@@ -72,7 +72,7 @@ class DemoGraphTest {
                 Map.of("Jus peria (bitter gourd)", "bitter gourd")));
         mvc.perform(post("/dev/graph/sync")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(true))
-                .andExpect(jsonPath("$.written").value(30));
+                .andExpect(jsonPath("$.written").value(40));
         Patient aminah = patients.findByAccountId(DemoData.AMINAH_ACCOUNT_ID).orElseThrow();
         aminahGraphId = aminah.getGraphId().toString();
     }

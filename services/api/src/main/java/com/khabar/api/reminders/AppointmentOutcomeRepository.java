@@ -10,4 +10,6 @@ public interface AppointmentOutcomeRepository extends JpaRepository<AppointmentO
     List<AppointmentOutcome> findByClinicIdAndHandledAtIsNull(UUID clinicId);
 
     List<AppointmentOutcome> findByPatientIdAndHandledAtIsNull(UUID patientId);
+
+    boolean existsByPatientIdAndAppointmentAtAfter(UUID patientId, java.time.Instant after);
 }

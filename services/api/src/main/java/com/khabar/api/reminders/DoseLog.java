@@ -67,12 +67,12 @@ public class DoseLog {
         this.sentAt = sentAt;
     }
 
-    void delivered(boolean delivered) {
+    public void delivered(boolean delivered) {
         this.delivered = delivered;
     }
 
     /** Records the first answer only; a second tap changes nothing. */
-    boolean answer(String response, Instant at) {
+    public boolean answer(String response, Instant at) {
         if (this.response != null) {
             return false;
         }

@@ -20,8 +20,11 @@ public class CheckInSender {
     private final CheckInRepository checkIns;
     private final PatientMessages messages;
     private final AdjustableClock clock;
+    private final com.khabar.api.pathways.Pathways pathways;
 
-    public CheckInSender(CheckInRepository checkIns, PatientMessages messages, AdjustableClock clock) {
+    public CheckInSender(CheckInRepository checkIns, PatientMessages messages, AdjustableClock clock,
+                         com.khabar.api.pathways.Pathways pathways) {
+        this.pathways = pathways;
         this.checkIns = checkIns;
         this.messages = messages;
         this.clock = clock;
@@ -58,7 +61,9 @@ public class CheckInSender {
         List<CheckIn> due = checkIns.findByStatusAndDueDateLessThanEqual(CheckIn.Status.PENDING, LocalDate.now(clock));
         int delivered = 0;
         for (CheckIn checkIn : due) {
-            String text = PatientMessages.checkInText(checkIn.getPatient().getPreferredLanguage(), checkIn.isFasting());
+            String language = checkIn.getPatient().getPreferredLanguage();
+            // A patient on a condition pathway is also asked for what that pathway tracks.
+            String text = PatientMessages.checkInText(language, checkIn.isFasting()) + pathways.checkInExtra(checkIn.getPatient().getId(), language);
             Messenger.Result result = messages.send(checkIn.getPatient(), text, Messenger.Kind.CHECK_IN);
             if (result.delivered()) {
                 checkIn.markSent(clock.instant());

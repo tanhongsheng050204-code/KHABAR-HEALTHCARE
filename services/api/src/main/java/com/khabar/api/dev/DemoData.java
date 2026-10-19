@@ -75,12 +75,15 @@ public class DemoData implements ApplicationRunner {
     private final AdjustableClock clock;
     private final PatientGraphSync graphSync;
     private final ClinicStaffAccess staffAccess;
+    private final DemoHistory history;
 
     public DemoData(ClinicRepository clinics, AppUserRepository users, PatientRepository patients,
                     CaregiverLinkRepository caregiverLinks, PatientReplyRepository replies,
                     MedicationItemRepository medications, IntakeSessionRepository intakes, IntakeRecords intakeRecords,
                     ApprovedAnswerRepository answers, ReadingRepository readings, AppointmentRepository appointments,
-                    AdjustableClock clock, PatientGraphSync graphSync, ClinicStaffAccess staffAccess) {
+                    AdjustableClock clock, PatientGraphSync graphSync, ClinicStaffAccess staffAccess,
+                    DemoHistory history) {
+        this.history = history;
         this.clinics = clinics;
         this.users = users;
         this.patients = patients;
@@ -103,6 +106,7 @@ public class DemoData implements ApplicationRunner {
         if (users.existsById(DOCTOR_ID)) {
             users.findById(DOCTOR_ID).filter(user -> user.getClinic() != null)
                     .ifPresent(user -> staffAccess.grant(user, user.getClinic(), ClinicStaffRole.DOCTOR, user.getId(), clock.instant()));
+            history.seed();
             return;
         }
         Clinic clinic = clinics.save(new Clinic("Klinik Dr Priya (demo)"));
@@ -122,6 +126,7 @@ public class DemoData implements ApplicationRunner {
         Instant now = Instant.now();
         approvedAnswers(clinic, doctor, now.minus(Duration.ofDays(30)));
         generatedPatients(clinic, doctor, now.minus(Duration.ofDays(60)));
+        history.seed();
         patients.findByClinicId(clinic.getId()).forEach(p -> graphSync.changed(p.getId()));
     }
 
@@ -273,6 +278,7 @@ public class DemoData implements ApplicationRunner {
                 byNameAndPhone.get("Muthu a/l Rajan|03-0000 0004"));
         int seeded = followUp(story);
         restoreAminahsStory(story.aminah());
+        history.seed();
         return seeded;
     }
 

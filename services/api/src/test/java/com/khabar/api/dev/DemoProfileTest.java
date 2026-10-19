@@ -82,6 +82,6 @@ class DemoProfileTest {
     void theDemoClinicIsSeeded() throws Exception {
         String body = mvc.perform(post("/dev/token").param("as", "doctor")).andReturn().getResponse().getContentAsString();
         mvc.perform(get("/api/clinic/patients").header("Authorization", "Bearer " + json.readTree(body).get("token").asText()))
-                .andExpect(jsonPath("$.length()").value(30));
+                .andExpect(jsonPath("$.length()").value(40));
     }
 }
