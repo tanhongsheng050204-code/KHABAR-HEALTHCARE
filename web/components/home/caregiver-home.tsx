@@ -18,6 +18,7 @@ import { LanguageSwitcher, useUi } from "@/lib/i18n";
 import type { Quiet } from "@/lib/types";
 import featureStyles from "@/components/features/features.module.css";
 import { CaregiverTelegramPanel } from "@/components/features/caregiver-telegram";
+import { CaregiverActPanel } from "@/components/features/access";
 
 type Notice = { tone: "error" | "success" | "info"; text: string };
 
@@ -222,6 +223,10 @@ export function CaregiverHome({
               </aside>
             )}
           </div>
+
+          {canSeeSharedContext && patient && (
+            <CaregiverActPanel patientId={patient.id} name={greetingName(patient.fullName)} notify={notify} />
+          )}
 
           {canSeeSharedContext && (
             <CaregiverTelegramPanel notify={notify} names={patient ? { [patient.id]: patient.fullName } : {}} />

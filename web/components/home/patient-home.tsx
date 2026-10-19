@@ -37,6 +37,8 @@ import { RemindersPanel } from "@/components/features/reminders";
 import { TeachBackPanel } from "@/components/features/teach-back";
 import { MyTrendsPanel } from "@/components/features/my-trends";
 import { MealCheckPanel } from "@/components/features/meal-check";
+import { AccessSettingsPanel, SimpleHome, VoiceReplyPanel } from "@/components/features/access";
+import type { Preferences } from "@/lib/types";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import { TelegramCard } from "./telegram-card";
@@ -79,6 +81,8 @@ export function PatientHome({
   }, [section, loaded]);
   const [busy, setBusy] = useState<string | null>(null);
   const [intakeDoneAt, setIntakeDoneAt] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const [fullApp, setFullApp] = useState(false);
   const optional = useCallback(async <T,>(path: string) => {
     try {
       return await apiRequest<T>(path);
@@ -100,6 +104,7 @@ export function PatientHome({
         nextMeds,
         nextCaregivers,
         nextLog,
+        nextPrefs,
       ] = await Promise.all([
         optional<Summary>(`/api/patients/${patientId}/summary`),
         optional<Appointment>("/api/appointments/mine"),
@@ -109,7 +114,9 @@ export function PatientHome({
         apiRequest<Medication[]>(`/api/patients/${patientId}/medications`),
         apiRequest<Caregiver[]>("/api/patients/me/caregivers"),
         apiRequest<AccessLog[]>(`/api/patients/${patientId}/access-log`),
+        optional<Preferences>("/api/me/preferences"),
       ]);
+      setPrefs(nextPrefs);
       setSummary(nextSummary);
       setAppointment(nextAppointment);
       setIntakeDoneAt(nextIntake?.completedAt ?? null);
@@ -147,6 +154,16 @@ export function PatientHome({
       <WorkspaceLoading />
     ) : (
       <WorkspaceError message={loadError} retry={() => void load()} />
+    );
+  if (prefs?.simpleMode && !fullApp)
+    return (
+      <SimpleHome
+        name={firstName}
+        summary={summary}
+        appointment={appointment}
+        notify={notify}
+        onExit={() => setFullApp(true)}
+      />
     );
   return (
     <main className={styles.workspace} id="overview" tabIndex={-1}>
@@ -402,6 +419,7 @@ export function PatientHome({
           className={styles.panelTransition}
         >
           <CheckInPanel notify={notify} onIntakeDone={load} />
+          {prefs?.voiceFirst && <VoiceReplyPanel notify={notify} />}
         </div>
         <div
           id="readings-view"
@@ -443,6 +461,7 @@ export function PatientHome({
             cut: t("Shortened here; the full text was sent."),
             purpose: (label) => t(label),
           }} locale={locale} />}
+          <AccessSettingsPanel notify={notify} onChange={(p) => { setPrefs(p); setFullApp(!p.simpleMode ? false : fullApp); }} />
           <MyDataPanel notify={notify} />
         </div>
       </div>

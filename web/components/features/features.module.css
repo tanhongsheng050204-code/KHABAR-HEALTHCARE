@@ -551,3 +551,66 @@
 .prebrief {
   border-left: 3px solid var(--tidal);
 }
+.simple {
+  display: grid;
+  gap: 20px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  font-size: 1.2rem;
+}
+.simple h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+.simpleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+.simpleTile {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-height: 160px;
+  padding: 20px;
+  color: var(--night);
+  background: var(--paper);
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  font: inherit;
+  text-align: left;
+}
+button.simpleTile {
+  cursor: pointer;
+}
+button.simpleTile:hover:not(:disabled) {
+  border-color: var(--tidal);
+}
+button.simpleTile:disabled {
+  opacity: 0.6;
+}
+.simpleTile strong {
+  font-size: 1.35rem;
+}
+.simpleTile span {
+  color: var(--ink-soft);
+}
+.simplePlan {
+  margin: 0;
+  padding: 16px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.simpleCard {
+  padding: 16px;
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+}
+.bigButton {
+  min-height: 64px;
+  padding: 0 28px;
+  font-size: 1.2rem;
+}

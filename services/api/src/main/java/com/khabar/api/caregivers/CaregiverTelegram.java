@@ -58,10 +58,13 @@ public class CaregiverTelegram {
         this.linkCodeExpiresAt = null;
     }
 
+    /** Unlinking also cancels any code not yet used, so an old code cannot re-link the chat. */
     void unlink() {
         this.chatId = null;
         this.chatIndex = null;
         this.linkedAt = null;
+        this.linkCodeHash = null;
+        this.linkCodeExpiresAt = null;
     }
 
     public UUID getCaregiverId() { return caregiverId; }

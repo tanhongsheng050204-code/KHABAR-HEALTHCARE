@@ -159,6 +159,16 @@ class AccessTest {
         assertThat(answered.getResponse()).isEqualTo("MISSED");
         assertThat(answered.getAnsweredVia()).isEqualTo("FAMILY");
 
+        // An unused code stops working once the patient unlinks.
+        String spare = json.readTree(mvc.perform(post("/api/me/family-group/link-code").header("Authorization", bearer(account.getId())))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8)).get("code").asText();
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/me/family-group").header("Authorization", bearer(account.getId())))
+                .andExpect(jsonPath("$.linked").value(false));
+        telegram(Map.of("message", Map.of("message_id", 3, "text", "/family " + spare,
+                "chat", Map.of("id", group - 1, "type", "group"), "from", Map.of("id", 6))));
+        mvc.perform(get("/api/me/family-group").header("Authorization", bearer(account.getId())))
+                .andExpect(jsonPath("$.linked").value(false));
+
         // Text in the group is not a reply to the clinic.
         telegram(Map.of("message", Map.of("message_id", 2, "text", "Mak sakit dada", "chat", Map.of("id", group, "type", "group"), "from", Map.of("id", 5))));
         assertThat(replies.findByPatientIdOrderByReceivedAtAsc(aminah.getId())).isEmpty();

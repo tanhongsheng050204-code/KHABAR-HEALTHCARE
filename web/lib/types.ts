@@ -86,3 +86,5 @@ export type AskAnswer = { answer: string; source: "model" | "rules"; patients: A
 export type CallScript = { language: string; lines: Array<{ english: string; spoken: string }>; safety: { english: string; spoken: string }; source: "model" | "rules" }
 export type PreBriefData = { since: string; daysSince: number | null; headline: string; lines: Array<{ kind: string; level: string; text: string }> }
 export type DietTip = { id: string; category: string; label: string; ms: string; en: string; zh: string | null; ta: string | null }
+export type Preferences = { voiceFirst: boolean; simpleMode: boolean }
+export type FamilyGroupStatus = { telegramConfigured: boolean; linked: boolean; linkedAt: string | null }
