@@ -2638,3 +2638,13 @@
   background: white;
   box-shadow: var(--shadow-soft);
 }
+.gloss {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.86em;
+}
+.gloss small {
+  color: var(--ink-mute);
+  font-weight: 600;
+}

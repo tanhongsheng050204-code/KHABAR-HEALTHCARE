@@ -33,6 +33,8 @@ import { EmptyState, SectionHeading, StatusBadge } from "@/components/ui";
 import { LanguageSwitcher, useUi } from "@/lib/i18n";
 import { AiReceiptsPanel } from "@/components/features/ai-receipts";
 import { MyDataPanel } from "@/components/features/my-data";
+import { RemindersPanel } from "@/components/features/reminders";
+import { TeachBackPanel } from "@/components/features/teach-back";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import { TelegramCard } from "./telegram-card";
@@ -388,6 +390,8 @@ export function PatientHome({
             reload={load}
             notify={notify}
           />
+          <RemindersPanel notify={notify} />
+          <TeachBackPanel notify={notify} />
         </div>
         <div
           id="checkin-view"

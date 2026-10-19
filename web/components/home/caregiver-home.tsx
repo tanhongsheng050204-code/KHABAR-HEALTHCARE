@@ -17,6 +17,7 @@ import { ListenButton } from "./listen-button";
 import { LanguageSwitcher, useUi } from "@/lib/i18n";
 import type { Quiet } from "@/lib/types";
 import featureStyles from "@/components/features/features.module.css";
+import { CaregiverTelegramPanel } from "@/components/features/caregiver-telegram";
 
 type Notice = { tone: "error" | "success" | "info"; text: string };
 
@@ -221,6 +222,10 @@ export function CaregiverHome({
               </aside>
             )}
           </div>
+
+          {canSeeSharedContext && (
+            <CaregiverTelegramPanel notify={notify} names={patient ? { [patient.id]: patient.fullName } : {}} />
+          )}
 
           {canSeeSharedContext && (
             <section className={styles.peopleCard}>

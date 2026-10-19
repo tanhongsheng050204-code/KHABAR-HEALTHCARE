@@ -313,8 +313,16 @@ export function DoctorHome({
                       item.latestReply ||
                       (item.reason === "OPEN_CASE"
                         ? "Still open: what raised it has cleared. Close the case when follow-up is done."
-                        : "No reply for 48 hours.")}
+                        : item.reason === "MISSED_APPOINTMENT"
+                          ? "Did not come to a booked visit."
+                          : "No reply for 48 hours.")}
                   </p>
+                  {(item.urgentReply ? item.urgentEnglish : item.latestEnglish) && (
+                    <p className={styles.gloss}>
+                      <small>English (machine translation)</small>{" "}
+                      {item.urgentReply ? item.urgentEnglish : item.latestEnglish}
+                    </p>
+                  )}
                   <CaseControls item={item} snapshotAt={calls.snapshotAt} me={me} assignees={assignees} onChanged={load} notify={notify} />
                 </div>
               </article>

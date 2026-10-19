@@ -11,7 +11,7 @@ export type FollowUpCase = { id: string; status: CaseStatus; level: TriageLevel;
 export type CaseEvent = { action: string; from: CaseStatus | null; to: CaseStatus; by: string; note: string | null; at: string }
 export type Assignee = { userId: string; displayName: string; roles: ClinicStaffRole[] }
 export type Coverage = { day: string; onDuty: string | null; backup: string | null; escalationContact: string | null; warning: string | null }
-export type CallItem = { patientId: string; fullName: string; preferredLanguage: string; level: TriageLevel; urgentReply: string | null; latestReply: string | null; followUpDay: number | null; reason: "REPLY" | "READING" | "MISSED_DOSE" | "NO_REPLY" | "OPEN_CASE"; followUpCase?: FollowUpCase | null }
+export type CallItem = { patientId: string; fullName: string; preferredLanguage: string; level: TriageLevel; urgentReply: string | null; latestReply: string | null; urgentEnglish?: string | null; latestEnglish?: string | null; followUpDay: number | null; reason: "REPLY" | "READING" | "MISSED_DOSE" | "MISSED_APPOINTMENT" | "NO_REPLY" | "OPEN_CASE"; followUpCase?: FollowUpCase | null }
 export type CallList = { items: CallItem[]; counts: { red: number; watch: number; review: number }; patientsInFollowUp: number; snapshotAt: string; coverage?: Coverage }
 export type RotaDay = { day: string; primaryUserId: string; primaryName: string | null; backupUserId: string | null; backupName: string | null }
 export type ClinicSettings = { hours: string | null; escalationContact: string | null; redAckMinutes: number; watchAckMinutes: number; reviewAckMinutes: number; rota: RotaDay[]; updatedAt: string | null; today: Coverage }
@@ -44,15 +44,15 @@ export type Previsit = {
   lastVisit: { encounterId: string; finalisedAt: string; doctor: string; diagnosis: string | null; plan: string | null; followUp: string | null; prescription: string[] } | null
   medications: Medication[]
   reconciliation: Array<{ check: string; severity: string; detail: string }> | null
-  recentReplies: Array<{ receivedAt: string; level: TriageLevel; text: string; missedDose: boolean }>
+  recentReplies: Array<{ receivedAt: string; level: TriageLevel; text: string; missedDose: boolean; english?: string | null }>
 }
 
 export type ApprovedAnswer = { id: string; title: string; triggers: string[]; texts: Record<string, string>; approvedBy: string; approvedAt: string }
 
 // ---- Features added in Oct 2026 (staff chat, AI receipts, plan check, audit chain, impact, notes, privacy) ----
 export type AiReceipt = { id: number; purpose: string; purposeLabel: string; endpoint: string; sent: string; truncated: boolean; media: boolean; namesRemoved: number; icsRemoved: number; phonesRemoved: number; at: string }
-export type StaffAlertLog = { kind: "ALERT" | "BRIEFING" | "TEST"; outcome: "SENT" | "NOT_SENT" | "FAILED"; text: string; detail: string | null; at: string }
-export type StaffChannel = { linked: boolean; linkedAt: string | null; alertsOn: boolean; briefingHour: number | null; telegramConfigured: boolean; pendingCode: boolean; recent: StaffAlertLog[] }
+export type StaffAlertLog = { kind: "ALERT" | "BRIEFING" | "TEST" | "HANDOVER"; outcome: "SENT" | "NOT_SENT" | "FAILED"; text: string; detail: string | null; at: string }
+export type StaffChannel = { linked: boolean; linkedAt: string | null; alertsOn: boolean; briefingHour: number | null; handoverHour?: number | null; telegramConfigured: boolean; pendingCode: boolean; recent: StaffAlertLog[] }
 export type StaffLinkCode = { code: string; expiresAt: string; command: string }
 export type AuditVerification = { intact: boolean; checked: number; unsealed: number; brokenAt: number | null; problem: string | null; tailSeq: number; tailHash: string; checkedAt: string }
 export type SummaryStatus = { encounterId: string; text: string; held: boolean; heldReason: string | null; releasedAt: string | null; releaseNote: string | null }
@@ -64,3 +64,12 @@ export type Mentions = { unread: number; items: Mention[] }
 export type PrivacyRequest = { id: string; patientId: string; patientName: string | null; kind: "ERASURE" | "CORRECTION"; details: string | null; status: "OPEN" | "DONE" | "DECLINED"; createdAt: string; resolvedAt: string | null; resolution: string | null }
 export type PrivacyIncident = { id: string; title: string; whatHappened: string | null; peopleAffected: number | null; discoveredAt: string; containedAt: string | null; assessedAt: string | null; significantHarm: boolean; commissionerNotifiedAt: string | null; peopleNotifiedAt: string | null; closedAt: string | null; log: string | null }
 export type Quiet = { quiet: boolean; dayNumber: number | null; since: string | null }
+
+export type DoseEntry = { id: string; day: string; slot: string; medicines: string; response: "TAKEN" | "MISSED" | null; sentAt: string }
+export type Adherence = { days: number; sent: number; taken: number; missed: number; unanswered: number; doses: DoseEntry[] }
+export type ReminderSettings = { doseReminders: boolean; appointmentReminders: boolean; telegramLinked: boolean; hasPlan: boolean; adherence: Adherence }
+export type TeachBackQuestion = { id: string; kind: "TIMES_PER_DAY" | "FOOD" | "NEXT_VISIT"; medicine: string | null; options: string[] }
+export type TeachBackAttempt = { id: string; correct: number; total: number; missed: string[]; takenAt: string }
+export type TeachBackQuiz = { encounterId: string | null; questions: TeachBackQuestion[]; attempts: TeachBackAttempt[] }
+export type TeachBackOutcome = { correct: number; total: number; results: Array<{ id: string; kind: string; medicine: string | null; given: string | null; answer: string; correct: boolean }> }
+export type CaregiverTelegram = { telegramConfigured: boolean; linked: boolean; linkedAt: string | null; codePending: boolean; recent: Array<{ patientId: string; kind: string; sentAt: string; delivered: boolean }> }

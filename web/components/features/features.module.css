@@ -305,3 +305,50 @@
   font: inherit;
   font-size: 0.82rem;
 }
+.adherence {
+  display: grid;
+  gap: 8px;
+}
+.doseGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.doseGrid span {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+.dose_ok {
+  background: var(--tidal);
+}
+.dose_red {
+  background: var(--urgent);
+}
+.dose_review {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+}
+.question {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.question legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  cursor: pointer;
+}

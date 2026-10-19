@@ -133,6 +133,8 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           <div className={styles.staffRows}>{callList && filterItems(callList.items, filter, me).map((item) => <article className={styles.staffRow} key={item.patientId}>
             <div><strong>{item.fullName}</strong><span>{item.reason.replaceAll("_", " ")} · {item.preferredLanguage.toUpperCase()}{item.followUpDay ? ` · Day ${item.followUpDay}` : ""}</span>
               {item.urgentReply && <p>{item.urgentReply}</p>}
+              {item.urgentReply && item.urgentEnglish && <p className={styles.gloss}><small>English (machine translation)</small> {item.urgentEnglish}</p>}
+              {item.reason === "MISSED_APPOINTMENT" && <p>Did not come to a booked visit.</p>}
               <CaseControls item={item} snapshotAt={callList.snapshotAt} me={me} assignees={assignees} onChanged={loadQueue} notify={notify} /></div>
             <StatusBadge level={item.level}>{item.level.toLowerCase()}</StatusBadge>
           </article>)}</div>

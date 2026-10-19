@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { BellRing, Copy, Send, Sunrise } from "lucide-react"
+import { BellRing, ClipboardList, Copy, Send, Sunrise } from "lucide-react"
 import { apiRequest } from "@/lib/api"
 import type { StaffAlertLog, StaffChannel, StaffLinkCode } from "@/lib/types"
 import { SectionHeading, StatusBadge } from "@/components/ui"
@@ -16,11 +16,11 @@ const OUTCOME: Record<StaffAlertLog["outcome"], { level: string; word: string }>
   NOT_SENT: { level: "watch", word: "recorded only" },
   FAILED: { level: "red", word: "failed" },
 }
-const KIND: Record<StaffAlertLog["kind"], string> = { ALERT: "Alert", BRIEFING: "Morning briefing", TEST: "Test" }
+const KIND: Record<StaffAlertLog["kind"], string> = { ALERT: "Alert", BRIEFING: "Morning briefing", TEST: "Test", HANDOVER: "Handover" }
 
 /**
  * The clinic's staff chat: link a Telegram group with a one-time code, switch on counts-only alerts and the
- * morning briefing, send a test, and read every message sent (or only recorded) so far.
+ * morning briefing and the end-of-shift handover, send a test, and read every message sent (or only recorded) so far.
  */
 export function StaffChatPanel({ notify, canManage }: { notify: (n: Notice) => void; canManage: boolean }) {
   const [channel, setChannel] = useState<StaffChannel | null>(null)
@@ -40,15 +40,15 @@ export function StaffChatPanel({ notify, canManage }: { notify: (n: Notice) => v
     setBusy(label)
     try { await work() } catch (e) { notify({ tone: "error", text: e instanceof Error ? e.message : "That did not work." }) } finally { setBusy(null) }
   }
-  const save = (alertsOn: boolean, briefingHour: number | null) => act("save", async () => {
-    setChannel(await apiRequest<StaffChannel>("/api/clinic/staff-chat", { method: "PUT", body: JSON.stringify({ alertsOn, briefingHour }) }))
+  const save = (alertsOn: boolean, briefingHour: number | null, handoverHour: number | null = channel?.handoverHour ?? null) => act("save", async () => {
+    setChannel(await apiRequest<StaffChannel>("/api/clinic/staff-chat", { method: "PUT", body: JSON.stringify({ alertsOn, briefingHour, handoverHour }) }))
     notify({ tone: "success", text: alertsOn ? "Staff alerts are on." : "Staff alerts are off." })
   })
 
   if (!channel) return null
   return (
     <section className={homeStyles.peopleCard} id="staff-chat">
-      <SectionHeading eyebrow="Staff chat" title="Alerts and the morning briefing" action={<StatusBadge level={channel.alertsOn ? "ok" : "review"}>{channel.alertsOn ? "on" : "off"}</StatusBadge>} />
+      <SectionHeading eyebrow="Staff chat" title="Alerts, briefing and handover" action={<StatusBadge level={channel.alertsOn ? "ok" : "review"}>{channel.alertsOn ? "on" : "off"}</StatusBadge>} />
       <div className={styles.panel}>
         <p className={styles.lead}>Khabar can tell your team&apos;s Telegram group when patients are waiting: how many, how many are urgent, and how many are past your acknowledgement time, with a link to the call list. It never sends a patient&apos;s name or words.</p>
         {!channel.telegramConfigured && <p className={styles.muted}>Telegram is not configured on this server, so messages are recorded below but not delivered.</p>}
@@ -77,6 +77,12 @@ export function StaffChatPanel({ notify, canManage }: { notify: (n: Notice) => v
               {[6, 7, 8, 9, 10].map((h) => <option key={h} value={h}>{h}:00</option>)}
             </select>
           </label>
+          <label className={styles.field}>End-of-shift handover
+            <select value={channel.handoverHour ?? ""} disabled={busy === "save"} onChange={(e) => void save(channel.alertsOn, channel.briefingHour, e.target.value === "" ? null : Number(e.target.value))}>
+              <option value="">No handover</option>
+              {[13, 14, 16, 17, 18, 20, 22].map((h) => <option key={h} value={h}>{h}:00</option>)}
+            </select>
+          </label>
         </div>}
         {canManage && <div className={styles.row}>
           <button className="button-secondary" disabled={busy === "test"} onClick={() => void act("test", async () => {
@@ -85,6 +91,12 @@ export function StaffChatPanel({ notify, canManage }: { notify: (n: Notice) => v
             await load()
           })}><Send size={15} aria-hidden="true" /> Send a test</button>
           <button className="button-secondary" disabled={busy === "preview"} onClick={() => void act("preview", async () => { setPreview((await apiRequest<{ text: string }>("/api/clinic/staff-chat/briefing")).text) })}><Sunrise size={15} aria-hidden="true" /> Preview today&apos;s briefing</button>
+          <button className="button-secondary" disabled={busy === "handover-preview"} onClick={() => void act("handover-preview", async () => { setPreview((await apiRequest<{ text: string }>("/api/clinic/staff-chat/handover")).text) })}><ClipboardList size={15} aria-hidden="true" /> Preview the handover</button>
+          <button className="button-secondary" disabled={busy === "handover"} onClick={() => void act("handover", async () => {
+            const sent = await apiRequest<StaffAlertLog>("/api/clinic/staff-chat/handover", { method: "POST" })
+            notify({ tone: sent.outcome === "SENT" ? "success" : "info", text: sent.outcome === "SENT" ? "Handover sent to the staff chat." : `Handover recorded only: ${sent.detail ?? ""}`.trim() })
+            await load()
+          })}><Send size={15} aria-hidden="true" /> Send handover now</button>
         </div>}
         {preview && <pre className={styles.sent}>{preview}</pre>}
 
