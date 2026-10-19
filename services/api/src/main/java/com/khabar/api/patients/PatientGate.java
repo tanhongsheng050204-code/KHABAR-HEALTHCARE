@@ -40,6 +40,18 @@ public class PatientGate {
         return patient;
     }
 
+    /** Clinical detail (lab results): only the patient and their clinic's doctors, never caregivers. Staff reads are logged. */
+    public Patient clinical(AppUser user, UUID patientId) {
+        Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!policy.isPatientOrTheirClinic(user, patient)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        if (user.getRole() != Role.PATIENT) {
+            auditLog.record(user, patient.getId(), AuditAction.VIEWED_RECORD);
+        }
+        return patient;
+    }
+
     /** A doctor at the patient's own clinic. */
     public Patient doctorAt(AppUser user, UUID patientId) {
         Patient patient = patients.findById(patientId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

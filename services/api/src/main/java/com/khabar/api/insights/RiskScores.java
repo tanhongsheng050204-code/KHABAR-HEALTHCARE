@@ -52,6 +52,13 @@ public class RiskScores {
     }
 
     public record Score(UUID patientId, int score, List<Reason> reasons) {
+
+        /** The same score with each reason named by its rule only, without the patient's readings or lab values. */
+        public Score withoutValues() {
+            return new Score(patientId, score, reasons.stream()
+                    .map(r -> new Reason(r.key(), RULES.stream().filter(rule -> rule.key().equals(r.key())).map(Rule::label).findFirst().orElse(r.key()), r.points()))
+                    .toList());
+        }
     }
 
     public record Weight(String key, String label, int defaultPoints, int points) {

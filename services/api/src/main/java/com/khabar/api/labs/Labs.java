@@ -66,7 +66,7 @@ public class Labs {
     @GetMapping("/api/patients/{id}/labs")
     @Transactional
     public List<LabView> list(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
-        Patient patient = gate.read(currentUser.from(jwt), id);
+        Patient patient = gate.clinical(currentUser.from(jwt), id);
         return views(patient.getId());
     }
 

@@ -56,6 +56,11 @@ public class Trends {
 
     public record Summary(int days, List<Series> series, List<DayDoses> doses, String doseDirection, List<DayReplies> replies,
                           List<Labs.LabView> labs, String overall, List<String> notes) {
+
+        /** What a caregiver may see: readings and dose answers, which the patient shares with them; not labs or reply triage. */
+        public Summary forCaregiver() {
+            return new Summary(days, series, doses, doseDirection, List.of(), List.of(), overall, notes);
+        }
     }
 
     private final ReadingRepository readings;

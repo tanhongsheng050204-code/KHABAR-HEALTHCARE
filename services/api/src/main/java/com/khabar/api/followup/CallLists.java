@@ -76,7 +76,8 @@ public class CallLists {
         CallListItem withRisk(com.khabar.api.insights.RiskScores.Score score) {
             return new CallListItem(patientId, fullName, preferredLanguage, level, urgentReply, latestReply, latestAt, followUpDay,
                     unhandledReplies, reason, followUpCase, urgentEnglish, latestEnglish, score.score(),
-                    score.reasons().stream().map(com.khabar.api.insights.RiskScores.Reason::label).toList());
+                    // Rule names only: readings and lab values stay in the doctor's record view.
+                    score.withoutValues().reasons().stream().map(com.khabar.api.insights.RiskScores.Reason::label).toList());
         }
     }
 

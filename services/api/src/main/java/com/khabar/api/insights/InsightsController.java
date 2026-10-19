@@ -32,9 +32,11 @@ public class InsightsController {
     private final PatientPathwayRepository pathways;
     private final Trends trends;
     private final RiskScores risk;
+    private final com.khabar.api.audit.AuditLog auditLog;
 
     public InsightsController(CurrentUser currentUser, PatientGate gate, ClinicStaffAccess staffAccess, PatientRepository patients,
-                              PatientPathwayRepository pathways, Trends trends, RiskScores risk) {
+                              PatientPathwayRepository pathways, Trends trends, RiskScores risk, com.khabar.api.audit.AuditLog auditLog) {
+        this.auditLog = auditLog;
         this.currentUser = currentUser;
         this.gate = gate;
         this.staffAccess = staffAccess;
@@ -53,8 +55,10 @@ public class InsightsController {
         if (days < 7 || days > 180) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose between 7 and 180 days.");
         }
-        Patient patient = gate.read(currentUser.from(jwt), id);
-        return trends.summary(patient.getId(), days);
+        AppUser user = currentUser.from(jwt);
+        Patient patient = gate.read(user, id);
+        Trends.Summary summary = trends.summary(patient.getId(), days);
+        return user.getRole() == com.khabar.api.identity.Role.CAREGIVER ? summary.forCaregiver() : summary;
     }
 
     /** The score is for the clinic's follow-up staff, not shown to patients or caregivers. */
@@ -64,7 +68,10 @@ public class InsightsController {
         AppUser staff = followUpStaff(jwt);
         Patient patient = patients.findById(id).filter(p -> p.getClinic().getId().equals(staff.getClinic().getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return risk.score(patient.getId(), staff.getClinic().getId());
+        auditLog.record(staff, patient.getId(), com.khabar.api.audit.AuditAction.VIEWED_RECORD);
+        RiskScores.Score score = risk.score(patient.getId(), staff.getClinic().getId());
+        // Nurses work the follow-up queue; readings and lab values in the reasons are for the clinic's doctors.
+        return staffAccess.hasClinicalAccess(staff) ? score : score.withoutValues();
     }
 
     /** Every patient the clinic follows (in follow-up or on a pathway), highest score first. */
@@ -78,7 +85,7 @@ public class InsightsController {
         return patients.findByClinicId(clinicId).stream()
                 .filter(p -> p.getFollowUpStart() != null || onPathway.contains(p.getId()))
                 .map(p -> {
-                    RiskScores.Score s = risk.score(p.getId(), points);
+                    RiskScores.Score s = risk.score(p.getId(), points).withoutValues();
                     return new RiskRow(p.getId(), p.getFullName(), p.getPreferredLanguage(), s.score(), s.reasons());
                 })
                 .sorted(Comparator.comparingInt(RiskRow::score).reversed().thenComparing(RiskRow::fullName))

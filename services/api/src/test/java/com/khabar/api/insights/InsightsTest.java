@@ -167,11 +167,19 @@ class InsightsTest {
         assertThat(sugar.get("outOfTarget").asInt()).isEqualTo(6);
         assertThat(trends.get("overall").asText()).isEqualTo("WORSENING");
 
-        JsonNode risk = body(mvc.perform(get("/api/patients/{id}/risk", ahmad.getId()).header("Authorization", bearer(nurse.getId())))
+        assertThat(trends.get("labs")).as("caregivers see readings and doses, not labs").isEmpty();
+        mvc.perform(get("/api/patients/{id}/labs", ahmad.getId()).header("Authorization", bearer(caregiver.getId())))
+                .andExpect(status().isForbidden());
+
+        JsonNode risk = body(mvc.perform(get("/api/patients/{id}/risk", ahmad.getId()).header("Authorization", bearer(doctor.getId())))
                 .andExpect(status().isOk()));
         // 3 missed doses (3) + sugar rising (2) + latest sugar above target (1)
         assertThat(risk.get("score").asInt()).isEqualTo(6);
-        assertThat(risk.get("reasons").toString()).contains("Blood sugar rising").contains("3 missed doses");
+        assertThat(risk.get("reasons").toString()).contains("7.0 → 9.5").contains("3 missed doses");
+        JsonNode nurseView = body(mvc.perform(get("/api/patients/{id}/risk", ahmad.getId()).header("Authorization", bearer(nurse.getId())))
+                .andExpect(status().isOk()));
+        assertThat(nurseView.get("score").asInt()).isEqualTo(6);
+        assertThat(nurseView.get("reasons").toString()).as("nurses see the rule, not the readings").doesNotContain("9.5").contains("Blood sugar rising");
 
         mvc.perform(get("/api/patients/{id}/risk", ahmad.getId()).header("Authorization", bearer(caregiver.getId())))
                 .andExpect(status().isForbidden());
