@@ -88,3 +88,6 @@ export type PreBriefData = { since: string; daysSince: number | null; headline: 
 export type DietTip = { id: string; category: string; label: string; ms: string; en: string; zh: string | null; ta: string | null }
 export type Preferences = { voiceFirst: boolean; simpleMode: boolean }
 export type FamilyGroupStatus = { telegramConfigured: boolean; linked: boolean; linkedAt: string | null }
+export type WorkloadBoard = { staff: Array<{ userId: string; name: string; role: string; open: number; urgent: number; overdue: number; closedThisWeek: number; callsThisWeek: number }>; unowned: number; unownedUrgent: number; at: string }
+export type ImportResult = { saved: boolean; ok: number; problems: number; rows: Array<{ line: number; fullName: string; icMasked: string | null; phone: string; language: string | null; condition: string | null; status: "OK" | "ERROR" | "DUPLICATE"; problems: string[] }> }
+export type OutcomesReportData = { clinicName: string; month: string; from: string; to: string; monthInProgress: boolean; generatedAt: string; sections: Array<{ title: string; lines: Array<{ key: string; label: string; value: number; of: number | null; note: string | null }> }> }

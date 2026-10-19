@@ -13,6 +13,7 @@ import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
 import { RiskChip, RiskWeightsPanel, SlippingPanel } from "@/components/features/clinical-insights";
 import { CallScriptButton } from "@/components/features/copilot";
+import { ImportPatientsPanel, ReportLink, WorkloadPanel } from "@/components/features/ops";
 import { SectionHeading, StatusBadge } from "@/components/ui";
 import { useWorkspaceNavigation } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
@@ -144,6 +145,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
           <p className={styles.staffCaution}><ShieldCheck size={15} /> This queue supports follow-up; it does not diagnose or replace clinic escalation procedures.</p>
         </section>
         <SlippingPanel />
+        <WorkloadPanel notify={notify} canBalance={manager} />
         <MentionsPanel />
         <ImpactPanel />
       </>}
@@ -164,6 +166,8 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
         <ClinicSettingsPanel notify={notify} />
         <StaffChatPanel notify={notify} canManage={manager} />
         <RiskWeightsPanel notify={notify} canManage={manager} />
+        {manager && <ReportLink />}
+        {manager && <ImportPatientsPanel notify={notify} />}
         <IntegrationsPanel />
         <PrivacyDeskPanel notify={notify} />
         <AuditChainPanel />

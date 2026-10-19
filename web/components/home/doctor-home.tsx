@@ -23,6 +23,7 @@ import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
 import { RiskChip, SlippingPanel } from "@/components/features/clinical-insights";
 import { AskKhabarPanel, CallScriptButton, DietTipsPanel } from "@/components/features/copilot";
+import { ImportPatientsPanel, ReportLink, WorkloadPanel } from "@/components/features/ops";
 import styles from "@/app/home/home.module.css";
 import { greetingName, initials } from "@/lib/names";
 import { WorkspaceLoading, WorkspaceError } from "./workspace-state";
@@ -612,10 +613,13 @@ export function DoctorHome({
       )}
       <AskKhabarPanel />
       <SlippingPanel />
+      <WorkloadPanel notify={notify} canBalance />
       <MentionsPanel />
       <ImpactPanel />
+      <ReportLink />
       <ClinicTools notify={(notice) => notify(notice)} />
       <DietTipsPanel notify={notify} canEdit />
+      <ImportPatientsPanel notify={notify} />
     </main>
   );
 }

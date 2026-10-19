@@ -116,7 +116,7 @@ public class OutcomesReport {
         pathways.findByClinicIdAndEndedAtIsNull(clinicId).forEach(p -> byPathway.merge(p.getPathway(), 1L, Long::sum));
         List<Line> people = new ArrayList<>();
         people.add(new Line("followed", "Patients in follow-up or on a care pathway", followed.size(), null, null));
-        byPathway.forEach((k, v) -> people.add(new Line("pathway_" + k, "On the " + Pathways.DEFINITIONS.get(k).label().toLowerCase() + " pathway", v, null, null)));
+        byPathway.forEach((k, v) -> people.add(new Line("pathway_" + k, "Care pathway: " + Pathways.DEFINITIONS.get(k).label(), v, null, null)));
         sections.add(new Section("Who was followed", people));
 
         // Reaching patients

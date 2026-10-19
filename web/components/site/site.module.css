@@ -1058,3 +1058,123 @@
     transition: none;
   }
 }
+
+/* Pricing page */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+.plan {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: white;
+}
+.plan h2 {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.2rem;
+}
+.planPrice {
+  margin: 0;
+  color: var(--ink-soft);
+}
+.planPrice strong {
+  color: var(--night);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+.plan ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plan li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--ink-soft);
+}
+.plan li svg {
+  flex: none;
+  color: var(--tidal);
+}
+.roi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.roiInputs {
+  display: grid;
+  gap: 16px;
+}
+.roiInputs label {
+  display: grid;
+  gap: 4px;
+}
+.roiInputs span {
+  font-weight: 600;
+}
+.roiInputs input {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: white;
+  font: inherit;
+}
+.roiInputs small {
+  color: var(--ink-mute);
+}
+.roiResult {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+}
+.roiResult dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.roiResult dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.roiResult dt {
+  color: var(--ink-soft);
+}
+.roiResult dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+.roiNet dd {
+  color: var(--tidal);
+  font-size: 1.3rem;
+}
+.roiNote {
+  margin: 0;
+  color: var(--ink-mute);
+  font-size: 0.88rem;
+}
+.pricingHead,
+.roiResult {
+  justify-items: start;
+}
+.roiResult dl {
+  width: 100%;
+}

@@ -178,54 +178,71 @@ public class AskKhabar {
         }
     }
 
-    /** Khabar's own answer when no model is available: keyword topics matched against the same table. */
+    /**
+     * Khabar's own answer when no model is available. A condition named in the question ("diabetics", "blood
+     * pressure") narrows who is considered; the topics ("missing doses", "missed visit", "slipping") decide who matches.
+     */
     static Answer fromRules(String question, List<FollowUpTable.Entry> entries) {
         String q = question.toLowerCase(Locale.ROOT);
+        List<String> population = new ArrayList<>();
+        Predicate<FollowUpTable.Entry> among = e -> true;
+        if (has(q, "diabet", "kencing manis")) {
+            population.add("on the diabetes pathway");
+            among = among.and(e -> onPathway(e, "DIABETES"));
+        }
+        if (has(q, "hypertens", "darah tinggi")) {
+            population.add("on the high blood pressure pathway");
+            among = among.and(e -> onPathway(e, "HYPERTENSION"));
+        }
         List<String> topics = new ArrayList<>();
         Predicate<FollowUpTable.Entry> match = e -> false;
-        if (has(q, "diabet", "sugar", "glucose", "gula", "kencing manis")) {
-            topics.add("on the diabetes pathway with blood sugar rising or above target");
-            match = match.or(e -> onPathway(e, "DIABETES") && (worse(e, "GLUCOSE") || reasonKey(e, "GLUCOSE_ABOVE_TARGET")));
+        if (has(q, "sugar", "glucose", "gula")) {
+            topics.add("blood sugar rising or above target");
+            match = match.or(e -> worse(e, "GLUCOSE") || reasonKey(e, "GLUCOSE_ABOVE_TARGET"));
         }
-        if (has(q, "pressure", "bp", "hypertens", "darah tinggi")) {
-            topics.add("with blood pressure rising or above target");
+        if (has(q, "pressure", " bp", "bp ")) {
+            topics.add("blood pressure rising or above target");
             match = match.or(e -> worse(e, "SYSTOLIC") || reasonKey(e, "BP_ABOVE_TARGET"));
         }
-        if (has(q, "miss", "dose", "adheren", "ubat", "medicine", "taking")) {
-            topics.add("who answered Missed or left dose reminders unanswered this week");
+        if (has(q, "dose", "adheren", "ubat", "medicine", "taking", "pill", "tablet")) {
+            topics.add("doses answered Missed or left unanswered this week");
             match = match.or(e -> reasonKey(e, "MISSED_DOSES") || reasonKey(e, "UNANSWERED_DOSES"));
         }
         if (has(q, "no-show", "no show", "appointment", "visit", "temu janji")) {
-            topics.add("who missed a booked visit");
+            topics.add("a missed booked visit");
             match = match.or(e -> reasonKey(e, "MISSED_VISIT"));
         }
         if (has(q, "hba1c", "a1c", "lab")) {
-            topics.add("with the latest HbA1c above target");
+            topics.add("the latest HbA1c above target");
             match = match.or(e -> reasonKey(e, "HBA1C_ABOVE_TARGET"));
         }
         if (has(q, "review", "overdue")) {
-            topics.add("whose pathway review is due");
+            topics.add("a pathway review due");
             match = match.or(e -> reasonKey(e, "REVIEW_DUE"));
         }
-        if (has(q, "quiet", "silent", "no reply", "not replied", "reply")) {
-            topics.add("who have not answered a check-in for 48 hours");
+        if (has(q, "quiet", "silent", "no reply", "not replied", "not answered")) {
+            topics.add("no answer to a check-in for 48 hours");
             match = match.or(e -> reasonKey(e, "NO_REPLY"));
         }
         if (has(q, "understand", "plan check", "teach")) {
-            topics.add("whose last plan check had wrong answers");
+            topics.add("wrong answers in the last plan check");
             match = match.or(e -> reasonKey(e, "PLAN_NOT_UNDERSTOOD"));
         }
         if (topics.isEmpty() || has(q, "slip", "worse", "worst", "deteriorat", "risk", "concern", "worry", "priority")) {
-            topics.add("with the highest follow-up risk scores");
-            match = match.or(e -> e.score().score() >= 3);
+            topics.add("readings worsening or a risk score of 5 or more");
+            match = match.or(e -> worse(e, "GLUCOSE") || worse(e, "SYSTOLIC") || e.score().score() >= 5);
         }
-        List<FollowUpTable.Entry> found = entries.stream().filter(match)
+        Predicate<FollowUpTable.Entry> wanted = among.and(match);
+        long considered = entries.stream().filter(among).count();
+        List<FollowUpTable.Entry> found = entries.stream().filter(wanted)
                 .sorted(Comparator.comparingInt((FollowUpTable.Entry e) -> e.score().score()).reversed()).limit(10).toList();
         List<Cited> cited = found.stream().map(e -> new Cited(e.patient().getId(), e.patient().getFullName(),
                 e.score().withoutValues().reasons().stream().map(r -> r.label()).reduce((a, b) -> a + "; " + b).orElse("no risk points"))).toList();
+        String who = population.isEmpty() ? "followed patients" : "followed patients " + String.join(" and ", population);
         String text = found.isEmpty()
-                ? "No patient in follow-up matches: " + String.join("; ", topics) + "."
-                : found.size() + " of " + entries.size() + " followed patients " + String.join(", or ", topics) + ", highest score first.";
+                ? "None of the " + considered + " " + who + " has " + String.join(", or ", topics) + "."
+                : found.size() + " of " + considered + " " + who + " " + (found.size() == 1 ? "has " : "have ")
+                + String.join(", or ", topics) + "; highest risk score first.";
         return new Answer(text + " (Answered by Khabar's rules; no AI model is set up.)", "rules", cited, entries.size());
     }
 

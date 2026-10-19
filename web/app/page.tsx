@@ -99,6 +99,7 @@ export default function LandingPage() {
             <a href="#safety">Safety</a>
             <a href="#faq">FAQ</a>
             <Link href="/story">Her story</Link>
+            <Link href="/pricing">Pricing</Link>
           </nav>
           <div className={styles.headerActions}>
             <Link className="button-secondary" href="/login">
@@ -355,6 +356,7 @@ export default function LandingPage() {
               <h2>Story</h2>
               <ul>
                 <li><Link href="/story">Aminah&apos;s thirty days</Link></li>
+                <li><Link href="/pricing">Pricing and value calculator</Link></li>
               </ul>
             </div>
           </div>
