@@ -26,8 +26,9 @@ raise the level.
 
 \* Not independent any more: its misses were read while the concepts were written.
 
-The one red reply still missed on the second set: "I'm gasping for air even sitting still". It was not fixed after
-measuring, so the number stays honest; the next rule change should be checked against a new set.
+The one red reply missed on the second set was "I'm gasping for air even sitting still". The 31/32 above was
+measured before it was fixed. On 19 Oct it was fixed (32/32 on a re-run), which means the second set is no longer
+unseen either; the next unseen figure needs a fresh set.
 Full output: [triage-concepts-holdout2.md](triage-concepts-holdout2.md).
 
 ## Limits

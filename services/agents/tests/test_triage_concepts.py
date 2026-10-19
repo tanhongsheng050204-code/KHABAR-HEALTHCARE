@@ -62,3 +62,9 @@ def test_a_reply_too_long_to_check_cheaply_is_never_left_as_fine():
 def test_a_red_flag_anywhere_in_a_long_reply_is_still_red():
     assert detect("saya sihat " * 800 + " pengsan tadi").level == "red"
     assert detect("pengsan tadi " + "saya sihat " * 800).level == "red"
+
+
+def test_gasping_for_air_is_an_emergency():
+    from agents.triage_concepts import detect
+    assert detect("I'm gasping for air even sitting still") is not None
+    assert detect("I'm gasping for air even sitting still").level == "red"
