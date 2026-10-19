@@ -64,6 +64,8 @@ nonzero when either endpoint is unavailable or returns an unexpected status.
 | `KHABAR_STAFF_ALERTS_POLL_MS` | `120000` | How often the check runs. |
 | `KHABAR_REMINDERS_ENABLED` | `true` (`false` in the `pilot` profile) | Runs dose, refill and appointment reminders (each patient switches their own on), no-show detection and caregiver alerts. |
 | `KHABAR_REMINDERS_POLL_MS` | `300000` | How often reminders are checked. |
+| `KHABAR_TICK_SECRET` | empty (off) | Shared secret for `POST /api/webhooks/tick`, which `.github/workflows/tick.yml` calls every 5 minutes so the timed jobs run even when the host sleeps. Set the same value as the GitHub secret `KHABAR_TICK_SECRET`. |
+| `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE` (agents) | `gemini-2.5-flash-preview-tts`, `Kore` | Speech for "voice first" check-ins on Telegram. Without speech the check-in goes as text only. |
 | `KHABAR_AUDIT_SEAL_MS` | `60000` | How often new access-log entries are sealed into the hash chain. |
 | `WEB_APP_URL` | empty | Used for the link in staff alerts. |
 
