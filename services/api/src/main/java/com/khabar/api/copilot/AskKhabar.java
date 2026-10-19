@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -61,9 +62,11 @@ public class AskKhabar {
     private final AiReceipts aiReceipts;
     private final AuditLog auditLog;
     private final ObjectMapper json;
+    private final com.khabar.api.patients.PatientRepository patients;
 
     public AskKhabar(CurrentUser currentUser, ClinicStaffAccess staffAccess, FollowUpTable table, AgentClientService agents,
-                     AiReceipts aiReceipts, AuditLog auditLog, ObjectMapper json) {
+                     AiReceipts aiReceipts, AuditLog auditLog, ObjectMapper json, com.khabar.api.patients.PatientRepository patients) {
+        this.patients = patients;
         this.currentUser = currentUser;
         this.staffAccess = staffAccess;
         this.table = table;
@@ -93,7 +96,7 @@ public class AskKhabar {
         }
         Map<String, FollowUpTable.Entry> byCode = new LinkedHashMap<>();
         entries.forEach(e -> byCode.put(e.code(), e));
-        String coded = codeNames(question, entries);
+        String coded = codeNames(question, entries, patients.findByClinicId(doctor.getClinic().getId()));
 
         Answer answer = fromModel(coded, entries, byCode);
         if (answer == null) {
@@ -105,16 +108,36 @@ public class AskKhabar {
         return answer;
     }
 
-    /** A patient named in the question becomes their code, so no name reaches the AI. */
-    static String codeNames(String question, List<FollowUpTable.Entry> entries) {
-        String coded = question;
-        for (FollowUpTable.Entry e : entries) {
-            String full = e.patient().getFullName();
-            coded = Pattern.compile("\\b" + Pattern.quote(full) + "\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(coded).replaceAll(e.code());
-            String first = full.split("\\s+")[0];
-            if (first.length() >= 4) {
-                coded = Pattern.compile("\\b" + Pattern.quote(first) + "\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(coded).replaceAll(e.code());
+    /** Connectors in Malaysian names that are not names on their own. */
+    static final Set<String> CONNECTORS = Set.of("bin", "binti", "bt", "bte", "al", "ap", "a/l", "a/p", "s/o", "d/o", "anak", "mr", "mrs", "ms", "dr");
+
+    /**
+     * No name reaches the AI. A followed patient's full name or any part of it becomes their code; the name of any
+     * other patient at the clinic becomes [NAME]. Full names first, then single parts, longest first.
+     */
+    static String codeNames(String question, List<FollowUpTable.Entry> entries, List<Patient> clinicPatients) {
+        Map<UUID, String> codes = new java.util.HashMap<>();
+        entries.forEach(e -> codes.put(e.patient().getId(), e.code()));
+        List<String[]> replacements = new ArrayList<>();
+        for (Patient p : clinicPatients) {
+            String full = p.getFullName() == null ? "" : p.getFullName().strip();
+            if (full.isEmpty()) {
+                continue;
             }
+            String code = codes.getOrDefault(p.getId(), "[NAME]");
+            replacements.add(new String[]{full, code});
+            for (String part : full.split("\\s+")) {
+                if (part.length() >= 3 && !CONNECTORS.contains(part.toLowerCase(Locale.ROOT))) {
+                    replacements.add(new String[]{part, code});
+                }
+            }
+        }
+        replacements.sort(Comparator.comparingInt((String[] r) -> r[0].length()).reversed());
+        String coded = question;
+        for (String[] r : replacements) {
+            // Letter-aware edges instead of \b, so names next to Chinese or Tamil text are found too.
+            coded = Pattern.compile("(?<![\\p{L}\\p{N}])" + Pattern.quote(r[0]) + "(?![\\p{L}\\p{N}])",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(coded).replaceAll(java.util.regex.Matcher.quoteReplacement(r[1]));
         }
         return coded;
     }
@@ -123,9 +146,11 @@ public class AskKhabar {
     private Answer fromModel(String question, List<FollowUpTable.Entry> entries, Map<String, FollowUpTable.Entry> byCode) {
         List<Map<String, Object>> rows = entries.stream().map(FollowUpTable.Entry::row).toList();
         try {
+            // Each patient's receipt holds only their own row: the question may be about someone else.
             for (FollowUpTable.Entry e : entries) {
                 aiReceipts.text(e.patient(), AiReceipts.Purpose.ASK_KHABAR, "/agents/copilot/ask",
-                        "Staff question: " + question + "\nThis patient's row (as " + e.code() + "): " + json.writeValueAsString(e.row()));
+                        "A staff question about the clinic's follow-up. Your row was sent as " + e.code() + " with no name: "
+                                + json.writeValueAsString(e.row()));
             }
             Map<String, Object> result = agents.askKhabar(question, rows);
             Object text = result == null ? null : result.get("answer");

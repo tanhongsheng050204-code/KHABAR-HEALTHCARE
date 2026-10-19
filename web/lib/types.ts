@@ -82,3 +82,7 @@ export type PathwayEntry = { id: string; pathway: string; label: string; targets
 export type PathwayDefinition = { key: string; label: string; defaults: PathwayTargets; reviewEveryWeeks: number; tracks: string[] }
 export type RiskRow = { patientId: string; fullName: string; preferredLanguage: string; score: number; reasons: Array<{ key: string; label: string; points: number }> }
 export type RiskWeight = { key: string; label: string; defaultPoints: number; points: number }
+export type AskAnswer = { answer: string; source: "model" | "rules"; patients: Array<{ patientId: string; fullName: string; why: string }>; rowsConsidered: number }
+export type CallScript = { language: string; lines: Array<{ english: string; spoken: string }>; safety: { english: string; spoken: string }; source: "model" | "rules" }
+export type PreBriefData = { since: string; daysSince: number | null; headline: string; lines: Array<{ kind: string; level: string; text: string }> }
+export type DietTip = { id: string; category: string; label: string; ms: string; en: string; zh: string | null; ta: string | null }

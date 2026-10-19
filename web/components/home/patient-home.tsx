@@ -36,6 +36,7 @@ import { MyDataPanel } from "@/components/features/my-data";
 import { RemindersPanel } from "@/components/features/reminders";
 import { TeachBackPanel } from "@/components/features/teach-back";
 import { MyTrendsPanel } from "@/components/features/my-trends";
+import { MealCheckPanel } from "@/components/features/meal-check";
 import { ListenButton } from "./listen-button";
 import { PacketPhotoReader } from "./packet-photo-reader";
 import { TelegramCard } from "./telegram-card";
@@ -393,6 +394,7 @@ export function PatientHome({
           />
           <RemindersPanel notify={notify} />
           <TeachBackPanel notify={notify} />
+          <MealCheckPanel />
         </div>
         <div
           id="checkin-view"

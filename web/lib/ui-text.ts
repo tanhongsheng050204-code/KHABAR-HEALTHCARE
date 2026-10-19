@@ -305,4 +305,14 @@ export const UI_TEXT: Record<string, [string, string, string]> = {
   "not enough readings": ["bacaan tidak mencukupi", "读数不足", "போதுமான அளவீடுகள் இல்லை"],
   "Blood pressure (top)": ["Tekanan darah (atas)", "血压（高压）", "இரத்த அழுத்தம் (மேல்)"],
   "Blood pressure (bottom)": ["Tekanan darah (bawah)", "血压（低压）", "இரத்த அழுத்தம் (கீழ்)"],
+
+  // Meal check (Oct 2026)
+  "Meals": ["Makanan", "饮食", "உணவு"],
+  "Check a meal": ["Semak makanan", "检查一餐", "உணவைச் சரிபார்"],
+  "Take a photo of your meal. Khabar names the food groups and sends back your clinic's own diet tips. No calorie counts.": ["Ambil gambar makanan anda. Khabar menamakan kumpulan makanan dan menghantar nasihat pemakanan klinik anda sendiri. Tiada kiraan kalori.", "拍下您的餐食。Khabar 会识别食物类别，并发回诊所自己的饮食建议。不计算卡路里。", "உங்கள் உணவைப் படம் எடுங்கள். Khabar உணவு வகைகளைக் கண்டறிந்து உங்கள் கிளினிக்கின் சொந்த உணவு ஆலோசனையை அனுப்பும். கலோரி கணக்கு இல்லை."],
+  "Meal photo": ["Gambar makanan", "餐食照片", "உணவுப் படம்"],
+  "I agree to send this photo to the AI to name the food. It is not kept.": ["Saya setuju menghantar gambar ini kepada AI untuk menamakan makanan. Ia tidak disimpan.", "我同意把这张照片发给AI识别食物。照片不会保存。", "உணவைக் கண்டறிய இந்தப் படத்தை AI-க்கு அனுப்ப ஒப்புக்கொள்கிறேன். இது சேமிக்கப்படாது."],
+  "Checking…": ["Menyemak…", "正在检查…", "சரிபார்க்கிறது…"],
+  "Check my meal": ["Semak makanan saya", "检查我的餐食", "என் உணவைச் சரிபார்"],
+  "Meal checks are not available yet.": ["Semakan makanan belum tersedia.", "餐食检查暂未开放。", "உணவுச் சரிபார்ப்பு இன்னும் கிடைக்கவில்லை."],
 }

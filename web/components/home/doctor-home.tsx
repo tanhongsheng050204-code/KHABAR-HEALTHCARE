@@ -22,6 +22,7 @@ import { ClinicTools } from "@/components/clinical/clinic-tools";
 import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
 import { RiskChip, SlippingPanel } from "@/components/features/clinical-insights";
+import { AskKhabarPanel, CallScriptButton, DietTipsPanel } from "@/components/features/copilot";
 import styles from "@/app/home/home.module.css";
 import { greetingName, initials } from "@/lib/names";
 import { WorkspaceLoading, WorkspaceError } from "./workspace-state";
@@ -325,6 +326,7 @@ export function DoctorHome({
                       {item.urgentReply ? item.urgentEnglish : item.latestEnglish}
                     </p>
                   )}
+                  <CallScriptButton patientId={item.patientId} />
                   <CaseControls item={item} snapshotAt={calls.snapshotAt} me={me} assignees={assignees} onChanged={load} notify={notify} />
                 </div>
               </article>
@@ -608,10 +610,12 @@ export function DoctorHome({
           </section>
         </dialog>
       )}
+      <AskKhabarPanel />
       <SlippingPanel />
       <MentionsPanel />
       <ImpactPanel />
       <ClinicTools notify={(notice) => notify(notice)} />
+      <DietTipsPanel notify={notify} canEdit />
     </main>
   );
 }

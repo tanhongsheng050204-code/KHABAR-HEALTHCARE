@@ -12,6 +12,7 @@ import { PrivacyDeskPanel } from "@/components/features/privacy-desk";
 import { ImpactPanel } from "@/components/features/impact";
 import { MentionsPanel } from "@/components/features/case-notes";
 import { RiskChip, RiskWeightsPanel, SlippingPanel } from "@/components/features/clinical-insights";
+import { CallScriptButton } from "@/components/features/copilot";
 import { SectionHeading, StatusBadge } from "@/components/ui";
 import { useWorkspaceNavigation } from "./workspace-navigation";
 import styles from "@/app/home/home.module.css";
@@ -136,6 +137,7 @@ export function ClinicStaffHome({ me, notify }: { me: Me; notify: (notice: Notic
               {item.urgentReply && <p>{item.urgentReply}</p>}
               {item.urgentReply && item.urgentEnglish && <p className={styles.gloss}><small>English (machine translation)</small> {item.urgentEnglish}</p>}
               {item.reason === "MISSED_APPOINTMENT" && <p>Did not come to a booked visit.</p>}
+              <CallScriptButton patientId={item.patientId} />
               <CaseControls item={item} snapshotAt={callList.snapshotAt} me={me} assignees={assignees} onChanged={loadQueue} notify={notify} /></div>
             <StatusBadge level={item.level}>{item.level.toLowerCase()}</StatusBadge>
           </article>)}</div>

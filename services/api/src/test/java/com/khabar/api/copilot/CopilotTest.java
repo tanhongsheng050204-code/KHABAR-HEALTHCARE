@@ -128,17 +128,19 @@ class CopilotTest {
             String code = rows.stream().filter(r -> ((Map<String, Object>) r.get("doses14d")) != null).findFirst().orElseThrow().get("code").toString();
             return Map.of("answer", code + " has missed three doses this week.", "patients", List.of(Map.of("code", code, "why", "3 missed")));
         });
-        JsonNode answer = ask(doctor, "How is Ahmad bin Ismail doing?");
+        patients.save(new Patient(ahmad.getClinic(), null, "Kumaravel a/l Rajan", "550101-07-1111", "012-555 0199", "ta"));
+        JsonNode answer = ask(doctor, "How is Ahmad bin Ismail doing? And Ahmad's neighbour Kumaravel?");
 
         ArgumentCaptor<String> question = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<List<Map<String, Object>>> rows = ArgumentCaptor.forClass(List.class);
         verify(agents).askKhabar(question.capture(), rows.capture());
-        assertThat(question.getValue()).doesNotContain("Ahmad").matches(".*P\\d+.*");
+        assertThat(question.getValue()).doesNotContain("Ahmad").doesNotContain("Kumaravel").contains("[NAME]").matches("(?s).*P\\d+.*");
         assertThat(json.writeValueAsString(rows.getValue())).doesNotContain("Ahmad").doesNotContain("Siti").doesNotContain("012-555");
         assertThat(answer.get("source").asText()).isEqualTo("model");
         assertThat(answer.get("answer").asText()).startsWith("Ahmad bin Ismail has missed");
         assertThat(answer.get("patients").get(0).get("patientId").asText()).isEqualTo(ahmad.getId().toString());
-        assertThat(receipts.latest(ahmad.getId(), 5)).anyMatch(r -> r.purpose().equals("ASK_KHABAR"));
+        assertThat(receipts.latest(siti.getId(), 5)).filteredOn(r -> r.purpose().equals("ASK_KHABAR"))
+                .as("another patient's receipt never holds the question").allMatch(r -> !r.sent().contains("Ahmad") && !r.sent().contains("How is"));
     }
 
     @Test
