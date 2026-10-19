@@ -24,8 +24,12 @@ import java.util.zip.ZipInputStream;
  */
 final class XlsxReader {
 
-    static final int MAX_PART = 8 * 1024 * 1024;
-    static final int MAX_TOTAL = 32 * 1024 * 1024;
+    /** A 500-patient list is well under these; anything bigger is refused before or while it is read. */
+    static final int MAX_PART = 2 * 1024 * 1024;
+    static final int MAX_TOTAL = 4 * 1024 * 1024;
+    static final int MAX_ROWS = 502;
+    static final int MAX_COLUMNS = 64;
+    static final int MAX_SHARED = 20_000;
 
     private XlsxReader() {
     }
@@ -36,6 +40,9 @@ final class XlsxReader {
         if (parts.containsKey("xl/sharedStrings.xml")) {
             Document doc = parse(parts.get("xl/sharedStrings.xml"));
             NodeList items = doc.getElementsByTagNameNS("*", "si");
+            if (items.getLength() > MAX_SHARED) {
+                throw new IOException("The spreadsheet is too large.");
+            }
             for (int i = 0; i < items.getLength(); i++) {
                 shared.add(text((Element) items.item(i)));
             }
@@ -48,13 +55,23 @@ final class XlsxReader {
         Document doc = parse(sheet);
         NodeList rowNodes = doc.getElementsByTagNameNS("*", "row");
         List<List<String>> rows = new ArrayList<>();
+        if (rowNodes.getLength() > MAX_ROWS) {
+            throw new IOException("Import up to 500 patients at a time.");
+        }
         for (int r = 0; r < rowNodes.getLength(); r++) {
             Element row = (Element) rowNodes.item(r);
             NodeList cells = row.getElementsByTagNameNS("*", "c");
+            if (cells.getLength() > MAX_COLUMNS) {
+                throw new IOException("A row has more than " + MAX_COLUMNS + " columns.");
+            }
             TreeMap<Integer, String> byColumn = new TreeMap<>();
             for (int c = 0; c < cells.getLength(); c++) {
                 Element cell = (Element) cells.item(c);
                 int column = column(cell.getAttribute("r"), c);
+                if (column < 0 || column >= MAX_COLUMNS) {
+                    // Columns past the first 64 are never part of a patient list.
+                    continue;
+                }
                 String type = cell.getAttribute("t");
                 String value;
                 if ("inlineStr".equals(type)) {
@@ -82,12 +99,19 @@ final class XlsxReader {
         return rows;
     }
 
-    /** "12" not "12.0", and a phone number stored as 60123456789.0 keeps its digits. */
+    /** "12" not "12.0", and a phone number stored as 6.0127E10 keeps its digits. Huge exponents stay as written. */
     private static String number(String raw) {
         String t = raw.trim();
+        if (t.length() > 32) {
+            return t.substring(0, 32);
+        }
         try {
             if (t.contains("E") || t.contains("e")) {
-                return new java.math.BigDecimal(t).toPlainString();
+                java.math.BigDecimal value = new java.math.BigDecimal(t);
+                if (value.precision() - value.scale() > 20 || value.scale() > 20) {
+                    return t;
+                }
+                return value.toPlainString();
             }
             if (t.endsWith(".0")) {
                 return t.substring(0, t.length() - 2);
@@ -103,8 +127,12 @@ final class XlsxReader {
             return fallback;
         }
         int col = 0;
+        int letters = 0;
         for (char ch : ref.toCharArray()) {
-            if (Character.isLetter(ch)) {
+            if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {
+                if (++letters > 3) {
+                    return -1;
+                }
                 col = col * 26 + (Character.toUpperCase(ch) - 'A' + 1);
             } else {
                 break;

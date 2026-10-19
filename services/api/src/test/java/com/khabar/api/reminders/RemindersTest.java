@@ -188,6 +188,17 @@ class RemindersTest {
     }
 
     @Test
+    void thePatientSeesTodaysMedicinesByTimeOfDay() throws Exception {
+        signVisit(false, 4.0);
+        mvc.perform(get("/api/me/medicines-today").header("Authorization", bearer(aminahAccount.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].slot").value("morning"))
+                .andExpect(jsonPath("$[0].medicines.length()").value(2))
+                .andExpect(jsonPath("$[0].medicines[0].timing").value("after_food"))
+                .andExpect(jsonPath("$[1].slot").value("night"));
+    }
+
+    @Test
     void aLateServerDoesNotSendAReminderHoursAfterItsTime() throws Exception {
         signVisit(false, 4.0);
         switchOn();

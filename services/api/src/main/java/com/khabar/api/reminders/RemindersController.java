@@ -56,6 +56,12 @@ public class RemindersController {
         return reminders.settingsFor(ownRecord(jwt));
     }
 
+    @GetMapping("/api/me/medicines-today")
+    @Transactional(readOnly = true)
+    public java.util.List<Reminders.PlanSlot> medicinesToday(@AuthenticationPrincipal Jwt jwt) {
+        return reminders.todaysPlan(ownRecord(jwt));
+    }
+
     @PutMapping("/api/me/reminders")
     @Transactional
     public Reminders.SettingsView update(@RequestBody SettingsInput input, @AuthenticationPrincipal Jwt jwt) {

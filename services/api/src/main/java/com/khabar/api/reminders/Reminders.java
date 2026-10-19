@@ -80,6 +80,23 @@ public class Reminders {
                                Adherence adherence) {
     }
 
+    public record PlanMedicine(String name, Double strengthMg, double units, String timing) {
+    }
+
+    /** One time of day in the patient's current plan: when, and which medicines, as the doctor prescribed them. */
+    public record PlanSlot(String slot, String time, List<PlanMedicine> medicines) {
+    }
+
+    /** Today's medicines by time of day, from the latest signed plan; empty without one. As-needed medicines are left out. */
+    public List<PlanSlot> todaysPlan(Patient patient) {
+        return currentPlan(patient.getId(), clock.instant()).map(plan -> bySlot(plan).entrySet().stream()
+                .map(e -> new PlanSlot(e.getKey(), SLOT_TIMES.get(e.getKey()).toString(), e.getValue().stream()
+                        .map(rx -> new PlanMedicine(rx.getName() == null ? rx.getRaw() : rx.getName(), rx.getStrengthMg(),
+                                rx.getUnitsPerDose() == null ? 1 : rx.getUnitsPerDose(), rx.getTiming()))
+                        .toList()))
+                .toList()).orElse(List.of());
+    }
+
     /** What happened to a Taken / Missed / Coming / Can't-come answer. */
     public record Answer(boolean recorded, String message) {
     }

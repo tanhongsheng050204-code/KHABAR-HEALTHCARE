@@ -48,4 +48,18 @@ class XlsxReaderTest {
         assertThatThrownBy(() -> XlsxReader.read(xlsx(evil, "<worksheet " + NS + "><sheetData/></worksheet>"))).isInstanceOf(IOException.class);
         assertThatThrownBy(() -> XlsxReader.read("not a zip".getBytes(StandardCharsets.UTF_8))).isInstanceOf(IOException.class);
     }
+
+    @Test
+    void farColumnsHugeNumbersAndTooManyRowsAreBounded() throws IOException {
+        String shared = "<sst " + NS + "/>";
+        String sheet = "<worksheet " + NS + "><sheetData><row r=\"1\"><c r=\"A1\"><v>1E999999</v></c><c r=\"XFD1\"><v>7</v></c>"
+                + "<c r=\"ZZZZZZ1\"><v>8</v></c></row></sheetData></worksheet>";
+        List<List<String>> rows = XlsxReader.read(xlsx(shared, sheet));
+        assertThat(rows.get(0)).containsExactly("1E999999");
+
+        StringBuilder many = new StringBuilder("<worksheet " + NS + "><sheetData>");
+        for (int i = 1; i <= 600; i++) many.append("<row r=\"").append(i).append("\"><c r=\"A").append(i).append("\"><v>1</v></c></row>");
+        many.append("</sheetData></worksheet>");
+        assertThatThrownBy(() -> XlsxReader.read(xlsx(shared, many.toString()))).isInstanceOf(IOException.class);
+    }
 }
