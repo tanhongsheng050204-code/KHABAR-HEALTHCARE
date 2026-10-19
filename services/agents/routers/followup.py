@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from agents.answers import AnswerMatch, AnswerOption, default_model as default_answer_model, match_answer
+from agents.gloss import Gloss, default_model as default_gloss_model, gloss
 from agents.triage import default_model, triage
 from core import graph
 from core.security import verify_internal_service_key
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/agents/followup", tags=["Follow-up Agent"], dependen
 
 _model = default_model()
 _answer_model = default_answer_model()
+_gloss_model = default_gloss_model()
 
 
 class TriageRequest(BaseModel):
@@ -45,3 +47,13 @@ class AnswerRequest(BaseModel):
 def choose_answer(request: AnswerRequest):
     """Which doctor-approved answer, if any, the reply asks for. Returns an id, never answer text."""
     return match_answer(request.text, request.options, model=_answer_model)
+
+
+class GlossRequest(BaseModel):
+    text: str
+
+
+@router.post("/gloss", response_model=Gloss)
+def gloss_reply(request: GlossRequest):
+    """An English machine translation for staff, shown beside the patient's own words. Empty without a model."""
+    return gloss(request.text, model=_gloss_model)

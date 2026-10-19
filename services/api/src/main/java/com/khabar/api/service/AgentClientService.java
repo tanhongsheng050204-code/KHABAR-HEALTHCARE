@@ -97,6 +97,16 @@ public class AgentClientService {
                 .body(Map.class);
     }
 
+    /** An English machine translation of a reply for staff; {"english": null} when the agents have no model. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> glossReply(String text) {
+        return restClient.post()
+                .uri("/agents/followup/gloss")
+                .body(Map.of("text", text))
+                .retrieve()
+                .body(Map.class);
+    }
+
     @SuppressWarnings("unchecked")
     /** context is what the clinic already knows, with no identifiers: medicines, allergies. */
     public Map<String, Object> processIntake(String graphId, String preferredLanguage, List<Map<String, String>> messages,

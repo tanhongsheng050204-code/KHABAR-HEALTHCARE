@@ -105,6 +105,7 @@ public class FollowUpService {
         }
         // save() merges (the id is set in the constructor), so keep the managed copy it returns
         PatientReply reply = replies.save(fresh);
+        glossForStaff(patient, reply, redacted);
         graphSync.changed(patient.getId());
         checkIns.findByPatientIdAndStatus(patient.getId(), CheckIn.Status.SENT).stream()
                 .max(Comparator.comparing(CheckIn::getDueDate))
@@ -129,6 +130,26 @@ public class FollowUpService {
         String acknowledgement = triaged ? PatientMessages.acknowledgementText(language, level) : PatientMessages.uncheckedText(language);
         messages.send(patient, acknowledgement, Messenger.Kind.NOTICE);
         return new Outcome(level, null, acknowledgement);
+    }
+
+    /**
+     * Staff who do not read the patient's language get an English machine translation beside the original. It is
+     * only for reading: triage and the call list never use it. Any failure just leaves the original on its own.
+     */
+    private void glossForStaff(Patient patient, PatientReply reply, String redacted) {
+        if ("en".equals(patient.getPreferredLanguage())) {
+            return;
+        }
+        try {
+            aiReceipts.text(patient, AiReceipts.Purpose.REPLY_GLOSS, "/agents/followup/gloss", redacted);
+            Map<String, Object> result = agents.glossReply(redacted);
+            Object english = result == null ? null : result.get("english");
+            if (english instanceof String s && !s.isBlank()) {
+                reply.gloss(s.strip());
+            }
+        } catch (RuntimeException e) {
+            log.info("No English gloss for a reply: {}", e.getClass().getSimpleName());
+        }
     }
 
     private Optional<ApprovedAnswer> approvedAnswerFor(Patient patient, String redacted) {

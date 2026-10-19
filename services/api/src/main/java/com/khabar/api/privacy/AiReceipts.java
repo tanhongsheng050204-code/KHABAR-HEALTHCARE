@@ -32,7 +32,8 @@ public class AiReceipts {
         ANSWER_MATCH("Matching a reply to a clinic-approved answer"),
         PACKET_PHOTO("Reading a medicine packet photo"),
         DICTATION("Doctor's dictation turned into text"),
-        VOICE_REPLY("Patient's voice note turned into text");
+        VOICE_REPLY("Patient's voice note turned into text"),
+        REPLY_GLOSS("English translation of a reply for clinic staff");
 
         private final String label;
 

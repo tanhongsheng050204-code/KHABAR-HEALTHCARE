@@ -34,6 +34,11 @@ public class PatientReply {
     @Column(name = "text_enc", nullable = false, length = 4096)
     private String text;
 
+    /** An English machine translation for staff, shown beside the patient's words; never used for triage. */
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "gloss_enc", length = 8192)
+    private String gloss;
+
     @Column(nullable = false)
     private Instant receivedAt;
 
@@ -84,6 +89,14 @@ public class PatientReply {
         if (!missedDose) {
             this.handledAt = when;
         }
+    }
+
+    public void gloss(String english) {
+        this.gloss = english;
+    }
+
+    public String getGloss() {
+        return gloss;
     }
 
     public void markMissedDose() {

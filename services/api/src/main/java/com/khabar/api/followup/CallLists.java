@@ -55,11 +55,12 @@ public class CallLists {
      */
     public record CallListItem(UUID patientId, String fullName, String preferredLanguage, TriageLevel level,
                                String urgentReply, String latestReply, Instant latestAt, Integer followUpDay,
-                               int unhandledReplies, String reason, FollowUpCases.CaseView followUpCase) {
+                               int unhandledReplies, String reason, FollowUpCases.CaseView followUpCase,
+                               String urgentEnglish, String latestEnglish) {
 
         CallListItem withCase(FollowUpCases.CaseView view) {
             return new CallListItem(patientId, fullName, preferredLanguage, view.level().compareTo(level) < 0 ? view.level() : level,
-                    urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason, view);
+                    urgentReply, latestReply, latestAt, followUpDay, unhandledReplies, reason, view, urgentEnglish, latestEnglish);
         }
     }
 
@@ -106,7 +107,7 @@ public class CallLists {
                 .collect(Collectors.toMap(c -> c.getPatient().getId(), c -> c, (a, b) -> a.getSentAt().isBefore(b.getSentAt()) ? a : b))
                 .values().stream()
                 .map(c -> new CallListItem(c.getPatient().getId(), c.getPatient().getFullName(), c.getPatient().getPreferredLanguage(),
-                        TriageLevel.REVIEW, null, null, c.getSentAt(), c.getPatient().followUpDay(today), 0, "NO_REPLY", null))
+                        TriageLevel.REVIEW, null, null, c.getSentAt(), c.getPatient().followUpDay(today), 0, "NO_REPLY", null, null, null))
                 .toList();
         java.util.Set<UUID> silentIds = silent.stream().map(CallListItem::patientId).collect(Collectors.toSet());
         Map<UUID, com.khabar.api.reminders.AppointmentOutcome> missedVisits = noShows.findByClinicIdAndHandledAtIsNull(clinicId).stream()
@@ -117,7 +118,7 @@ public class CallLists {
         List<CallListItem> noShowItems = new java.util.ArrayList<>();
         missedVisits.values().forEach(outcome -> patients.findById(outcome.getPatientId()).ifPresent(p ->
                 noShowItems.add(new CallListItem(p.getId(), p.getFullName(), p.getPreferredLanguage(), TriageLevel.REVIEW, null, null,
-                        outcome.getAppointmentAt(), p.followUpDay(today), 0, "MISSED_APPOINTMENT", null))));
+                        outcome.getAppointmentAt(), p.followUpDay(today), 0, "MISSED_APPOINTMENT", null, null, null))));
 
         ClinicSettings settings = clinicOps.settingsFor(clinicId);
         Map<UUID, Patient> patientsById = new java.util.HashMap<>();
@@ -139,7 +140,7 @@ public class CallLists {
                 .filter(open -> !shown.contains(open.getPatient().getId()))
                 .forEach(open -> withCases.add(new CallListItem(open.getPatient().getId(), open.getPatient().getFullName(),
                         open.getPatient().getPreferredLanguage(), open.getLevel(), null, null, open.getOpenedAt(),
-                        open.getPatient().followUpDay(today), 0, "OPEN_CASE", cases.view(open, settings, snapshotAt))));
+                        open.getPatient().followUpDay(today), 0, "OPEN_CASE", cases.view(open, settings, snapshotAt), null, null)));
 
         List<CallListItem> items = withCases.stream()
                 .sorted(Comparator.comparing(CallListItem::level)
@@ -162,7 +163,7 @@ public class CallLists {
                 .orElseThrow();
         Patient patient = urgent.getPatient();
         return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), urgent.getLevel(),
-                urgent.getDescription(), latest.getDescription(), latest.getMeasuredAt(), patient.followUpDay(today), open.size(), "READING", null);
+                urgent.getDescription(), latest.getDescription(), latest.getMeasuredAt(), patient.followUpDay(today), open.size(), "READING", null, null, null);
     }
 
     private static CallListItem toItem(Patient patient, List<PatientReply> open, LocalDate today) {
@@ -175,6 +176,6 @@ public class CallLists {
         boolean onlyMissedDoses = open.stream().allMatch(r -> r.isMissedDose() && r.getLevel().compareTo(TriageLevel.REVIEW) >= 0);
         return new CallListItem(patient.getId(), patient.getFullName(), patient.getPreferredLanguage(), level,
                 urgent.getText(), latest.getText(), latest.getReceivedAt(), patient.followUpDay(today), open.size(),
-                onlyMissedDoses ? "MISSED_DOSE" : "REPLY", null);
+                onlyMissedDoses ? "MISSED_DOSE" : "REPLY", null, urgent.getGloss(), latest.getGloss());
     }
 }

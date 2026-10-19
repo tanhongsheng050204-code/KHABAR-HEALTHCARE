@@ -73,7 +73,7 @@ public class PreVisitController {
                             List<String> prescription) {
     }
 
-    public record RecentReply(Instant receivedAt, TriageLevel level, String text, boolean missedDose) {
+    public record RecentReply(Instant receivedAt, TriageLevel level, String text, boolean missedDose, String english) {
     }
 
     /** reconciliation is null when the checks could not run, so the screen can say so rather than show "no problems". */
@@ -96,7 +96,7 @@ public class PreVisitController {
                         e.getFollowUp(), e.getPrescription().stream().map(PrescriptionLine::getRaw).toList()))
                 .orElse(null);
         List<RecentReply> recent = replies.findTop5ByPatientIdOrderByReceivedAtDesc(patient.getId()).stream()
-                .map(r -> new RecentReply(r.getReceivedAt(), r.getLevel(), r.getText(), r.isMissedDose()))
+                .map(r -> new RecentReply(r.getReceivedAt(), r.getLevel(), r.getText(), r.isMissedDose(), r.getGloss()))
                 .toList();
 
         return new PreVisit(

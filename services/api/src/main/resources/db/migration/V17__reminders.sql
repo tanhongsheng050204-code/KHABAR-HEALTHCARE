@@ -71,3 +71,6 @@ create table caregiver_notice (
     delivered boolean not null,
     constraint ux_caregiver_notice unique (caregiver_id, kind, ref)
 );
+
+-- An English machine translation of each reply, for staff; shown beside the original, never used for triage.
+alter table patient_reply add column gloss_enc varchar(8192);
